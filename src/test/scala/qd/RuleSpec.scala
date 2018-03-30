@@ -6,11 +6,11 @@ import scala.util.Random
 
 class RuleSpec extends FlatSpec with Matchers {
 
-  /* val node1 = Atom(1)
+  val node1 = Atom(1)
   val node2 = Atom(2)
   val node3 = Atom(3)
-  val nodes = Domain("Node", node1, node2, node3) */
-  val nodes = Domain("Node", Range(0, 100).map(Atom).toSet)
+  val nodes = Domain("Node", node1, node2, node3)
+  // val nodes = Domain("Node", Range(0, 100).map(Atom).toSet)
 
   val edge = Relation("edge", nodes, nodes)
   val path = Relation("path", nodes, nodes)
@@ -23,10 +23,10 @@ class RuleSpec extends FlatSpec with Matchers {
 
   val program = Program(ruleE, ruleT)
   println(program)
-  /* val edb = Map(edge -> Relation(edge, edge(node1, node2),
-                                       edge(node2, node2),
-                                       edge(node2, node3))) */
-  var allEdges: Set[DTuple] = Set()
+  val edb = Config(Map(edge -> Instance(edge, edge(node1, node2),
+                                              edge(node2, node2),
+                                              edge(node2, node3))))
+  /* var allEdges: Set[DTuple] = Set()
   val random = new Random()
   for (i <- Range(0, nodes.size)) {
     for (j <- Range(0, nodes.size)) {
@@ -35,10 +35,9 @@ class RuleSpec extends FlatSpec with Matchers {
       }
     }
   }
-  val edb = Config(Map(edge -> Instance(edge, allEdges)))
-  val idb = NaiveEvaluator(program, edb)
+  val edb = Config(Map(edge -> Instance(edge, allEdges))) */
+  val idb = NaiveEvaluator(program)(edb)
   println(s"Result size: ${idb(edge).numTuples}")
-
-  // println(program.eval(edb))
+  println(idb)
 
 }

@@ -12,9 +12,9 @@ case class Domain(name: Any, allAtoms: Set[Atom]) {
   val size: Int = allAtoms.size
 
   def equalityRelation: Instance = {
-    val schema = Relation(s"Eq$name", this, this)
+    val relation = Relation(s"Eq$name", this, this)
     val tuples = allAtoms.map(atom => DTuple(atom, atom))
-    Instance(schema, tuples)
+    Instance(relation, tuples)
   }
 
   override def toString: String = s"$name(${allAtoms.mkString(", ")})"
@@ -68,6 +68,11 @@ case class Instance(relation: Relation, tuples: Set[DTuple]) {
     require(relation == that.relation)
     Instance(relation, tuples ++ that.tuples)
   }
+
+  def ++(that: Iterable[DTuple]): Instance = {
+    require(that.forall(relation.contains))
+    Instance(relation, tuples ++ that)
+  }
 }
 
 object Instance {
@@ -81,11 +86,14 @@ case class Config(instances: Map[Relation, Instance]) {
   require(instances.forall { case (relation, instance) => relation == instance.relation })
   def apply(relation: Relation): Instance = instances(relation)
   def getOrElse(relation: Relation, default: => Instance): Instance = instances.getOrElse(relation, default)
-  def +(sr: (Relation, Instance)): Config = Config(instances + sr)
+  def +(si: (Relation, Instance)): Config = Config(instances + si)
 }
 
 case class WeightedInstance(relation: Relation, tuples: Map[DTuple, Double]) {
-  require(tuples.forall(tw => relation.contains(tw._1) && 0.0 <= tw._2 && tw._2 <= 1.0))
-  def valueOf(tuple: DTuple): Double = tuples.getOrElse(tuple, 0.0)
+  require(tuples.forall { case (tuple, weight) => relation.contains(tuple) && 0.0 <= weight && weight <= 1.0 })
+  def valueOf(tuple: DTuple): Double = {
+    require(relation.contains(tuple))
+    tuples.getOrElse(tuple, 0.0)
+  }
   def toInstance(cutoff: Double): Instance = Instance(relation, tuples.filter(tw => tw._2 >= cutoff).keySet)
 }

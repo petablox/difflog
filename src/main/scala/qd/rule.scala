@@ -29,18 +29,34 @@ object Valuation {
     require(map.forall { case (variable, atom) => variable.domain.contains(atom) })
     new Valuation(map)
   }
+  def apply(): Valuation = new Valuation(Map())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Literal and rules
 
 case class Literal(relation: Relation, parameters: Parameter*) {
-  require(relation.numFields == parameters.length)
-  require(relation.signature.zip(parameters).forall(dp => dp._1 == dp._2.domain))
-  val freeVariables: Set[Variable] = parameters.filter(_.isInstanceOf[Variable])
-                                               .map(_.asInstanceOf[Variable])
-                                               .toSet
+  require(relation.signature == parameters.map(_.domain))
+  val freeVariables: Set[Variable] = parameters.collect({ case v: Variable => v }).toSet
   override def toString: String = s"${relation.name}(${parameters.mkString(", ")})"
+
+  def concretize(valuation: Valuation): Set[DTuple] = {
+    var completeValuations = Set(valuation)
+    for (v <- parameters.collect { case v: Variable => v }) {
+      completeValuations = completeValuations.flatMap(valPrime => {
+        if (!valPrime.contains(v)) v.domain.allAtoms.map(atom => valPrime + (v -> atom))
+        else Set(valPrime)
+      })
+    }
+
+    for (valPrime <- completeValuations) yield {
+      val fields = parameters.map {
+        case v @ Variable(_, _) => valPrime(v)
+        case Constant(c, _) => c
+      }
+      DTuple(fields:_*)
+    }
+  }
 }
 
 case class Rule(name: Any, head: Literal, body: Set[Literal]) {
@@ -73,8 +89,8 @@ case class WeightedRule(name: Any, coefficient: Double, head: Literal, body: Lit
 // Programs and evaluators
 
 case class Program(rules: Set[Rule]) {
-  val allSchemas: Set[Relation] = rules.flatMap(rule => rule.body.map(_.relation) + rule.head.relation)
-  val allDomains: Set[Domain] = allSchemas.flatMap(_.signature)
+  val allRelations: Set[Relation] = rules.flatMap(rule => rule.body.map(_.relation) + rule.head.relation)
+  val allDomains: Set[Domain] = allRelations.flatMap(_.signature)
   override def toString: String = rules.mkString(System.lineSeparator())
 }
 
@@ -83,10 +99,8 @@ object Program {
   def apply(): Program = Program(Set[Rule]())
 }
 
-abstract class Evaluator(program: Program) {
-  def eval(edb: Config): Config
-
+abstract class Evaluator(program: Program) extends (Config => Config) {
   val rules: Set[Rule] = program.rules
-  val allSchemas: Set[Relation] = program.allSchemas
+  val allRelations: Set[Relation] = program.allRelations
   val allDomains: Set[Domain] = program.allDomains
 }
