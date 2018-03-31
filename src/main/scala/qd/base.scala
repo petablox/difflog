@@ -84,9 +84,20 @@ object Instance {
 
 case class Config(instances: Map[Relation, Instance]) {
   require(instances.forall { case (relation, instance) => relation == instance.relation })
+  val numTuples: Int = instances.values.map(_.numTuples).sum
   def apply(relation: Relation): Instance = instances(relation)
   def getOrElse(relation: Relation, default: => Instance): Instance = instances.getOrElse(relation, default)
   def +(si: (Relation, Instance)): Config = Config(instances + si)
+}
+
+object Config {
+  def apply(firstPair: (Relation, Instance), remainingPairs: (Relation, Instance)*): Config = {
+    Config((firstPair +: remainingPairs).toMap)
+  }
+  def apply(): Config = Config(Map[Relation, Instance]())
+  def apply(instances: Instance*): Config = {
+    Config(instances.map(instance => instance.relation -> instance).toMap)
+  }
 }
 
 case class WeightedInstance(relation: Relation, tuples: Map[DTuple, Double]) {

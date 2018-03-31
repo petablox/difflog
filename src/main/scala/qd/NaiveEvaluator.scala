@@ -4,23 +4,19 @@ case class NaiveEvaluator(program: Program) extends Evaluator(program) {
 
   override def apply(edb: Config): Config = {
     var config = Config(allRelations.map(schema => schema -> edb.getOrElse(schema, Instance(schema))).toMap)
-    var done = false
-    while (!done) {
-      done = true
+    var oldConfig = Config()
+    while (config.numTuples > oldConfig.numTuples) {
+      oldConfig = config
       for (rule <- rules) {
-        val (configPrime, changed) = immediateConsequence(rule, config)
-        if (changed) {
-          config = configPrime
-          done = false
-        }
+        config = immediateConsequence(rule, config)
       }
+      assert(config.numTuples >= oldConfig.numTuples)
     }
     config
   }
 
-  // Applies a rule to a configuration. Returns the new configuration and signals whether anything was changed
-  // (_, true) iff something was changed.
-  def immediateConsequence(rule: Rule, config: Config): (Config, Boolean) = {
+  // Applies a rule to a configuration
+  def immediateConsequence(rule: Rule, config: Config): Config = {
     var bodyVals = Set(Valuation())
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
@@ -29,8 +25,7 @@ case class NaiveEvaluator(program: Program) extends Evaluator(program) {
 
     val newInstance = config(rule.head.relation) ++ newTuples
     val newConfig = config + (rule.head.relation -> newInstance)
-    val changed = newInstance.numTuples > config(rule.head.relation).numTuples
-    (newConfig, changed)
+    newConfig
   }
 
   def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
