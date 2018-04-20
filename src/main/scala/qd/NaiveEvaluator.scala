@@ -3,16 +3,24 @@ package qd
 case class NaiveEvaluator(program: Program) extends Evaluator(program) {
 
   override def apply(edb: Config): Config = {
-    var config = Config(allRelations.map(schema => schema -> edb.getOrElse(schema, Instance(schema))).toMap)
     var oldConfig = Config()
+    var config = edb.withDefault(relation => Instance(relation))
     while (config.numTuples > oldConfig.numTuples) {
       oldConfig = config
-      for (rule <- rules) {
-        config = immediateConsequence(rule, config)
-      }
+      config = immediateConsequence(oldConfig)
       assert(config.numTuples >= oldConfig.numTuples)
     }
     config
+  }
+
+  def immediateConsequence(config: Config): Config = {
+    var ans = config
+    for (rule <- rules) {
+      val newAns = immediateConsequence(rule, ans)
+      assert(newAns.numTuples >= ans.numTuples)
+      ans = newAns
+    }
+    ans
   }
 
   // Applies a rule to a configuration

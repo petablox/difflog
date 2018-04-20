@@ -17,7 +17,7 @@ case class Domain(name: Any, allAtoms: Set[Atom]) {
     Instance(relation, tuples)
   }
 
-  override def toString: String = s"$name(${allAtoms.mkString(", ")})"
+  override def toString: String = s"$name[${allAtoms.mkString(", ")}]"
 }
 
 object Domain {
@@ -73,6 +73,16 @@ case class Instance(relation: Relation, tuples: Set[DTuple]) {
     require(that.forall(relation.contains))
     Instance(relation, tuples ++ that)
   }
+
+  def --(that: Instance): Instance = {
+    require(relation == that.relation)
+    Instance(relation, tuples -- that.tuples)
+  }
+
+  def --(that: Iterable[DTuple]): Instance = {
+    require(that.forall(relation.contains))
+    Instance(relation, tuples -- that)
+  }
 }
 
 object Instance {
@@ -87,6 +97,11 @@ case class Config(instances: Map[Relation, Instance]) {
   val numTuples: Int = instances.values.map(_.numTuples).sum
   def apply(relation: Relation): Instance = instances(relation)
   def getOrElse(relation: Relation, default: => Instance): Instance = instances.getOrElse(relation, default)
+  def withDefault(default: Relation => Instance): Config = {
+    val ans = Config(instances.withDefault(default))
+    assert(numTuples == ans.numTuples)
+    ans
+  }
   def +(si: (Relation, Instance)): Config = Config(instances + si)
 }
 

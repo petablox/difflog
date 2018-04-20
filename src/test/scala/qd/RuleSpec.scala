@@ -30,14 +30,25 @@ class RuleSpec extends FlatSpec with Matchers {
   val random = new Random()
   for (i <- Range(0, nodes.size)) {
     for (j <- Range(0, nodes.size)) {
-      if (random.nextDouble() < 0.01) {
+      if (random.nextDouble() < 0.1) {
         allEdges = allEdges + edge(Atom(i), Atom(j))
       }
     }
   }
   val edb = Config(Instance(edge, allEdges))
-  val idb = NaiveEvaluator(program)(edb)
-  println(s"idb.numTuples: ${idb.numTuples}, id(path).numTuples: ${idb(path).numTuples}")
+  val startTime: Long = System.nanoTime()
+  val idbNaive: Config = NaiveEvaluator(program)(edb)
+  val naiveTime: Long = System.nanoTime() - startTime
+  val idbSeminaive: Config = SeminaiveEvaluator(program)(edb)
+  val seminaiveTime: Long = System.nanoTime() - naiveTime - startTime
+
+  println(s"naiveTime: ${naiveTime / 1.0e9} seminaiveTime: ${seminaiveTime / 1.0e9}")
+  println(s"idbNaive.numTuples: ${idbNaive.numTuples}, idbNaive(path).numTuples: ${idbNaive(path).numTuples}")
+  println(s"idbSeminaive.numTuples: ${idbSeminaive.numTuples}, idbSemiNaive(path).numTuples: ${idbSeminaive(path).numTuples}")
   // println(idb)
+
+  "Naive and Seminaive evaluation" should "coincide" in {
+    assert(idbNaive == idbSeminaive)
+  }
 
 }

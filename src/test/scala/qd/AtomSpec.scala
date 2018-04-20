@@ -97,7 +97,7 @@ class AtomSpec extends FlatSpec with Matchers {
     assert(triangle.toString == "<triangle>")
     assert(rectangle.toString == "<rectangle>")
     assert(circle.toString == "<circle>")
-    assert(shapes.toString == "Shape(<triangle>, <rectangle>, <circle>)")
+    assert(shapes.toString == "Shape[<triangle>, <rectangle>, <circle>]")
   }
 
 }
