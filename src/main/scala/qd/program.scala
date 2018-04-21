@@ -88,18 +88,20 @@ case class WeightedRule(name: Any, coefficient: Double, head: Literal, body: Lit
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Programs and evaluators
 
-case class Program(rules: Set[Rule]) {
+case class Program(name: Any, rules: Set[Rule]) {
   val allRelations: Set[Relation] = rules.flatMap(rule => rule.body.map(_.relation) + rule.head.relation)
   val allDomains: Set[Domain] = allRelations.flatMap(_.signature)
   override def toString: String = rules.mkString(System.lineSeparator())
 }
 
 object Program {
-  def apply(firstRule: Rule, remainingRules: Rule*): Program = Program((firstRule +: remainingRules).toSet)
-  def apply(): Program = Program(Set[Rule]())
+  def apply(name: Any, firstRule: Rule, remainingRules: Rule*): Program = {
+    Program(name, (firstRule +: remainingRules).toSet)
+  }
+  def apply(name: Any): Program = Program(name, Set[Rule]())
 }
 
-abstract class Evaluator(program: Program) extends (Config => Config) {
+abstract class Evaluator(val name: Any, val program: Program) extends (Config => Config) {
   val rules: Set[Rule] = program.rules
   val allRelations: Set[Relation] = program.allRelations
   val allDomains: Set[Domain] = program.allDomains

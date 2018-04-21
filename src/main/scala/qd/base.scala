@@ -58,7 +58,7 @@ case class Relation(name: Any, signature: Domain*) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Instances (of relations / predicates) and configurations
 
-case class Instance(relation: Relation, tuples: Set[DTuple]) {
+case class Instance(relation: Relation, tuples: Set[DTuple]) extends Set[DTuple] {
   require(tuples.forall(relation.contains))
   def contains(tuple: DTuple): Boolean = tuples.contains(tuple)
   val numTuples: Int = tuples.size
@@ -83,6 +83,10 @@ case class Instance(relation: Relation, tuples: Set[DTuple]) {
     require(that.forall(relation.contains))
     Instance(relation, tuples -- that)
   }
+
+  override def +(elem: DTuple): Instance = Instance(relation, tuples + elem)
+  override def -(elem: DTuple): Instance = Instance(relation, tuples - elem)
+  override def iterator: Iterator[DTuple] = tuples.iterator
 }
 
 object Instance {
@@ -113,6 +117,7 @@ object Config {
   def apply(instances: Instance*): Config = {
     Config(instances.map(instance => instance.relation -> instance).toMap)
   }
+  val EMPTY: Config = Config().withDefault(relation => Instance(relation))
 }
 
 case class WeightedInstance(relation: Relation, tuples: Map[DTuple, Double]) {

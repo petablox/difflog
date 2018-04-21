@@ -1,64 +1,59 @@
 package qd
 
-case class SeminaiveEvaluator(program: Program) extends Evaluator(program) {
+case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
 
   override def apply(edb: Config): Config = {
-    val config = Config(allRelations.map(relation => relation -> edb.getOrElse(relation, Instance(relation))).toMap)
-    var configPair = ConfigPair(config, config)
-    while (configPair.delta.numTuples > 0) {
-      val newPair = immediateConsequence(configPair)
-      assert(newPair.config.numTuples >= configPair.config.numTuples)
-      configPair = newPair
+    var config: Config = edb.withDefault(relation => Instance(relation))
+    var delta = config
+    while (delta.numTuples > 0) {
+      /* println(s"S config.numTuples: ${config.numTuples}. " +
+              s"delta.numTuples: ${delta.numTuples}.") */
+      val (newConfig, newDelta) = immediateConsequence(config, delta)
+      assert(newConfig.numTuples >= config.numTuples)
+      config = newConfig
+      delta = newDelta
     }
-    configPair.config
+    config
   }
 
-  case class ConfigPair(config: Config, delta: Config)
-
-  def immediateConsequence(configPair: ConfigPair): ConfigPair = {
-    var newConfig = configPair.config
-    var newDelta = Config(allRelations.map(schema => schema -> Instance(schema)).toMap)
+  def immediateConsequence(config: Config, delta: Config): (Config, Config) = {
+    var newConfig = config
+    var newDelta = Config.EMPTY
     for (rule <- rules) {
+      val (instance, instDelta) = immediateConsequence(rule, config, delta)
       val relation = rule.head.relation
-      val rulePair = immediateConsequence(rule, configPair)
-      newConfig = newConfig + (relation -> (newConfig(relation) ++ rulePair.instance))
-      newDelta = newDelta + (relation -> (newDelta(relation) ++ rulePair.delta))
+      newConfig = newConfig + (relation -> (newConfig(relation) ++ instance))
+      newDelta = newDelta + (relation -> (newDelta(relation) ++ instDelta))
     }
-    ConfigPair(newConfig, newDelta)
+    (newConfig, newDelta)
   }
 
-  case class InstancePair(instance: Instance, delta: Instance) {
-    require(instance.relation == delta.relation)
-    val relation: Relation = instance.relation
-    def ++(that: InstancePair): InstancePair = InstancePair(instance ++ that.instance, delta ++ that.delta)
-  }
-
-  def immediateConsequence(rule: Rule, configPair: ConfigPair): InstancePair = {
+  def immediateConsequence(rule: Rule, config: Config, delta: Config): (Instance, Instance) = {
     val relation = rule.head.relation
-    val oldInstance = configPair.config(relation)
+    val oldInstance = config(relation)
 
     var newInstance = oldInstance
     var newDelta = Instance(relation)
     for (literal <- rule.body) {
-      val literalDelta = immediateConsequenceDelta(rule, literal, configPair)
+      val literalDelta = immediateConsequence(rule, literal, config, delta)
       newInstance = newInstance ++ literalDelta
       newDelta = newDelta ++ literalDelta
     }
 
-    InstancePair(newInstance, newDelta -- oldInstance)
+    (newInstance, newDelta -- oldInstance)
   }
 
-  def immediateConsequenceDelta(rule: Rule, literal: Literal, configPair: ConfigPair): Instance = {
-    require(rule.body.contains(literal))
+  def immediateConsequence(rule: Rule, deltaLiteral: Literal, config: Config, delta: Config): Instance = {
+    require(rule.body.contains(deltaLiteral))
 
     var bodyVals = Set(Valuation())
-    bodyVals = extend(literal, configPair.delta, bodyVals)
     for (literal <- rule.body) {
-      bodyVals = extend(literal, configPair.config, bodyVals)
+      bodyVals = if (literal == deltaLiteral) extend(literal, delta, bodyVals)
+                 else extend(literal, config, bodyVals)
     }
     val newTuples = bodyVals.flatMap(rule.head.concretize)
 
-    val newInstance = configPair.config(rule.head.relation) ++ newTuples
+    val newInstance = config(rule.head.relation) ++ newTuples
     newInstance
   }
 
