@@ -88,11 +88,39 @@ object Instance {
   def apply(relation: Relation): Instance = Instance(relation, Set[DTuple]())
 }
 
+case class Config(private val instances: Map[Relation, Instance]) extends Map[Relation, Instance] {
+  require(instances.forall { case (relation, instance) => relation == instance.relation })
+
+  override def apply(relation: Relation): Instance = instances.getOrElse(relation, Instance(relation))
+  override def get(relation: Relation): Option[Instance] = Some(this(relation))
+  override def iterator: Iterator[(Relation, Instance)] = instances.iterator
+  def +(ri: (Relation, Instance)): Config = {
+    val (relation, instance) = ri
+    val newInstance = this(relation) ++ instance
+    Config(instances + (relation -> newInstance))
+  }
+  override def +[V >: Instance](kv: (Relation, V)): Map[Relation, V] = throw new UnsupportedOperationException
+  override def -(relation: Relation): Config = Config(instances - relation)
+
+  val numTuples: Int = instances.values.map(_.size).sum
+}
+
+object Config {
+  def apply(firstPair: (Relation, Instance), remainingPairs: (Relation, Instance)*): Config = {
+    Config((firstPair +: remainingPairs).toMap)
+  }
+  def apply(): Config = Config(Map[Relation, Instance]())
+  def apply(instances: Instance*): Config = {
+    Config(instances.map(instance => instance.relation -> instance).toMap)
+  }
+  val EMPTY: Config = Config()
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Weighted instances and weighted configurations
+
 case class WeightedInstance(relation: Relation, private val map: Map[DTuple, Double]) extends Map[DTuple, Double] {
   require(map.forall { case (tuple, weight) => relation.contains(tuple) && 0.0 <= weight && weight <= 1.0 })
-
-  def support: Set[DTuple] = map.filter(_._2 > 0).keySet
-  def toInstance(cutoff: Double): Instance = Instance(relation, map.filter(tw => tw._2 >= cutoff).keySet)
 
   override def apply(tuple: DTuple): Double = {
     require(relation.contains(tuple))
@@ -109,41 +137,45 @@ case class WeightedInstance(relation: Relation, private val map: Map[DTuple, Dou
     require(relation.contains(tuple))
     WeightedInstance(relation, map + (tuple -> Math.max(this(tuple), value)))
   }
-  override def +[V >: Double](kv: (DTuple, V)): Map[DTuple, V] = {
-    val (tuple, value) = kv
-    require(relation.contains(tuple))
-    map + (tuple -> value)
-  }
+  override def +[V >: Double](kv: (DTuple, V)): Map[DTuple, V] = throw new UnsupportedOperationException
   override def -(key: DTuple): WeightedInstance = {
     require(relation.contains(key))
     WeightedInstance(relation, map - key)
   }
+
+  def ++(that: WeightedInstance): WeightedInstance = {
+    ???
+  }
+  // def ++(that: Iterable[DTuple]): Instance = Instance(relation, set ++ that)
+  // def --(that: Instance): Instance = Instance(relation, set -- that.set)
+  // def --(that: Iterable[DTuple]): Instance = Instance(relation, set -- that)
+
+  val support: Set[DTuple] = map.filter(_._2 > 0).keySet
+  override val size: Int = support.size
+  def toInstance(cutoff: Double): Instance = Instance(relation, map.filter(tw => tw._2 >= cutoff).keySet)
 }
 
-case class Config(private val instances: Map[Relation, Instance]) extends Map[Relation, Instance] {
+object WeightedInstance {
+  def apply(relation: Relation, firstTuple: (DTuple, Double), remainingTuples: (DTuple, Double)*): WeightedInstance = {
+    WeightedInstance(relation, (firstTuple +: remainingTuples).toMap)
+  }
+  def apply(relation: Relation): WeightedInstance = WeightedInstance(relation, Map[DTuple, Double]())
+}
+
+case class WeightedConfig(private val instances: Map[Relation, WeightedInstance])
+  extends Map[Relation, WeightedInstance] {
   require(instances.forall { case (relation, instance) => relation == instance.relation })
 
-  override def apply(relation: Relation): Instance = instances.getOrElse(relation, Instance(relation))
-  override def get(relation: Relation): Option[Instance] = Some(this(relation))
-  override def iterator: Iterator[(Relation, Instance)] = instances.iterator
-  def +(ri: (Relation, Instance)): Config = {
+  override def apply(relation: Relation): WeightedInstance = instances.getOrElse(relation, WeightedInstance(relation))
+  override def get(relation: Relation): Option[WeightedInstance] = Some(this(relation))
+  override def iterator: Iterator[(Relation, WeightedInstance)] = instances.iterator
+  def +(ri: (Relation, WeightedInstance)): Config = {
     val (relation, instance) = ri
     val newInstance = this(relation) ++ instance
-    Config(instances + (relation -> newInstance))
+    ??? // WeightedConfig(instances + (relation -> newInstance))
   }
-  override def +[V >: Instance](kv: (Relation, V)): Map[Relation, V] = instances + kv
-  override def -(relation: Relation): Config = Config(instances - relation)
+  override def +[V >: WeightedInstance](kv: (Relation, V)): Map[Relation, V] = throw new UnsupportedOperationException
+  override def -(relation: Relation): WeightedConfig = WeightedConfig(instances - relation)
 
   val numTuples: Int = instances.values.map(_.size).sum
-}
-
-object Config {
-  def apply(firstPair: (Relation, Instance), remainingPairs: (Relation, Instance)*): Config = {
-    Config((firstPair +: remainingPairs).toMap)
-  }
-  def apply(): Config = Config(Map[Relation, Instance]())
-  def apply(instances: Instance*): Config = {
-    Config(instances.map(instance => instance.relation -> instance).toMap)
-  }
-  val EMPTY: Config = Config()
 }
