@@ -15,16 +15,16 @@ class PathEdge extends FunSuite {
   for (graph <- ALL_GRAPHS; gp <- ALL_PROGRAMS; pe <- ALL_EVALUATORS) {
     val program = gp(graph)
     val evaluator = pe(program)
-    val edb = Config(Instance(graph.edge, graph.edgeSet.map { case (from, to) => DTuple(from, to) }))
+    val edb = Config(Instance(graph.edge, graph.edgeSet.map({ case (from, to) => DTuple(from, to) -> 1.0 }).toMap))
 
     test(s"Applying evaluator ${evaluator.name} " +
          s"to program ${program.name} and graph ${graph.name}") {
-      val startTime = System.nanoTime()
+      // val startTime = System.nanoTime()
       val idb = evaluator(edb)
-      val endTime = System.nanoTime()
+      // val endTime = System.nanoTime()
       val produced = idb(graph.path)
-      assert(produced.forall(_.length == 2))
-      assert(produced.map(t => (t(0), t(1))) == graph.reachable)
+      assert(produced.support.forall(_.length == 2))
+      assert(produced.support.map(t => (t(0), t(1))) == graph.reachable)
       // println(s"${graph.name}, ${program.name}, ${evaluator.name}: ${(endTime - startTime) / 1.0e9}")
     }
   }
@@ -82,8 +82,8 @@ class PathEdge extends FunSuite {
     val x = Variable("x", nodes)
     val y = Variable("y", nodes)
     val z = Variable("z", nodes)
-    val ruleE = Rule("E", path(x, y), edge(x, y))
-    val ruleT = Rule("T", path(x, z), path(x, y), edge(y, z))
+    val ruleE = Rule("E", 1.0, path(x, y), edge(x, y))
+    val ruleT = Rule("T", 1.0, path(x, z), path(x, y), edge(y, z))
 
     Program("PE", ruleE, ruleT)
   }
@@ -96,8 +96,8 @@ class PathEdge extends FunSuite {
     val x = Variable("x", nodes)
     val y = Variable("y", nodes)
     val z = Variable("z", nodes)
-    val ruleE = Rule("E", path(x, y), edge(x, y))
-    val ruleT = Rule("T", path(x, z), edge(x, y), path(y, z))
+    val ruleE = Rule("E", 1.0, path(x, y), edge(x, y))
+    val ruleT = Rule("T", 1.0, path(x, z), edge(x, y), path(y, z))
 
     Program("EP", ruleE, ruleT)
   }
@@ -110,8 +110,8 @@ class PathEdge extends FunSuite {
     val x = Variable("x", nodes)
     val y = Variable("y", nodes)
     val z = Variable("z", nodes)
-    val ruleE = Rule("E", path(x, y), edge(x, y))
-    val ruleT = Rule("T", path(x, z), path(x, y), path(y, z))
+    val ruleE = Rule("E", 1.0, path(x, y), edge(x, y))
+    val ruleT = Rule("T", 1.0, path(x, z), path(x, y), path(y, z))
 
     Program("PP", ruleE, ruleT)
   }

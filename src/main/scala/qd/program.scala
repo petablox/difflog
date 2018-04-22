@@ -35,8 +35,8 @@ object Valuation {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Literal and rules
 
-case class Literal(relation: Relation, parameters: Parameter*) {
-  require(relation.signature == parameters.map(_.domain))
+case class Literal(coeff: Double, relation: Relation, parameters: Parameter*) {
+  require(0.0 <= coeff && coeff <= 1.0 && relation.signature == parameters.map(_.domain))
   val freeVariables: Set[Variable] = parameters.collect({ case v: Variable => v }).toSet
   override def toString: String = s"${relation.name}(${parameters.mkString(", ")})"
 
@@ -59,30 +59,18 @@ case class Literal(relation: Relation, parameters: Parameter*) {
   }
 }
 
-case class Rule(name: Any, head: Literal, body: Set[Literal]) {
+case class Rule(name: Any, coeff: Double, head: Literal, body: Set[Literal]) {
+  require(0.0 <= coeff && coeff <= 1.0)
   val freeVariables: Set[Variable] = (body + head).flatMap(_.freeVariables)
   override def toString: String = s"$name: $head :- ${body.mkString(", ")}."
 }
 
 object Rule {
-  def apply(name: Any, head: Literal, firstBodyLiteral: Literal, remainingBodyLiteral: Literal*): Rule = {
-    Rule(name, head, (firstBodyLiteral +: remainingBodyLiteral).toSet)
+  def apply(name: Any, coeff: Double, head: Literal,
+            firstBodyLiteral: Literal, remainingBodyLiteral: Literal*): Rule = {
+    Rule(name, coeff, head, (firstBodyLiteral +: remainingBodyLiteral).toSet)
   }
-  def apply(name: Any, head: Literal): Rule = Rule(name, head, Set[Literal]())
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Weighted literals and weighted rules
-
-case class WeightedLiteral(coefficient: Double, relation: Relation, parameters: Parameter*) {
-  require(0.0 <= coefficient && coefficient <= 1.0)
-  require(relation.signature == parameters.map(_.domain))
-  override def toString: String = f"$coefficient%.2f ${relation.name}%s(${parameters.mkString(", ")}%s)"
-}
-
-case class WeightedRule(name: Any, coefficient: Double, head: Literal, body: Literal*) {
-  require(0.0 <= coefficient && coefficient <= 1.0)
-  override def toString: String = f"$name%s ($coefficient%.2f): $head%s :- ${body.mkString(", ")}%s."
+  def apply(name: Any, coeff: Double, head: Literal): Rule = Rule(name, coeff, head, Set[Literal]())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

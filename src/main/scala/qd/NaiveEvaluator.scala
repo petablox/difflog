@@ -5,11 +5,11 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
   override def apply(edb: Config): Config = {
     var oldConfig = Config()
     var config = edb
-    while (config.numTuples > oldConfig.numTuples) {
+    while (config.totalWeight > oldConfig.totalWeight) {
       // println(s"N config.numTuples: ${config.numTuples}")
       oldConfig = config
       config = immediateConsequence(oldConfig)
-      assert(config.numTuples >= oldConfig.numTuples)
+      assert(config.totalWeight >= oldConfig.totalWeight)
     }
     config
   }
@@ -18,7 +18,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     var ans = config
     for (rule <- rules) {
       val newAns = immediateConsequence(rule, ans)
-      assert(newAns.numTuples >= ans.numTuples)
+      assert(newAns.totalWeight >= ans.totalWeight)
       ans = newAns
     }
     ans
