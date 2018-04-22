@@ -4,7 +4,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
 
   override def apply(edb: Config): Config = {
     var oldConfig = Config()
-    var config = edb.withDefault(relation => Instance(relation))
+    var config = edb
     while (config.numTuples > oldConfig.numTuples) {
       // println(s"N config.numTuples: ${config.numTuples}")
       oldConfig = config

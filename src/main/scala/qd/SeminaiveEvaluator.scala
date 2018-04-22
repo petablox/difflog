@@ -3,7 +3,7 @@ package qd
 case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
 
   override def apply(edb: Config): Config = {
-    var config: Config = edb.withDefault(relation => Instance(relation))
+    var config: Config = edb
     var delta = config
     while (delta.numTuples > 0) {
       /* println(s"S config.numTuples: ${config.numTuples}. " +
