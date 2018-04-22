@@ -44,7 +44,7 @@ case class Literal(relation: Relation, parameters: Parameter*) {
     var completeValuations = Set(valuation)
     for (v <- parameters.collect { case v: Variable => v }) {
       completeValuations = completeValuations.flatMap(valPrime => {
-        if (!valPrime.contains(v)) v.domain.allAtoms.map(atom => valPrime + (v -> atom))
+        if (!valPrime.contains(v)) v.domain.map(atom => valPrime + (v -> atom))
         else Set(valPrime)
       })
     }

@@ -7,17 +7,19 @@ case class Atom(t: Any) {
   override def toString: String = s"<$t>"
 }
 
-case class Domain(name: Any, allAtoms: Set[Atom]) {
-  def contains(atom: Atom): Boolean = allAtoms.contains(atom)
-  val size: Int = allAtoms.size
+case class Domain(name: Any, private val set: Set[Atom]) extends Set[Atom] {
+  override def contains(atom: Atom): Boolean = set.contains(atom)
+  override def iterator: Iterator[Atom] = set.iterator
+  override val size: Int = set.size
+  override def +(atom: Atom): Set[Atom] = Domain(s"$name + $atom", set + atom)
+  override def -(atom: Atom): Set[Atom] = Domain(s"$name - $atom", set - atom)
+  override def toString: String = s"$name[${set.mkString(", ")}]"
 
   def equalityRelation: Instance = {
     val relation = Relation(s"Eq$name", this, this)
-    val tuples = allAtoms.map(atom => DTuple(atom, atom))
+    val tuples = set.map(atom => DTuple(atom, atom))
     Instance(relation, tuples)
   }
-
-  override def toString: String = s"$name[${allAtoms.mkString(", ")}]"
 }
 
 object Domain {
@@ -32,17 +34,19 @@ object Domain {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tuples and relations (aka predicates)
 
-case class DTuple(fields: Atom*) {
-  val length: Int = fields.length
-  def apply(index: Int): Atom = fields(index)
+case class DTuple(private val fields: Atom*) extends Seq[Atom] {
+  override def apply(index: Int): Atom = fields(index)
+  override val length: Int = fields.length
+  override def iterator: Iterator[Atom] = fields.iterator
   override def toString: String = s"(${fields.mkString(", ")})"
 }
 
 case class Relation(name: Any, signature: Domain*) {
   def contains(tuple: DTuple): Boolean = {
-    signature.length == tuple.length && signature.zip(tuple.fields).forall(df => df._1.contains(df._2))
+    signature.length == tuple.length &&
+    signature.zip(tuple).forall { case (domain, field) => domain.contains(field) }
   }
-  val numFields: Int = signature.length
+  val arity: Int = signature.length
   override def toString: String = s"$name(${signature.map(_.name).mkString(", ")})"
 
   def apply(fields: Atom*): DTuple = {
@@ -58,35 +62,21 @@ case class Relation(name: Any, signature: Domain*) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Instances (of relations / predicates) and configurations
 
-case class Instance(relation: Relation, tuples: Set[DTuple]) extends Set[DTuple] {
-  require(tuples.forall(relation.contains))
-  def contains(tuple: DTuple): Boolean = tuples.contains(tuple)
-  val numTuples: Int = tuples.size
-  def toWeightedInstance: WeightedInstance = WeightedInstance(relation, tuples.map(t => t -> 1.0).toMap)
+case class Instance(relation: Relation, private val set: Set[DTuple]) extends Set[DTuple] {
+  require(set.forall(relation.contains))
 
-  def ++(that: Instance): Instance = {
-    require(relation == that.relation)
-    Instance(relation, tuples ++ that.tuples)
-  }
+  override def contains(tuple: DTuple): Boolean = set.contains(tuple)
+  override def iterator: Iterator[DTuple] = set.iterator
+  override val size: Int = set.size
+  override def +(elem: DTuple): Instance = Instance(relation, set + elem)
+  override def -(elem: DTuple): Instance = Instance(relation, set - elem)
 
-  def ++(that: Iterable[DTuple]): Instance = {
-    require(that.forall(relation.contains))
-    Instance(relation, tuples ++ that)
-  }
+  def ++(that: Instance): Instance = Instance(relation, set ++ that.set)
+  def ++(that: Iterable[DTuple]): Instance = Instance(relation, set ++ that)
+  def --(that: Instance): Instance = Instance(relation, set -- that.set)
+  def --(that: Iterable[DTuple]): Instance = Instance(relation, set -- that)
 
-  def --(that: Instance): Instance = {
-    require(relation == that.relation)
-    Instance(relation, tuples -- that.tuples)
-  }
-
-  def --(that: Iterable[DTuple]): Instance = {
-    require(that.forall(relation.contains))
-    Instance(relation, tuples -- that)
-  }
-
-  override def +(elem: DTuple): Instance = Instance(relation, tuples + elem)
-  override def -(elem: DTuple): Instance = Instance(relation, tuples - elem)
-  override def iterator: Iterator[DTuple] = tuples.iterator
+  def toWeightedInstance: WeightedInstance = WeightedInstance(relation, set.map(t => t -> 1.0).toMap)
 }
 
 object Instance {
@@ -96,17 +86,57 @@ object Instance {
   def apply(relation: Relation): Instance = Instance(relation, Set[DTuple]())
 }
 
-case class Config(instances: Map[Relation, Instance]) {
+case class WeightedInstance(relation: Relation, private val map: Map[DTuple, Double]) extends Map[DTuple, Double] {
+  require(map.forall { case (tuple, weight) => relation.contains(tuple) && 0.0 <= weight && weight <= 1.0 })
+
+  def support: Set[DTuple] = map.filter(_._2 > 0).keySet
+  def toInstance(cutoff: Double): Instance = Instance(relation, map.filter(tw => tw._2 >= cutoff).keySet)
+
+  override def apply(tuple: DTuple): Double = {
+    require(relation.contains(tuple))
+    map.getOrElse(tuple, 0.0)
+  }
+  override def get(tuple: DTuple): Option[Double] = {
+    require(relation.contains(tuple))
+    map.get(tuple)
+  }
+  override def iterator: Iterator[(DTuple, Double)] = map.iterator
+
+  def +(kv: (DTuple, Double)): WeightedInstance = {
+    val (tuple, value) = kv
+    require(relation.contains(tuple))
+    WeightedInstance(relation, map + (tuple -> Math.max(this(tuple), value)))
+  }
+  override def +[V1 >: Double](kv: (DTuple, V1)): Map[DTuple, V1] = {
+    val (tuple, value) = kv
+    require(relation.contains(tuple))
+    map + (tuple -> value)
+  }
+  override def -(key: DTuple): WeightedInstance = {
+    require(relation.contains(key))
+    WeightedInstance(relation, map - key)
+  }
+}
+
+case class Config(private val instances: Map[Relation, Instance]) extends Map[Relation, Instance] {
   require(instances.forall { case (relation, instance) => relation == instance.relation })
-  val numTuples: Int = instances.values.map(_.numTuples).sum
-  def apply(relation: Relation): Instance = instances(relation)
-  def getOrElse(relation: Relation, default: => Instance): Instance = instances.getOrElse(relation, default)
+  val numTuples: Int = instances.values.map(_.size).sum
+  override def apply(relation: Relation): Instance = instances(relation)
+  override def getOrElse[T >: Instance](relation: Relation, default: => T): T = instances.getOrElse(relation, default)
   def withDefault(default: Relation => Instance): Config = {
     val ans = Config(instances.withDefault(default))
     assert(numTuples == ans.numTuples)
     ans
   }
   def +(si: (Relation, Instance)): Config = Config(instances + si)
+
+  override def +[V1 >: Instance](kv: (Relation, V1)): Map[Relation, V1] = ???
+
+  override def get(key: Relation): Option[Instance] = ???
+
+  override def iterator: Iterator[(Relation, Instance)] = ???
+
+  override def -(key: Relation): Map[Relation, Instance] = ???
 }
 
 object Config {
@@ -118,13 +148,4 @@ object Config {
     Config(instances.map(instance => instance.relation -> instance).toMap)
   }
   val EMPTY: Config = Config().withDefault(relation => Instance(relation))
-}
-
-case class WeightedInstance(relation: Relation, tuples: Map[DTuple, Double]) {
-  require(tuples.forall { case (tuple, weight) => relation.contains(tuple) && 0.0 <= weight && weight <= 1.0 })
-  def valueOf(tuple: DTuple): Double = {
-    require(relation.contains(tuple))
-    tuples.getOrElse(tuple, 0.0)
-  }
-  def toInstance(cutoff: Double): Instance = Instance(relation, tuples.filter(tw => tw._2 >= cutoff).keySet)
 }

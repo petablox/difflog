@@ -39,14 +39,14 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
 
   def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
     for (valuation <- bodyVals;
-         tuple <- config(literal.relation).tuples;
+         tuple <- config(literal.relation);
          newValuation <- extend(literal, tuple, valuation))
     yield newValuation
   }
 
   def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {
     var ans = valuation
-    for ((par, field) <- literal.parameters.zip(tuple.fields)) {
+    for ((par, field) <- literal.parameters.zip(tuple)) {
       par match {
         case v @ Variable(_, _) =>
           if (!ans.contains(v)) ans = ans + (v -> field)
