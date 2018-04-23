@@ -62,7 +62,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
          tv <- config(literal.relation);
          (tuple, score) = tv;
          newValuation <- extend(literal, tuple, valuation))
-      yield newValuation * score * literal.coeff
+      yield newValuation * Instance.merge(score, literal.coeff)
   }
 
   def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {

@@ -57,7 +57,7 @@ case class Relation(name: Any, signature: Domain*) {
     require(this.contains(ans))
     ans
   }
-  def apply(parameters: Parameter*): Literal = Literal(1.0, this, parameters:_*)
+  def apply(parameters: Parameter*): Literal = Literal(0.0, this, parameters:_*)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
