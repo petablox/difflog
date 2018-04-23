@@ -46,7 +46,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   def immediateConsequence(rule: Rule, deltaLiteral: Literal, config: Config, delta: Config): Instance = {
     require(rule.body.contains(deltaLiteral))
 
-    var bodyVals = Set(Valuation())
+    var bodyVals = Set(Valuation() * rule.coeff)
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, delta, bodyVals)
                  else extend(literal, config, bodyVals)

@@ -26,7 +26,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
 
   // Applies a rule to a configuration
   def immediateConsequence(rule: Rule, config: Config): Config = {
-    var bodyVals = Set(Valuation())
+    var bodyVals = Set(Valuation() * rule.coeff)
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
     }
