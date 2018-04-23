@@ -48,7 +48,7 @@ case class Literal(coeff: Double, relation: Relation, parameters: Parameter*) {
   val freeVariables: Set[Variable] = parameters.collect({ case v: Variable => v }).toSet
   override def toString: String = s"${relation.name}(${parameters.mkString(", ")})"
 
-  def concretize(valuation: Valuation): Set[DTuple] = {
+  def concretize(valuation: Valuation): Map[DTuple, Double] = {
     var completeValuations = Set(valuation)
     for (v <- parameters.collect { case v: Variable => v }) {
       completeValuations = completeValuations.flatMap(valPrime => {
@@ -57,13 +57,13 @@ case class Literal(coeff: Double, relation: Relation, parameters: Parameter*) {
       })
     }
 
-    for (valPrime <- completeValuations) yield {
+    (for (valPrime <- completeValuations) yield {
       val fields = parameters.map {
         case v @ Variable(_, _) => valPrime(v)
         case Constant(c, _) => c
       }
-      DTuple(fields:_*)
-    }
+      DTuple(fields:_*) -> valPrime.score
+    }).toMap
   }
 }
 

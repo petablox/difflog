@@ -57,7 +57,7 @@ case class Relation(name: Any, signature: Domain*) {
     require(this.contains(ans))
     ans
   }
-  def apply(parameters: Parameter*): Literal = Literal(this, parameters:_*)
+  def apply(parameters: Parameter*): Literal = Literal(1.0, this, parameters:_*)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,9 +85,9 @@ case class Instance(relation: Relation, private val map: Map[DTuple, Double]) ex
 
   def ++(that: Instance): Instance = Instance(relation, Instance.merge(map, that.map))
   def ++(that: Map[DTuple, Double]): Instance = Instance(relation, Instance.merge(map, that))
-  def --(that: Instance): Instance = Instance(relation, map.filter { case (tuple, value) => value < that(tuple) })
+  def --(that: Instance): Instance = Instance(relation, map.filter { case (tuple, value) => value > that(tuple) })
   def --(that: Map[DTuple, Double]): Instance = {
-    Instance(relation, map.filter { case (tuple, value) => value < that.getOrElse(tuple, 1.0) })
+    Instance(relation, map.filter { case (tuple, value) => value > that.getOrElse(tuple, 0.0) })
   }
 }
 

@@ -30,7 +30,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
     }
-    val newTuples = bodyVals.flatMap(rule.head.concretize)
+    val newTuples = bodyVals.flatMap(rule.head.concretize).toMap
 
     val newInstance = config(rule.head.relation) ++ newTuples
     val newConfig = config + (rule.head.relation -> newInstance)
@@ -39,9 +39,10 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
 
   def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
     for (valuation <- bodyVals;
-         tuple <- config(literal.relation);
+         tv <- config(literal.relation);
+         (tuple, score) = tv;
          newValuation <- extend(literal, tuple, valuation))
-    yield newValuation
+    yield newValuation * score * literal.coeff
   }
 
   def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {

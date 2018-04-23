@@ -19,13 +19,13 @@ class PathEdge extends FunSuite {
 
     test(s"Applying evaluator ${evaluator.name} " +
          s"to program ${program.name} and graph ${graph.name}") {
-      // val startTime = System.nanoTime()
+      val startTime = System.nanoTime()
       val idb = evaluator(edb)
-      // val endTime = System.nanoTime()
+      val endTime = System.nanoTime()
       val produced = idb(graph.path)
       assert(produced.support.forall(_.length == 2))
       assert(produced.support.map(t => (t(0), t(1))) == graph.reachable)
-      // println(s"${graph.name}, ${program.name}, ${evaluator.name}: ${(endTime - startTime) / 1.0e9}")
+      println(s"TIME! ${graph.name}, ${program.name}, ${evaluator.name}: ${(endTime - startTime) / 1.0e9}")
     }
   }
 
