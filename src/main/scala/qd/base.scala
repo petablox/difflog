@@ -72,12 +72,12 @@ case class Instance(relation: Relation, private val map: Map[DTuple, Double]) ex
   val totalWeight: Double = map.values.sum
 
   override def apply(tuple: DTuple): Double = mapd(tuple)
-  override def contains(tuple: DTuple): Boolean = mapd(tuple) > 0.0
+  override def contains(tuple: DTuple): Boolean = support.contains(tuple)
   override def get(tuple: DTuple): Option[Double] = mapd.get(tuple)
   override def iterator: Iterator[(DTuple, Double)] = map.iterator
   def +(tv: (DTuple, Double)): Instance = {
     val (tuple, value) = tv
-    val newValue = Instance.merge(mapd(tuple), value)
+    val newValue = Math.max(mapd(tuple), value)
     Instance(relation, map + (tuple -> newValue))
   }
   override def +[V >: Double](kv: (DTuple, V)): Map[DTuple, V] = map + kv
@@ -97,12 +97,11 @@ object Instance {
   }
   def apply(relation: Relation): Instance = Instance(relation, Map[DTuple, Double]())
 
-  def merge(value1: Double, value2: Double): Double = Math.max(value1, value2)
   def merge(map1: Map[DTuple, Double], map2: Map[DTuple, Double]): Map[DTuple, Double] = {
     val (small, large) = if (map1.size < map2.size) (map1, map2) else (map2, map1)
     var ans = large
     for ((tuple, value) <- small) {
-      val newValue = merge(ans.getOrElse(tuple, 0.0), value)
+      val newValue = Math.max(ans.getOrElse(tuple, 0.0), value)
       ans = ans + (tuple -> newValue)
     }
     ans
@@ -138,5 +137,4 @@ object Config {
   def apply(instances: Instance*): Config = {
     Config(instances.map(instance => instance.relation -> instance).toMap)
   }
-  val EMPTY: Config = Config()
 }

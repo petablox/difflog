@@ -42,7 +42,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
          tv <- config(literal.relation);
          (tuple, score) = tv;
          newValuation <- extend(literal, tuple, valuation))
-    yield newValuation * Instance.merge(score, literal.coeff)
+    yield newValuation * Math.max(score, literal.coeff)
   }
 
   def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {

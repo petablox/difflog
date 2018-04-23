@@ -18,7 +18,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
 
   def immediateConsequence(config: Config, delta: Config): (Config, Config) = {
     var newConfig = config
-    var newDelta = Config.EMPTY
+    var newDelta = Config()
     for (rule <- rules) {
       val (instance, instDelta) = immediateConsequence(rule, config, delta)
       val relation = rule.head.relation
@@ -62,7 +62,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
          tv <- config(literal.relation);
          (tuple, score) = tv;
          newValuation <- extend(literal, tuple, valuation))
-      yield newValuation * Instance.merge(score, literal.coeff)
+      yield newValuation * Math.max(score, literal.coeff)
   }
 
   def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {

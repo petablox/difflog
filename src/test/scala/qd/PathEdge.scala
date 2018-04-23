@@ -6,11 +6,12 @@ import scala.util.Random
 
 class PathEdge extends FunSuite {
 
-  val ALL_GRAPHS: Set[Graph] = Set(smallGraph,
-                                   line(1), line(2), line(10),
-                                   erdosRenyi(50, 0.1, 0), erdosRenyi(100, 0.01, 0))
-  val ALL_PROGRAMS: Set[Graph => Program] = Set(PE, EP, PP)
-  val ALL_EVALUATORS: Set[Program => Evaluator] = Set(NaiveEvaluator, SeminaiveEvaluator)
+  val ALL_GRAPHS: Set[Graph] = Set(line(64)) /* Set(smallGraph) ++
+                               Range(1, 10).map(line).toSet ++
+                               Range(1, 32).map(circle).toSet +
+                               erdosRenyi(50, 0.1, 0) + erdosRenyi(100, 0.01, 0) */
+  val ALL_PROGRAMS: Set[Graph => Program] = Set(PE, /* EP, */ PP)
+  val ALL_EVALUATORS: Set[Program => Evaluator] = Set(/* NaiveEvaluator, */ SeminaiveEvaluator)
 
   for (graph <- ALL_GRAPHS; gp <- ALL_PROGRAMS; evalCtr <- ALL_EVALUATORS) {
     val program = gp(graph)
@@ -64,6 +65,13 @@ class PathEdge extends FunSuite {
     val nodeSet = Range(0, n).map(Atom).toSet
     val edgeSet = Range(0, n - 1).map(i => (Atom(i), Atom(i + 1))).toSet
     Graph(s"Line($n)", nodeSet, edgeSet)
+  }
+
+  def circle(n: Int): Graph = {
+    require(n > 0)
+    val nodeSet = Range(0, n).map(Atom).toSet
+    val edgeSet = Range(0, n).map(i => (Atom(i), Atom((i + 1) % n))).toSet
+    Graph(s"Circle($n)", nodeSet, edgeSet)
   }
 
   def erdosRenyi(n: Int, p: Double, seed: Int): Graph = {
