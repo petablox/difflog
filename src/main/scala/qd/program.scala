@@ -14,22 +14,30 @@ case class Constant(value: Atom, override val domain: Domain) extends Parameter(
 
 // A valuation is a mapping from variables to atoms
 // They are intermediate objects encountered while applying rules
-class Valuation private (map: Map[Variable, Atom]) {
-  def apply(variable: Variable): Atom = map(variable)
-  def contains(variable: Variable): Boolean = map.contains(variable)
+class Valuation private (map: Map[Variable, Atom], val score: Double) extends Map[Variable, Atom] {
+  override def get(variable: Variable): Option[Atom] = map.get(variable)
+  override def iterator: Iterator[(Variable, Atom)] = map.iterator
+
   def +(va: (Variable, Atom)): Valuation = {
     val (variable, atom) = va
     require(variable.domain.contains(atom))
-    new Valuation(map + va)
+    new Valuation(map + va, score)
+  }
+  override def +[V >: Atom](kv: (Variable, V)): Map[Variable, V] = map + kv
+  override def -(variable: Variable): Valuation = Valuation(map - variable, score)
+  def *(coeff: Double): Valuation = {
+    require(0.0 <= coeff && coeff <= 1.0)
+    Valuation(map, score * coeff)
   }
 }
 
 object Valuation {
-  def apply(map: Map[Variable, Atom]): Valuation = {
+  def apply(map: Map[Variable, Atom], score: Double): Valuation = {
     require(map.forall { case (variable, atom) => variable.domain.contains(atom) })
-    new Valuation(map)
+    require(0.0 <= score && score <= 1.0)
+    new Valuation(map, score)
   }
-  def apply(): Valuation = new Valuation(Map())
+  def apply(): Valuation = new Valuation(Map(), 1.0)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
