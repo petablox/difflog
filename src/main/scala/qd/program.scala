@@ -14,41 +14,37 @@ case class Constant(value: Atom, override val domain: Domain) extends Parameter(
 
 // A valuation is a mapping from variables to atoms
 // They are intermediate objects encountered while applying rules
-class Valuation private (map: Map[Variable, Atom], val logScore: Double) extends Map[Variable, Atom] {
+class Valuation private (map: Map[Variable, Atom], val score: Value) extends Map[Variable, Atom] {
   override def get(variable: Variable): Option[Atom] = map.get(variable)
   override def iterator: Iterator[(Variable, Atom)] = map.iterator
 
   def +(va: (Variable, Atom)): Valuation = {
     val (variable, atom) = va
     require(variable.domain.contains(atom))
-    new Valuation(map + va, logScore)
+    new Valuation(map + va, score)
   }
   override def +[V >: Atom](kv: (Variable, V)): Map[Variable, V] = map + kv
-  override def -(variable: Variable): Valuation = Valuation(map - variable, logScore)
-  def |*|(logCoeff: Double): Valuation = {
-    require(logCoeff <= 0.0)
-    Valuation(map, logScore + logCoeff)
-  }
+  override def -(variable: Variable): Valuation = Valuation(map - variable, score)
+  def *(coeff: Value): Valuation = Valuation(map, score * coeff)
 }
 
 object Valuation {
-  def apply(map: Map[Variable, Atom], score: Double): Valuation = {
+  def apply(map: Map[Variable, Atom], score: Value): Valuation = {
     require(map.forall { case (variable, atom) => variable.domain.contains(atom) })
-    require(score <= 0.0)
     new Valuation(map, score)
   }
-  def apply(): Valuation = new Valuation(Map(), 0.0)
+  def apply(): Valuation = new Valuation(Map(), Value.one)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Literal and rules
 
-case class Literal(logCoeff: Double, relation: Relation, parameters: Parameter*) {
-  require(logCoeff <= 0.0 && relation.signature == parameters.map(_.domain))
+case class Literal(coeff: Value, relation: Relation, parameters: Parameter*) {
+  require(relation.signature == parameters.map(_.domain))
   val freeVariables: Set[Variable] = parameters.collect({ case v: Variable => v }).toSet
   override def toString: String = s"${relation.name}(${parameters.mkString(", ")})"
 
-  def concretize(valuation: Valuation): Map[DTuple, Double] = {
+  def concretize(valuation: Valuation): Map[DTuple, Value] = {
     var completeValuations = Set(valuation)
     for (v <- parameters.collect { case v: Variable => v }) {
       completeValuations = completeValuations.flatMap(valPrime => {
@@ -62,23 +58,22 @@ case class Literal(logCoeff: Double, relation: Relation, parameters: Parameter*)
         case v @ Variable(_, _) => valPrime(v)
         case Constant(c, _) => c
       }
-      DTuple(fields:_*) -> valPrime.logScore
+      DTuple(fields:_*) -> valPrime.score
     }).toMap
   }
 }
 
-case class Rule(name: Any, logCoeff: Double, head: Literal, body: Set[Literal]) {
-  require(logCoeff <= 0.0)
+case class Rule(name: Any, coeff: Value, head: Literal, body: Set[Literal]) {
   val freeVariables: Set[Variable] = (body + head).flatMap(_.freeVariables)
   override def toString: String = s"$name: $head :- ${body.mkString(", ")}."
 }
 
 object Rule {
-  def apply(name: Any, logCoeff: Double, head: Literal,
+  def apply(name: Any, coeff: Value, head: Literal,
             firstBodyLiteral: Literal, remainingBodyLiteral: Literal*): Rule = {
-    Rule(name, logCoeff, head, (firstBodyLiteral +: remainingBodyLiteral).toSet)
+    Rule(name, coeff, head, (firstBodyLiteral +: remainingBodyLiteral).toSet)
   }
-  def apply(name: Any, logCoeff: Double, head: Literal): Rule = Rule(name, logCoeff, head, Set[Literal]())
+  def apply(name: Any, coeff: Value, head: Literal): Rule = Rule(name, coeff, head, Set[Literal]())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

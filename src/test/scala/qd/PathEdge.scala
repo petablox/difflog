@@ -6,22 +6,21 @@ import scala.util.Random
 
 class PathEdge extends FunSuite {
 
-  val ALL_GRAPHS: Set[Graph] = Set(line(128)) /* Set(smallGraph) ++
-                               Range(1, 10).map(line).toSet ++
+  val ALL_GRAPHS: Set[Graph] = /* Set(line(64)) */ Set(smallGraph) ++
+                               Range(1, 64).map(line).toSet ++
                                Range(1, 32).map(circle).toSet +
-                               erdosRenyi(50, 0.1, 0) + erdosRenyi(100, 0.01, 0) */
-  val ALL_PROGRAMS: Set[Graph => Program] = Set(PE /*, EP */, PP)
-  val ALL_EVALUATORS: Set[Program => Evaluator] = Set(/* NaiveEvaluator, */ SeminaiveEvaluator)
+                               erdosRenyi(50, 0.1, 0) + erdosRenyi(100, 0.01, 0)
+  val ALL_PROGRAMS: Set[Graph => Program] = Set(PE, EP, PP)
+  val ALL_EVALUATORS: Set[Program => Evaluator] = Set(NaiveEvaluator, SeminaiveEvaluator)
 
   for (graph <- ALL_GRAPHS; gp <- ALL_PROGRAMS; evalCtr <- ALL_EVALUATORS) {
     val program = gp(graph)
     val evaluator = evalCtr(program)
-    val edb = Config(Instance(graph.edge, graph.edgeSet.map({ case (from, to) => DTuple(from, to) -> 0.0 }).toMap))
 
     test(s"Applying evaluator ${evaluator.name} " +
          s"to program ${program.name} and graph ${graph.name}") {
       // val startTime = System.nanoTime()
-      val idb = evaluator(edb)
+      val idb = evaluator(graph.edb)
       // val endTime = System.nanoTime()
       val produced = idb(graph.path)
       assert(produced.support.forall(_.length == 2))
@@ -37,6 +36,8 @@ class PathEdge extends FunSuite {
     val nodes: Domain = Domain("Node", nodeSet)
     val edge = Relation("edge", nodes, nodes)
     val path = Relation("path", nodes, nodes)
+
+    def edb: Config = Config(Instance(edge, edgeSet.map({ case (from, to) => DTuple(from, to) -> Value.one }).toMap))
 
     val reachable: Set[(Atom, Atom)] = reachable(nodeSet.size + 1)
 
@@ -62,14 +63,14 @@ class PathEdge extends FunSuite {
 
   def line(n: Int): Graph = {
     require(n > 0)
-    val nodeSet = Range(0, n).map(Atom).toSet
+    val nodeSet = Range(0, n).map(i => Atom(i)).toSet
     val edgeSet = Range(0, n - 1).map(i => (Atom(i), Atom(i + 1))).toSet
     Graph(s"Line($n)", nodeSet, edgeSet)
   }
 
   def circle(n: Int): Graph = {
     require(n > 0)
-    val nodeSet = Range(0, n).map(Atom).toSet
+    val nodeSet = Range(0, n).map(i => Atom(i)).toSet
     val edgeSet = Range(0, n).map(i => (Atom(i), Atom((i + 1) % n))).toSet
     Graph(s"Circle($n)", nodeSet, edgeSet)
   }
@@ -77,7 +78,7 @@ class PathEdge extends FunSuite {
   def erdosRenyi(n: Int, p: Double, seed: Int): Graph = {
     require(n > 0 && 0.0 <= p && p <= 1.0)
     val random = new Random(seed)
-    val nodeSet = Range(0, n).map(Atom).toSet
+    val nodeSet = Range(0, n).map(i => Atom(i)).toSet
     val edgeSet = for (i <- nodeSet; j <- nodeSet; if random.nextDouble() < p) yield (i, j)
     Graph(s"Erdos-Renyi($n, $p, $seed)", nodeSet, edgeSet)
   }
@@ -90,8 +91,8 @@ class PathEdge extends FunSuite {
     val x = Variable("x", nodes)
     val y = Variable("y", nodes)
     val z = Variable("z", nodes)
-    val ruleE = Rule("E", -0.1, path(x, y), edge(x, y))
-    val ruleT = Rule("T", -0.05, path(x, z), path(x, y), edge(y, z))
+    val ruleE = Rule("E", Value(-0.1), path(x, y), edge(x, y))
+    val ruleT = Rule("T", Value(-0.05), path(x, z), path(x, y), edge(y, z))
 
     Program("PE", ruleE, ruleT)
   }
@@ -104,8 +105,8 @@ class PathEdge extends FunSuite {
     val x = Variable("x", nodes)
     val y = Variable("y", nodes)
     val z = Variable("z", nodes)
-    val ruleE = Rule("E", -0.1, path(x, y), edge(x, y))
-    val ruleT = Rule("T", -0.05, path(x, z), edge(x, y), path(y, z))
+    val ruleE = Rule("E", Value(-0.1), path(x, y), edge(x, y))
+    val ruleT = Rule("T", Value(-0.05), path(x, z), edge(x, y), path(y, z))
 
     Program("EP", ruleE, ruleT)
   }
@@ -118,8 +119,8 @@ class PathEdge extends FunSuite {
     val x = Variable("x", nodes)
     val y = Variable("y", nodes)
     val z = Variable("z", nodes)
-    val ruleE = Rule("E", -0.1, path(x, y), edge(x, y))
-    val ruleT = Rule("T", -0.05, path(x, z), path(x, y), path(y, z))
+    val ruleE = Rule("E", Value(-0.1), path(x, y), edge(x, y))
+    val ruleT = Rule("T", Value(-0.05), path(x, z), path(x, y), path(y, z))
 
     Program("PP", ruleE, ruleT)
   }
