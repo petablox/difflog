@@ -17,7 +17,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
               s"config.numTuples: ${config.numTuples}. " +
               s"delta.numTuples: ${delta.numTuples}. " +
               s"delta.totalWeight: ${delta.totalWeight}. " +
-              s"delta.maxTuple: ${deltaMaxValues}.")
+              s"deltaMaxValues: $deltaMaxValues.")
       iterCount = iterCount + 1
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       assert(newConfig.numTuples >= config.numTuples)

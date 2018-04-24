@@ -63,19 +63,21 @@ case class Relation(name: Any, signature: Domain*) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // The semiring of values
 
-class Value private (val v: Double) extends AnyVal with Ordered[Value] {
+// Mukund: I tried to convert the following class to a value class,
+// class Value(v: Double) extends AnyVal with Ordered[Value] { ... },
+// but preliminary experiments suggested that it actually hurts performance.
+
+case class Value(private val v: Double) extends Ordered[Value] {
+  require(v <= 0.0)
   def +(that: Value): Value = Value(Math.max(v, that.v))
   def *(that: Value): Value = Value(v + that.v)
   def ~(that: Value): Value = Value(Math.log(Math.exp(v) - Math.exp(that.v)))
   override def compare(that: Value): Int = v.compare(that.v)
   override def toString: String = v.toString
+  def toDouble: Double = v
 }
 
 object Value {
-  def apply(v: Double): Value = {
-    require(v <= 0.0)
-    new Value(v)
-  }
   val zero: Value = Value(Double.NegativeInfinity)
   val one: Value = Value(0.0)
 }
