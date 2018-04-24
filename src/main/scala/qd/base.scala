@@ -19,7 +19,7 @@ case class Domain(name: Any, private val set: Set[Atom]) extends Set[Atom] {
 
   def equalityRelation: Instance = {
     val relation = Relation(s"Eq$name", this, this)
-    val tuples = set.map(atom => DTuple(atom, atom) -> 1.0).toMap
+    val tuples = set.map(atom => DTuple(atom, atom) -> 0.0).toMap
     Instance(relation, tuples)
   }
 }
@@ -64,12 +64,18 @@ case class Relation(name: Any, signature: Domain*) {
 // Instances (of relations / predicates) and configurations
 
 case class Instance(relation: Relation, private val map: Map[DTuple, Double]) extends Map[DTuple, Double] {
-  require(map.forall { case (tuple, weight) => relation.contains(tuple) && 0.0 <= weight && weight <= 1.0 })
+  require(map.forall { case (tuple, weight) => relation.contains(tuple) && weight <= 0.0 })
 
-  private val mapd = map.withDefault(tuple => { require(relation.contains(tuple)); 0.0 })
-  val support: Set[DTuple] = map.filter(_._2 > 0).keySet
+  private val mapd = map.withDefault(tuple => { require(relation.contains(tuple)); Double.NegativeInfinity })
+  val support: Set[DTuple] = map.filter(_._2 > Double.NegativeInfinity).keySet
   override val size: Int = support.size
   val totalWeight: Double = map.values.sum
+  val maxTuple: Option[DTuple] = {
+    if (support.nonEmpty) {
+      val maxValue = map.values.max
+      Some(map.find({ case (_, value) => value >= maxValue }).get._1)
+    } else None
+  }
 
   override def apply(tuple: DTuple): Double = mapd(tuple)
   override def contains(tuple: DTuple): Boolean = support.contains(tuple)
@@ -85,9 +91,16 @@ case class Instance(relation: Relation, private val map: Map[DTuple, Double]) ex
 
   def ++(that: Instance): Instance = Instance(relation, Instance.merge(map, that.map))
   def ++(that: Map[DTuple, Double]): Instance = Instance(relation, Instance.merge(map, that))
-  def --(that: Instance): Instance = Instance(relation, map.filter { case (tuple, value) => value > that(tuple) })
+  def --(that: Instance): Instance = {
+    val delta = map.filter({ case (tuple, value) => value > that(tuple) })
+                   .map({ case (tuple, value) => tuple -> Math.log(Math.exp(value) - Math.exp(that(tuple))) })
+    Instance(relation, delta)
+  }
   def --(that: Map[DTuple, Double]): Instance = {
-    Instance(relation, map.filter { case (tuple, value) => value > that.getOrElse(tuple, 0.0) })
+    val thatd = that.withDefault(_ => Double.NegativeInfinity)
+    val delta = map.filter({ case (tuple, value) => value > thatd(tuple) })
+                   .map({ case (tuple, value) => tuple -> Math.log(Math.exp(value) - Math.exp(thatd(tuple))) })
+    Instance(relation, delta)
   }
 }
 
@@ -101,7 +114,7 @@ object Instance {
     val (small, large) = if (map1.size < map2.size) (map1, map2) else (map2, map1)
     var ans = large
     for ((tuple, value) <- small) {
-      val newValue = Math.max(ans.getOrElse(tuple, 0.0), value)
+      val newValue = Math.max(ans.getOrElse(tuple, Double.NegativeInfinity), value)
       ans = ans + (tuple -> newValue)
     }
     ans
@@ -127,6 +140,7 @@ case class Config(private val instances: Map[Relation, Instance]) extends Map[Re
 
   val numTuples: Int = instances.values.map(_.size).sum
   val totalWeight: Double = instances.values.map(_.totalWeight).sum
+  val maxTuple: Map[Relation, Option[DTuple]] = instances.mapValues(_.maxTuple)
 }
 
 object Config {

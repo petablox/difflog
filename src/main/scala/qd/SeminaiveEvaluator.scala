@@ -5,9 +5,17 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   override def apply(edb: Config): Config = {
     var config: Config = edb
     var delta = config
-    while (delta.totalWeight > 0) {
-      /* println(s"config.totalWeight: ${config.totalWeight}. " +
-              s"delta.totalWeight: ${delta.totalWeight}.") */
+    var iterCount = 0
+    val startTime = System.nanoTime()
+    while (delta.numTuples > 0) {
+      println(s"iterCount: $iterCount. " +
+              s"time: ${(System.nanoTime() - startTime) / 1.0e9}. " +
+              s"config.numTuples: ${config.numTuples}. " +
+              s"config.totalWeight: ${config.totalWeight}. " +
+              s"delta.numTuples: ${delta.numTuples}. " +
+              s"delta.totalWeight: ${delta.totalWeight}. " +
+              s"delta.maxTuple: ${delta.maxTuple}.")
+      iterCount = iterCount + 1
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       assert(newConfig.numTuples >= config.numTuples)
       config = newConfig
@@ -46,7 +54,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   def immediateConsequence(rule: Rule, deltaLiteral: Literal, config: Config, delta: Config): Instance = {
     require(rule.body.contains(deltaLiteral))
 
-    var bodyVals = Set(Valuation() * rule.coeff)
+    var bodyVals = Set(Valuation() |*| rule.logCoeff)
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, delta, bodyVals)
                  else extend(literal, config, bodyVals)
@@ -62,7 +70,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
          tv <- config(literal.relation);
          (tuple, score) = tv;
          newValuation <- extend(literal, tuple, valuation))
-      yield newValuation * Math.max(score, literal.coeff)
+      yield newValuation |*| Math.max(score, literal.logCoeff)
   }
 
   def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {
