@@ -19,7 +19,7 @@ case class Domain(name: Any, private val set: Set[Atom]) extends Set[Atom] {
 
   def equalityRelation: Instance = {
     val relation = Relation(s"Eq$name", this, this)
-    val tuples = set.map(atom => DTuple(atom, atom) -> Value.one).toMap
+    val tuples = set.map(atom => DTuple(atom, atom) -> Value.One).toMap
     Instance(relation, tuples)
   }
 }
@@ -57,29 +57,7 @@ case class Relation(name: Any, signature: Domain*) {
     require(this.contains(ans))
     ans
   }
-  def apply(parameters: Parameter*): Literal = Literal(Value.zero, this, parameters:_*)
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// The semiring of values
-
-// Mukund: I tried to convert the following class to a value class,
-// class Value(v: Double) extends AnyVal with Ordered[Value] { ... },
-// but preliminary experiments suggested that it actually hurts performance.
-
-case class Value(private val v: Double) extends Ordered[Value] {
-  require(v <= 0.0)
-  def +(that: Value): Value = Value(Math.max(v, that.v))
-  def *(that: Value): Value = Value(v + that.v)
-  def ~(that: Value): Value = Value(Math.log(Math.exp(v) - Math.exp(that.v)))
-  override def compare(that: Value): Int = v.compare(that.v)
-  override def toString: String = v.toString
-  def toDouble: Double = v
-}
-
-object Value {
-  val zero: Value = Value(Double.NegativeInfinity)
-  val one: Value = Value(0.0)
+  def apply(parameters: Parameter*): Literal = Literal(Zero(), this, parameters:_*)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -88,10 +66,9 @@ object Value {
 case class Instance(relation: Relation, private val map: Map[DTuple, Value]) extends Map[DTuple, Value] {
   require(map.keys.forall(relation.contains))
 
-  private val mapd = map.withDefault(tuple => { require(relation.contains(tuple)); Value.zero })
-  val support: Set[DTuple] = map.filter(_._2 > Value.zero).keySet
+  private val mapd = map.withDefault(tuple => { require(relation.contains(tuple)); Zero() })
+  val support: Set[DTuple] = map.filter(_._2.nonzero).keySet
   override val size: Int = support.size
-  val totalWeight: Value = support.map(map).fold(Value.zero)(_ + _)
   val maxTuple: Option[DTuple] = {
     if (support.nonEmpty) {
       val maxValue = map.values.max
@@ -111,17 +88,10 @@ case class Instance(relation: Relation, private val map: Map[DTuple, Value]) ext
   override def +[V >: Value](kv: (DTuple, V)): Map[DTuple, V] = map + kv
   override def -(tuple: DTuple): Instance = Instance(relation, map - tuple)
 
-  def ++(that: Instance): Instance = Instance(relation, Instance.merge(map, that.map))
   def ++(that: Map[DTuple, Value]): Instance = Instance(relation, Instance.merge(map, that))
-  def --(that: Instance): Instance = {
-    val delta = map.filter({ case (tuple, value) => value > that(tuple) })
-                   .map({ case (tuple, value) => tuple -> value ~ that(tuple) })
-    Instance(relation, delta)
-  }
   def --(that: Map[DTuple, Value]): Instance = {
-    val thatd = that.withDefaultValue(Value.zero)
+    val thatd = that.withDefaultValue(Zero())
     val delta = map.filter({ case (tuple, value) => value > thatd(tuple) })
-                   .map({ case (tuple, value) => tuple -> value ~ thatd(tuple) })
     Instance(relation, delta)
   }
 }
@@ -134,7 +104,7 @@ object Instance {
 
   def merge(map1: Map[DTuple, Value], map2: Map[DTuple, Value]): Map[DTuple, Value] = {
     val (small, large) = if (map1.size < map2.size) (map1, map2) else (map2, map1)
-    var ans = large.withDefaultValue(Value.zero)
+    var ans = large.withDefaultValue(Zero())
     for ((tuple, value) <- small) {
       val newValue = ans(tuple) + value
       ans = ans + (tuple -> newValue)
@@ -161,7 +131,6 @@ case class Config(private val instances: Map[Relation, Instance]) extends Map[Re
   override def -(relation: Relation): Config = Config(instances - relation)
 
   val numTuples: Int = instances.values.map(_.size).sum
-  val totalWeight: Value = instances.values.map(_.totalWeight).fold(Value.zero)(_ + _)
   val maxTuple: Map[Relation, DTuple] = instances.mapValues(_.maxTuple)
                                                  .collect { case (tuple, Some(value)) => tuple -> value }
 }

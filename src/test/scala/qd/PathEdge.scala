@@ -6,11 +6,11 @@ import scala.util.Random
 
 class PathEdge extends FunSuite {
 
-  val ALL_GRAPHS: Set[Graph] = /* Set(line(64)) */ Set(smallGraph) ++
+  val ALL_GRAPHS: Set[Graph] = Set(line(64)) /* Set(smallGraph) ++
                                Range(1, 64).map(line).toSet ++
                                Range(1, 32).map(circle).toSet +
-                               erdosRenyi(50, 0.1, 0) + erdosRenyi(100, 0.01, 0)
-  val ALL_PROGRAMS: Set[Graph => Program] = Set(PE, EP, PP)
+                               erdosRenyi(50, 0.1, 0) + erdosRenyi(100, 0.01, 0) */
+  val ALL_PROGRAMS: Set[Graph => Program] = Set(/* PE, EP, */ PP)
   val ALL_EVALUATORS: Set[Program => Evaluator] = Set(NaiveEvaluator, SeminaiveEvaluator)
 
   for (graph <- ALL_GRAPHS; gp <- ALL_PROGRAMS; evalCtr <- ALL_EVALUATORS) {
@@ -37,7 +37,7 @@ class PathEdge extends FunSuite {
     val edge = Relation("edge", nodes, nodes)
     val path = Relation("path", nodes, nodes)
 
-    def edb: Config = Config(Instance(edge, edgeSet.map({ case (from, to) => DTuple(from, to) -> Value.one }).toMap))
+    def edb: Config = Config(Instance(edge, edgeSet.map({ case (from, to) => DTuple(from, to) -> Value.One }).toMap))
 
     val reachable: Set[(Atom, Atom)] = reachable(nodeSet.size + 1)
 
@@ -91,8 +91,8 @@ class PathEdge extends FunSuite {
     val x = Variable("x", nodes)
     val y = Variable("y", nodes)
     val z = Variable("z", nodes)
-    val ruleE = Rule("E", Value(-0.1), path(x, y), edge(x, y))
-    val ruleT = Rule("T", Value(-0.05), path(x, z), path(x, y), edge(y, z))
+    val ruleE = Rule("E", Value(-0.1, TokenRule("E")), path(x, y), edge(x, y))
+    val ruleT = Rule("T", Value(-0.05, TokenRule("T")), path(x, z), path(x, y), edge(y, z))
 
     Program("PE", ruleE, ruleT)
   }
@@ -105,8 +105,8 @@ class PathEdge extends FunSuite {
     val x = Variable("x", nodes)
     val y = Variable("y", nodes)
     val z = Variable("z", nodes)
-    val ruleE = Rule("E", Value(-0.1), path(x, y), edge(x, y))
-    val ruleT = Rule("T", Value(-0.05), path(x, z), edge(x, y), path(y, z))
+    val ruleE = Rule("E", Value(-0.1, TokenRule("E")), path(x, y), edge(x, y))
+    val ruleT = Rule("T", Value(-0.05, TokenRule("T")), path(x, z), edge(x, y), path(y, z))
 
     Program("EP", ruleE, ruleT)
   }
@@ -119,8 +119,8 @@ class PathEdge extends FunSuite {
     val x = Variable("x", nodes)
     val y = Variable("y", nodes)
     val z = Variable("z", nodes)
-    val ruleE = Rule("E", Value(-0.1), path(x, y), edge(x, y))
-    val ruleT = Rule("T", Value(-0.05), path(x, z), path(x, y), path(y, z))
+    val ruleE = Rule("E", Value(-0.1, TokenRule("E")), path(x, y), edge(x, y))
+    val ruleT = Rule("T", Value(-0.05, TokenRule("T")), path(x, z), path(x, y), path(y, z))
 
     Program("PP", ruleE, ruleT)
   }

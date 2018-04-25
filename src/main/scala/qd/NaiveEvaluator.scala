@@ -3,38 +3,43 @@ package qd
 case class NaiveEvaluator(override val program: Program) extends Evaluator("Naive", program) {
 
   override def apply(edb: Config): Config = {
-    var oldConfig = Config()
-    var config = edb
-    while (config.totalWeight > oldConfig.totalWeight) {
+    var (oldConfig, config, delta) = (Config(), edb, edb)
+    while (delta.numTuples > 0) {
       // println(s"N config.numTuples: ${config.numTuples}")
+      val cd = immediateConsequence(config)
       oldConfig = config
-      config = immediateConsequence(oldConfig)
-      assert(config.totalWeight >= oldConfig.totalWeight)
+      config = cd._1
+      delta = cd._2
+      assert(config.numTuples >= oldConfig.numTuples)
     }
     config
   }
 
-  def immediateConsequence(config: Config): Config = {
-    var ans = config
+  def immediateConsequence(config: Config): (Config, Config) = {
+    var (c, d) = (config, Config())
     for (rule <- rules) {
-      val newAns = immediateConsequence(rule, ans)
-      assert(newAns.totalWeight >= ans.totalWeight)
-      ans = newAns
+      val relation = rule.head.relation
+      val (cPrime, instDelta) = immediateConsequence(rule, c)
+      assert(cPrime.numTuples >= c.numTuples)
+      c = cPrime
+      d = d + (relation -> (d(relation) ++ instDelta))
     }
-    ans
+    (c, d)
   }
 
   // Applies a rule to a configuration
-  def immediateConsequence(rule: Rule, config: Config): Config = {
-    var bodyVals = Set(Valuation() * rule.coeff)
+  def immediateConsequence(rule: Rule, config: Config): (Config, Instance) = {
+    val relation = rule.head.relation
+    var bodyVals = Set(Valuation())
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
     }
-    val newTuples = bodyVals.flatMap(rule.head.concretize).toMap
+    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
 
-    val newInstance = config(rule.head.relation) ++ newTuples
-    val newConfig = config + (rule.head.relation -> newInstance)
-    newConfig
+    val oldInstance = config(relation)
+    val newInstance = oldInstance ++ newTuples
+    val newConfig = config + (relation -> newInstance)
+    (newConfig, Instance(relation, newTuples) -- oldInstance)
   }
 
   def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
@@ -42,7 +47,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
          tv <- config(literal.relation);
          (tuple, score) = tv;
          newValuation <- extend(literal, tuple, valuation))
-    yield newValuation * (score + literal.coeff)
+    yield newValuation * (literal.coeff + score)
   }
 
   def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {

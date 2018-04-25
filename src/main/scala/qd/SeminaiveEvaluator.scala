@@ -3,21 +3,19 @@ package qd
 case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
 
   override def apply(edb: Config): Config = {
-    var oldConfig = Config()
-    var config = edb
-    var delta = config
+    var (oldConfig, config, delta) = (Config(), edb, edb)
     var iterCount = 0
     val startTime = System.nanoTime()
     while (delta.numTuples > 0) {
       val deltaMaxValues = delta.maxTuple.map { case (relation, tuple) => tuple -> (oldConfig(relation)(tuple),
                                                                                     delta(relation)(tuple),
                                                                                     config(relation)(tuple)) }
-      println(s"iterCount: $iterCount. " +
-              s"time: ${(System.nanoTime() - startTime) / 1.0e9}. " +
-              s"config.numTuples: ${config.numTuples}. " +
-              s"delta.numTuples: ${delta.numTuples}. " +
-              s"delta.totalWeight: ${delta.totalWeight}. " +
-              s"deltaMaxValues: $deltaMaxValues.")
+      val deltaMaxProvs = delta.maxTuple.map { case (relation, tuple) => tuple -> config(relation)(tuple).prov }
+      println(s"iterCount: $iterCount. time: ${(System.nanoTime() - startTime) / 1.0e9}.")
+      println(s"config.numTuples: ${config.numTuples}. " +
+              s"delta.numTuples: ${delta.numTuples}.")
+      println(s"deltaMaxValues: $deltaMaxValues.")
+      println(s"deltaMaxProvs: $deltaMaxProvs")
       iterCount = iterCount + 1
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       assert(newConfig.numTuples >= config.numTuples)
@@ -58,12 +56,12 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   def immediateConsequence(rule: Rule, deltaLiteral: Literal, config: Config, delta: Config): Instance = {
     require(rule.body.contains(deltaLiteral))
 
-    var bodyVals = Set(Valuation() * rule.coeff)
+    var bodyVals = Set(Valuation())
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, delta, bodyVals)
                  else extend(literal, config, bodyVals)
     }
-    val newTuples = bodyVals.flatMap(rule.head.concretize).toMap
+    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
 
     val newInstance = config(rule.head.relation) ++ newTuples
     newInstance
@@ -74,7 +72,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
          tv <- config(literal.relation);
          (tuple, score) = tv;
          newValuation <- extend(literal, tuple, valuation))
-      yield newValuation * (score + literal.coeff)
+      yield newValuation * (literal.coeff + score)
   }
 
   def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {
