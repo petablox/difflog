@@ -64,7 +64,7 @@ object Value {
 // The space of provenance tokens
 
 sealed abstract class Provenance {
-  def toBases: Seq[Token]
+  def toSeq: Seq[Token]
   def *(that: Provenance): Provenance = (this, that) match {
     case (Empty, _) => that
     case (_, Empty) => this
@@ -73,19 +73,16 @@ sealed abstract class Provenance {
 }
 
 case object Empty extends Provenance {
-  override def toBases: Seq[Token] = Seq()
+  override def toSeq: Seq[Token] = Seq()
   override def toString: String = "Empty"
 }
 
-sealed abstract class Token(name: Any) extends Provenance {
-  override def toBases: Seq[Token] = Seq(this)
+case class Token(name: Any) extends Provenance {
+  override def toSeq: Seq[Token] = Seq(this)
   override def toString: String = name.toString
 }
-case class TokenEDB(name: Any) extends Token(name)
-case class TokenLiteral(name: Any) extends Token(name)
-case class TokenRule(name: Any) extends Token(name)
 
 case class ProvenanceProduct private(p1: Provenance, p2: Provenance) extends Provenance {
-  override def toBases: Seq[Token] = p1.toBases ++ p2.toBases
+  override def toSeq: Seq[Token] = p1.toSeq ++ p2.toSeq
   override def toString: String = s"$p1$p2*"
 }
