@@ -5,7 +5,6 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
     while (delta.numTuples > 0) {
-      // println(s"N config.numTuples: ${config.numTuples}")
       val cd = immediateConsequence(config)
       oldConfig = config
       config = cd._1
