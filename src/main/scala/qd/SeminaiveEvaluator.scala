@@ -4,19 +4,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
 
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
-    var iterCount = 0
-    val startTime = System.nanoTime()
     while (delta.numTuples > 0) {
-      val deltaMaxValues = delta.maxTuple.map { case (relation, tuple) => tuple -> (oldConfig(relation)(tuple),
-                                                                                    delta(relation)(tuple),
-                                                                                    config(relation)(tuple)) }
-      val deltaMaxProvs = delta.maxTuple.map { case (relation, tuple) => tuple -> config(relation)(tuple).prov }
-      println(s"iterCount: $iterCount. time: ${(System.nanoTime() - startTime) / 1.0e9}.")
-      println(s"config.numTuples: ${config.numTuples}. " +
-              s"delta.numTuples: ${delta.numTuples}.")
-      println(s"deltaMaxValues: $deltaMaxValues.")
-      println(s"deltaMaxProvs: $deltaMaxProvs")
-      iterCount = iterCount + 1
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       assert(newConfig.numTuples >= config.numTuples)
       oldConfig = config
