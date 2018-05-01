@@ -32,12 +32,12 @@ object Instance {
     if (signature.length == 1) InstanceBase(signature.head, Map())
     else InstanceInd(signature.head, signature.tail, Map())
   }
+  def apply(relation: Relation): Instance = Instance(relation.signature:_*)
 }
 
 case class InstanceBase(domain: Domain, map: Map[Atom, Value]) extends Instance(Seq(domain)) {
   require(map.keys.forall(domain.contains))
-  val mapd: Map[DTuple, Value] = map.filter({ case (_, value) => value.nonzero })
-                                    .map({ case (atom, value) => DTuple(atom) -> value })
+  val mapd: Map[DTuple, Value] = map.map({ case (atom, value) => DTuple(atom) -> value })
                                     .withDefault(tuple => {
                                       require(tuple.length == 1 && domain.contains(tuple.head));
                                       Zero()
@@ -66,13 +66,12 @@ case class InstanceBase(domain: Domain, map: Map[Atom, Value]) extends Instance(
 case class InstanceInd(domainHead: Domain, domainTail: Seq[Domain], map: Map[Atom, Instance])
   extends Instance(domainHead +: domainTail) {
   require(map.forall { case (atom, instance) => domainHead.contains(atom) && domainTail == instance.signature })
-  val mapd: Map[Atom, Instance] = map.filter({ case (_, value) => value.nonEmpty })
 
   override def get(tuple: DTuple): Option[Value] = {
     val t0 = tuple.head
     val tl = DTuple(tuple.tail)
     require(domainHead.contains(t0))
-    mapd.get(t0).flatMap(_.get(tl))
+    map.get(t0).flatMap(_.get(tl))
   }
 
   override def iterator: Iterator[(DTuple, Value)] = ???
