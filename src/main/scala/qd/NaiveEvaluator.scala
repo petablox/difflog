@@ -33,7 +33,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
     }
-    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
+    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize)
 
     val oldInstance = config(relation)
     val newInstance = oldInstance ++ newTuples

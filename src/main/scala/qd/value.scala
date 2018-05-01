@@ -9,53 +9,45 @@ package qd
 // 2. To multiply two values is to take their sum. This corresponds to the product in the Vb domain.
 
 sealed abstract class Value(val prov: Provenance) extends Ordered[Value] {
-  def +(that: Value): Value
-  def *(that: Value): Value
-  val zero: Boolean
+  val zero: Boolean = this match { case Zero(_) => true; case _ => false }
   val nonzero: Boolean = !zero
-}
 
-case class Zero(override val prov: Provenance) extends Value(prov) {
-  override def +(that: Value): Value = that match {
-    case Zero(thatProv) => Zero(thatProv)
-    case Frac(thatV, thatProv) => Frac(thatV, thatProv)
-  }
-  override def *(that: Value): Value = Zero(prov * that.prov)
-  override val zero: Boolean = true
-  override def compare(that: Value): Int = that match {
-    case Zero(_) => 0
-    case Frac(_, _) => -1
-  }
-  override def toString: String = "-inf"
-}
-
-object Zero {
-  val sentinel: Zero = Zero(Empty)
-  def apply(): Zero = sentinel
-}
-
-case class Frac(private val v: BigDecimal, override val prov: Provenance) extends Value(prov) {
-  require(v <= 0)
-  override def +(that: Value): Value = that match {
-    case Zero(_) => Frac(v, prov)
-    case Frac(thatV, thatProv) =>
-      val ans = if (v > thatV) (v, prov, thatProv) else (thatV, thatProv, prov)
+  def +(that: Value): Value = (this, that) match {
+    case (Zero(_), _) => that
+    case (_, Zero(_)) => this
+    case (Frac(thisV, thisProv), Frac(thatV, thatProv)) =>
+      val ans = if (this > that) (thisV, thisProv, thatProv) else (thatV, thatProv, thisProv)
       Frac(ans._1, ans._2)
   }
-  override def *(that: Value): Value = that match {
-    case Zero(thatProv) => Zero(prov * thatProv)
-    case Frac(thatV, thatProv) => Frac(v + thatV, prov * thatProv)
+
+  def *(that: Value): Value = (this, that) match {
+    case (Zero(_), _) => Zero(this.prov * that.prov)
+    case (_, Zero(_)) => Zero(this.prov * that.prov)
+    case (Frac(thisV, _), Frac(thatV, _)) => Frac(thisV + thatV, this.prov * that.prov)
   }
-  override val zero: Boolean = false
-  override def compare(that: Value): Int = that match {
-    case Zero(_) => 1
-    case Frac(vThat, _) => v.compare(vThat)
+
+  // Over integers, the function abs(this - that) is a simple implementation of the following function.
+  override def compare(that: Value): Int = (this, that) match {
+    case (Zero(_), Zero(_)) => 0
+    case (Zero(_), _) => -1
+    case (_, Zero(_)) => 1
+    case (Frac(thisV, _), Frac(thatV, _)) => thisV.compare(thatV)
   }
-  override def toString: String = v.toString
 }
 
 object Value {
   def apply(v: BigDecimal, prov: Provenance): Frac = Frac(v, prov)
-  def One(prov: Provenance) = Frac(0, prov)
-  val One: Frac = One(Empty)
+}
+
+case class Zero(override val prov: Provenance = Empty) extends Value(Empty) {
+  override def toString: String = "-inf"
+}
+
+case class Frac(private val v: BigDecimal, override val prov: Provenance) extends Value(prov) {
+  require(v <= 0)
+  override def toString: String = v.toString
+}
+
+object One extends Frac(0, Empty) {
+  def apply(prov: Provenance): Frac = Frac(0, prov)
 }

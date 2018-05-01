@@ -33,7 +33,7 @@ object Valuation {
     require(map.forall { case (variable, atom) => variable.domain.contains(atom) })
     new Valuation(map, score)
   }
-  def apply(): Valuation = new Valuation(Map(), Value.One)
+  def apply(): Valuation = new Valuation(Map(), One)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
