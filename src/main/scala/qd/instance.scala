@@ -37,22 +37,23 @@ object Instance {
 
 case class InstanceBase(domain: Domain, map: Map[Atom, Value]) extends Instance(Seq(domain)) {
   require(map.keys.forall(domain.contains))
-  val mapd: Map[DTuple, Value] = map.map({ case (atom, value) => DTuple(atom) -> value })
-                                    .withDefault(tuple => {
-                                      require(tuple.length == 1 && domain.contains(tuple.head))
-                                      Zero
-                                    })
 
-  override def contains(tuple: DTuple): Boolean = mapd(tuple).nonzero
-  override def get(tuple: DTuple): Option[Value] = mapd.get(tuple)
-  override def iterator: Iterator[(DTuple, Value)] = mapd.iterator
+  val mapd: Map[Atom, Value] = map.withDefault(atom => { require(domain.contains(atom)); Zero })
+  def toAtom(tuple: DTuple): Atom = {
+    require(tuple.length == 1)
+    tuple.head
+  }
+
+  override def contains(tuple: DTuple): Boolean = mapd(toAtom(tuple)).nonzero
+  override def get(tuple: DTuple): Option[Value] = mapd.get(toAtom(tuple))
+  override def iterator: Iterator[(DTuple, Value)] = mapd.iterator.map { case (atom, value) => (DTuple(atom), value)}
 
   override def +(tv: (DTuple, Value)): Instance = {
     val (tuple, value) = tv
     require(tuple.length == 1)
-    val oldValue = mapd(tuple)
+    val atom = tuple.head
+    val oldValue = mapd(atom)
     if (oldValue <= value) {
-      val atom = tuple.head
       require(domain.contains(atom))
       InstanceBase(domain, map + (atom -> value))
     } else this
@@ -65,12 +66,14 @@ case class InstanceBase(domain: Domain, map: Map[Atom, Value]) extends Instance(
   }
 
   override def ++(that: Map[DTuple, Value]): Instance = {
-    val thatd = that.map { case (tuple, value) =>
+    val thata = that.map { case (tuple, value) =>
       require(tuple.length == 1)
       val atom = tuple.head
       require(domain.contains(atom))
       atom -> value
     }
+    val thatd = thata.withDefaultValue(Zero)
+    val newMap = for (atom <- this.keySet ++ thatd.keySet) yield atom -> mapd(atom) + thatd(atom)
     ???
   }
   override def --(that: Map[DTuple, Value]): Instance = {
