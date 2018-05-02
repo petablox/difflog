@@ -83,22 +83,7 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
       InstanceInd(domHead, domTail, map + (atom -> newMapA))
   }
 
-  def --(that: Instance): Instance = that.support.foldLeft(this)(_ - _)
-  def -(tv: (DTuple, Value)): Instance = this.subtract(tv._1, tv._2)
-  def subtract(tuple: DTuple, value: Value): Instance = this match {
-    case InstanceBase(domain, map) =>
-      require(tuple.length == 1)
-      val atom = tuple.head
-      require(domain.contains(atom))
-      val oldValue = map.getOrElse(atom, Value.Zero)
-      if (oldValue <= value) InstanceBase(domain, map - atom) else this
-    case InstanceInd(domHead, domTail, map) =>
-      val atom = tuple.head
-      require(domHead.contains(atom))
-      val mapA = map.getOrElse(atom, Instance(domTail:_*))
-      val newMapA = mapA.subtract(tuple.tail, value)
-      InstanceInd(domHead, domTail, map + (atom -> newMapA))
-  }
+  override def toString: String = support.toString
 }
 
 object Instance {

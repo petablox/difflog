@@ -1,13 +1,11 @@
 package qd
 
-import java.time.LocalTime
-
 case class NaiveEvaluator(override val program: Program) extends Evaluator("Naive", program) {
 
   override def apply(edb: Config): Config = {
     var (config, changed) = (edb, true)
     while (changed) {
-      println(s"N: ${LocalTime.now}")
+      // println(s"N: ${LocalTime.now}")
       val cd = immediateConsequence(config)
       config = cd._1
       changed = cd._2
@@ -27,13 +25,13 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
 
   // Applies a rule to a configuration
   def immediateConsequence(rule: Rule, config: Config): (Config, Boolean) = {
-    val relation = rule.head.relation
     var bodyVals = Set(Valuation())
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
     }
     val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
 
+    val relation = rule.head.relation
     val oldInstance = config(relation)
     val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
     val newConfig = config + (relation -> newInstance)
