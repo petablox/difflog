@@ -126,23 +126,23 @@ case class InstanceInd(domainHead: Domain, domainTail: Seq[Domain], map: Map[Ato
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Configurations
 
-case class Config(private val instances: Map[Relation, Instance]) extends Map[Relation, Instance] {
-  require(instances.forall { case (relation, instance) => relation.signature == instance.signature })
+case class Config(private val map: Map[Relation, Instance]) extends Map[Relation, Instance] {
+  require(map.forall { case (relation, instance) => relation.signature == instance.signature })
 
-  override def apply(relation: Relation): Instance = instances.getOrElse(relation, Instance(relation))
+  override def apply(relation: Relation): Instance = map.getOrElse(relation, Instance(relation))
   override def get(relation: Relation): Option[Instance] = Some(this(relation))
-  override def iterator: Iterator[(Relation, Instance)] = instances.iterator
+  override def iterator: Iterator[(Relation, Instance)] = map.iterator
   def +(ri: (Relation, Instance)): Config = {
     val (relation, instance) = ri
     val newInstance = this(relation) ++ instance
-    Config(instances + (relation -> newInstance))
+    Config(map + (relation -> newInstance))
   }
-  override def +[V >: Instance](kv: (Relation, V)): Map[Relation, V] = instances + kv
-  override def -(relation: Relation): Config = Config(instances - relation)
+  override def +[V >: Instance](kv: (Relation, V)): Map[Relation, V] = map + kv
+  override def -(relation: Relation): Config = Config(map - relation)
 
-  val numTuples: Int = instances.values.map(_.size).sum
-  val maxTuple: Map[Relation, DTuple] = instances.mapValues(_.maxTuple)
-                                                 .collect { case (tuple, Some(value)) => tuple -> value }
+  val numTuples: Int = map.values.map(_.size).sum
+  val maxTuple: Map[Relation, DTuple] = map.mapValues(_.maxTuple)
+                                           .collect { case (tuple, Some(value)) => tuple -> value }
 }
 
 object Config {
