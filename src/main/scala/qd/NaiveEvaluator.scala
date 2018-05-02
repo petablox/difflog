@@ -7,30 +7,28 @@ import scala.collection.parallel.ParSet
 case class NaiveEvaluator(override val program: Program) extends Evaluator("Naive", program) {
 
   override def apply(edb: Config): Config = {
-    var (oldConfig, config, delta) = (Config(), edb, edb)
-    while (delta.nonEmptySupport) {
+    var (config, changed) = (edb, true)
+    while (changed) {
       println(s"N: ${LocalTime.now}")
       val cd = immediateConsequence(config)
-      oldConfig = config
       config = cd._1
-      delta = cd._2
+      changed = cd._2
     }
     config
   }
 
-  def immediateConsequence(config: Config): (Config, Config) = {
-    var (c, d) = (config, Config())
+  def immediateConsequence(config: Config): (Config, Boolean) = {
+    var (c, d) = (config, false)
     for (rule <- rules) {
-      val relation = rule.head.relation
-      val (cPrime, instDelta) = immediateConsequence(rule, c)
+      val (cPrime, id) = immediateConsequence(rule, c)
       c = cPrime
-      d = d + (relation -> (d(relation) ++ instDelta))
+      d = d || id
     }
     (c, d)
   }
 
   // Applies a rule to a configuration
-  def immediateConsequence(rule: Rule, config: Config): (Config, Instance) = {
+  def immediateConsequence(rule: Rule, config: Config): (Config, Boolean) = {
     val relation = rule.head.relation
     var bodyVals = ParSet(Valuation())
     for (literal <- rule.body) {
@@ -39,9 +37,12 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap.seq
 
     val oldInstance = config(relation)
-    val newInstance = oldInstance ++ newTuples
+    val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
     val newConfig = config + (relation -> newInstance)
-    (newConfig, newTuples.foldLeft(Instance(relation))(_ + _) -- oldInstance)
+
+    val changed = newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
+
+    (newConfig, changed)
   }
 
   def extend(literal: Literal, config: Config, bodyVals: ParSet[Valuation]): ParSet[Valuation] = {
