@@ -2,8 +2,6 @@ package qd
 
 import java.time.LocalTime
 
-import scala.collection.parallel.ParSet
-
 case class NaiveEvaluator(override val program: Program) extends Evaluator("Naive", program) {
 
   override def apply(edb: Config): Config = {
@@ -30,11 +28,11 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
   // Applies a rule to a configuration
   def immediateConsequence(rule: Rule, config: Config): (Config, Boolean) = {
     val relation = rule.head.relation
-    var bodyVals = ParSet(Valuation())
+    var bodyVals = Set(Valuation())
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
     }
-    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap.seq
+    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
 
     val oldInstance = config(relation)
     val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
@@ -45,7 +43,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     (newConfig, changed)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: ParSet[Valuation]): ParSet[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
     for (valuation <- bodyVals;
          f = valuation.filter(literal);
          tv <- config(literal.relation).filter(f).support;

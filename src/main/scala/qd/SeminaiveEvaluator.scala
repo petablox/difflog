@@ -2,8 +2,6 @@ package qd
 
 import java.time.LocalTime
 
-import scala.collection.parallel.ParSet
-
 case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
 
   override def apply(edb: Config): Config = {
@@ -48,18 +46,18 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   def immediateConsequence(rule: Rule, deltaLiteral: Literal, config: Config, delta: Config): Instance = {
     require(rule.body.contains(deltaLiteral))
 
-    var bodyVals = ParSet(Valuation())
+    var bodyVals = Set(Valuation())
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, delta, bodyVals)
                  else extend(literal, config, bodyVals)
     }
-    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap.seq
+    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
 
     val newInstance = config(rule.head.relation) ++ newTuples
     newInstance
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: ParSet[Valuation]): ParSet[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
     for (valuation <- bodyVals;
          f = valuation.filter(literal);
          tv <- config(literal.relation).filter(f).support;
