@@ -6,11 +6,11 @@ import scala.util.Random
 
 class PathEdge extends FunSuite {
 
-  val ALL_GRAPHS: Set[Graph] = Set(line(64)) /* Set(smallGraph) ++
+  val ALL_GRAPHS: Set[Graph] = /* Set(line(64)) */ Set(smallGraph) ++
                                Range(1, 64).map(line).toSet ++
                                Range(1, 32).map(circle).toSet +
-                               erdosRenyi(50, 0.1, 0) + erdosRenyi(100, 0.01, 0) */
-  val ALL_PROGRAMS: Set[Graph => Program] = Set(/* PE, EP, */ PP)
+                               erdosRenyi(50, 0.1, 0) + erdosRenyi(100, 0.01, 0)
+  val ALL_PROGRAMS: Set[Graph => Program] = Set(PE, EP, PP)
   val ALL_EVALUATORS: Set[Program => Evaluator] = Set(NaiveEvaluator, SeminaiveEvaluator)
 
   for (graph <- ALL_GRAPHS; gp <- ALL_PROGRAMS; evalCtr <- ALL_EVALUATORS) {
@@ -19,13 +19,13 @@ class PathEdge extends FunSuite {
 
     test(s"Applying evaluator ${evaluator.name} " +
          s"to program ${program.name} and graph ${graph.name}") {
-      // val startTime = System.nanoTime()
+      val startTime = System.nanoTime()
       val idb = evaluator(graph.edb)
-      // val endTime = System.nanoTime()
+      val endTime = System.nanoTime()
       val produced = idb(graph.path)
-      assert(produced.support.forall(_.length == 2))
-      assert(produced.support.map(t => (t(0), t(1))) == graph.reachable)
-      // println(s"TIME! ${graph.name}, ${program.name}, ${evaluator.name}: ${(endTime - startTime) / 1.0e9}")
+      assert(produced.support.keys.forall(_.length == 2))
+      assert(produced.support.keys.map(t => (t(0), t(1))) == graph.reachable)
+      println(s"TIME! ${graph.name}, ${program.name}, ${evaluator.name}: ${(endTime - startTime) / 1.0e9}")
     }
   }
 

@@ -1,15 +1,19 @@
 package qd
 
+import java.time.LocalTime
+
+import scala.collection.parallel.ParSet
+
 case class NaiveEvaluator(override val program: Program) extends Evaluator("Naive", program) {
 
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
-    while (delta.numTuples > 0) {
+    while (delta.nonEmptySupport) {
+      // println(s"N: ${LocalTime.now}")
       val cd = immediateConsequence(config)
       oldConfig = config
       config = cd._1
       delta = cd._2
-      assert(config.numTuples >= oldConfig.numTuples)
     }
     config
   }
@@ -19,7 +23,6 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     for (rule <- rules) {
       val relation = rule.head.relation
       val (cPrime, instDelta) = immediateConsequence(rule, c)
-      assert(cPrime.numTuples >= c.numTuples)
       c = cPrime
       d = d + (relation -> (d(relation) ++ instDelta))
     }
@@ -29,11 +32,11 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
   // Applies a rule to a configuration
   def immediateConsequence(rule: Rule, config: Config): (Config, Instance) = {
     val relation = rule.head.relation
-    var bodyVals = Set(Valuation())
+    var bodyVals = ParSet(Valuation())
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
     }
-    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
+    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap.seq
 
     val oldInstance = config(relation)
     val newInstance = oldInstance ++ newTuples
@@ -41,9 +44,10 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     (newConfig, newTuples.foldLeft(Instance(relation))(_ + _) -- oldInstance)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: ParSet[Valuation]): ParSet[Valuation] = {
     for (valuation <- bodyVals;
-         tv <- config(literal.relation);
+         f = valuation.filter(literal);
+         tv <- config(literal.relation).filter(f).support;
          (tuple, score) = tv;
          newValuation <- extend(literal, tuple, valuation))
     yield newValuation * (literal.coeff + score)

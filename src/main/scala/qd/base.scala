@@ -39,9 +39,9 @@ case class DTuple(private val fields: Atom*) extends Seq[Atom] {
   override def apply(index: Int): Atom = fields(index)
   override def iterator: Iterator[Atom] = fields.iterator
   override val length: Int = fields.length
-  override def tail: DTuple = DTuple(fields.tail)
-  def +:(field: Atom): DTuple = DTuple(field +: fields)
-  def :+(field: Atom): DTuple = DTuple(fields :+ field)
+  override def tail: DTuple = DTuple(fields.tail:_*)
+  def +:(field: Atom): DTuple = DTuple((field +: fields):_*)
+  def :+(field: Atom): DTuple = DTuple((fields :+ field):_*)
   override def toString: String = s"(${fields.mkString(", ")})"
 }
 
@@ -61,5 +61,5 @@ case class Relation(name: Any, signature: Domain*) {
     require(this.contains(ans))
     ans
   }
-  def apply(parameters: Parameter*): Literal = Literal(Zero(Empty), this, parameters:_*)
+  def apply(parameters: Parameter*): Literal = Literal(Zero, this, parameters:_*)
 }

@@ -1,12 +1,16 @@
 package qd
 
+import java.time.LocalTime
+
+import scala.collection.parallel.ParSet
+
 case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
 
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
-    while (delta.numTuples > 0) {
+    while (delta.nonEmptySupport) {
+      // println(s"S: ${LocalTime.now}")
       val (newConfig, newDelta) = immediateConsequence(config, delta)
-      assert(newConfig.numTuples >= config.numTuples)
       oldConfig = config
       config = newConfig
       delta = newDelta
@@ -44,23 +48,24 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   def immediateConsequence(rule: Rule, deltaLiteral: Literal, config: Config, delta: Config): Instance = {
     require(rule.body.contains(deltaLiteral))
 
-    var bodyVals = Set(Valuation())
+    var bodyVals = ParSet(Valuation())
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, delta, bodyVals)
                  else extend(literal, config, bodyVals)
     }
-    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
+    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap.seq
 
     val newInstance = config(rule.head.relation) ++ newTuples
     newInstance
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: ParSet[Valuation]): ParSet[Valuation] = {
     for (valuation <- bodyVals;
-         tv <- config(literal.relation);
+         f = valuation.filter(literal);
+         tv <- config(literal.relation).filter(f).support;
          (tuple, score) = tv;
          newValuation <- extend(literal, tuple, valuation))
-      yield newValuation * (literal.coeff + score)
+    yield newValuation * (literal.coeff + score)
   }
 
   def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {

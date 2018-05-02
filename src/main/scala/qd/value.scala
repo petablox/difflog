@@ -9,8 +9,8 @@ package qd
 // 2. To multiply two values is to take their sum. This corresponds to the product in the Vb domain.
 
 sealed abstract class Value(val prov: Provenance) extends Ordered[Value] {
-  val zero: Boolean = this match { case Zero => true; case _ => false }
-  val nonzero: Boolean = !zero
+  def zero: Boolean = this match { case Zero => true; case _ => false }
+  def nonzero: Boolean = !zero
 
   def +(that: Value): Value = (this, that) match {
     case (Zero, _) => that
