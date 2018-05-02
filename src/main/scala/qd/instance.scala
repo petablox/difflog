@@ -18,10 +18,10 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends Map[DTuple, V
   override def contains(tuple: DTuple): Boolean
   override def get(tuple: DTuple): Option[Value]
   override def iterator: Iterator[(DTuple, Value)]
-  def +(tv: (DTuple, Value)): Instance
-  override def +[V >: Value](kv: (DTuple, V)): Map[DTuple, V]
-  override def -(tuple: DTuple): Instance
 
+  def +(tv: (DTuple, Value)): Instance
+  override def +[V >: Value](kv: (DTuple, V)): Map[DTuple, V] = throw new UnsupportedOperationException
+  override def -(tuple: DTuple): Instance
   def ++(that: Map[DTuple, Value]): Instance
   def --(that: Map[DTuple, Value]): Instance
 }
@@ -39,45 +39,83 @@ case class InstanceBase(domain: Domain, map: Map[Atom, Value]) extends Instance(
   require(map.keys.forall(domain.contains))
   val mapd: Map[DTuple, Value] = map.map({ case (atom, value) => DTuple(atom) -> value })
                                     .withDefault(tuple => {
-                                      require(tuple.length == 1 && domain.contains(tuple.head));
-                                      Zero()
+                                      require(tuple.length == 1 && domain.contains(tuple.head))
+                                      Zero
                                     })
 
+  override def contains(tuple: DTuple): Boolean = mapd(tuple).nonzero
   override def get(tuple: DTuple): Option[Value] = mapd.get(tuple)
   override def iterator: Iterator[(DTuple, Value)] = mapd.iterator
+
   override def +(tv: (DTuple, Value)): Instance = {
     val (tuple, value) = tv
     require(tuple.length == 1)
-    val atom = tuple.head
-    require(domain.contains(atom))
-    InstanceBase(domain, map + (atom -> value))
+    val oldValue = mapd(tuple)
+    if (oldValue <= value) {
+      val atom = tuple.head
+      require(domain.contains(atom))
+      InstanceBase(domain, map + (atom -> value))
+    } else this
   }
-  override def +[V >: Value](kv: (DTuple, V)): Map[DTuple, V] = mapd + kv
   override def -(tuple: DTuple): Instance = {
     require(tuple.length == 1)
     val atom = tuple.head
     require(domain.contains(atom))
     InstanceBase(domain, map - atom)
   }
-  override def ++(that: Map[DTuple, Value]): Instance = ???
-  override def --(that: Map[DTuple, Value]): Instance = ???
+
+  override def ++(that: Map[DTuple, Value]): Instance = {
+    val thatd = that.map { case (tuple, value) =>
+      require(tuple.length == 1)
+      val atom = tuple.head
+      require(domain.contains(atom))
+      atom -> value
+    }
+    ???
+  }
+  override def --(that: Map[DTuple, Value]): Instance = {
+    val thatd = that.map({ case (tuple, value) =>
+      require(tuple.length == 1)
+      val atom = tuple.head
+      require(domain.contains(atom))
+      atom -> value
+    }).withDefaultValue(Zero())
+    InstanceBase(domain, map.filter { case (key, value) => value > thatd(key) })
+  }
 }
 
 case class InstanceInd(domainHead: Domain, domainTail: Seq[Domain], map: Map[Atom, Instance])
   extends Instance(domainHead +: domainTail) {
   require(map.forall { case (atom, instance) => domainHead.contains(atom) && domainTail == instance.signature })
-
-  override def get(tuple: DTuple): Option[Value] = {
-    val t0 = tuple.head
-    val tl = DTuple(tuple.tail)
-    require(domainHead.contains(t0))
-    map.get(t0).flatMap(_.get(tl))
+  val mapd: Map[Atom, Instance] = mapd.withDefault { atom =>
+    require(domainHead.contains(atom));
+    Instance(domainTail:_*)
   }
 
-  override def iterator: Iterator[(DTuple, Value)] = ???
-  override def +(tv: (DTuple, Value)): Instance = ???
-  override def +[V >: Value](kv: (DTuple, V)): Map[DTuple, V] = ???
-  override def -(tuple: DTuple): Instance = ???
+  override def contains(tuple: DTuple): Boolean = get(tuple).getOrElse(Zero).nonzero
+  override def get(tuple: DTuple): Option[Value] = mapd(tuple.head).get(tuple.tail)
+  override def iterator: Iterator[(DTuple, Value)] = {
+    map.map({ case (atom, ia) => atom -> ia.iterator
+                                           .map { case (tuple, value) => (atom +: tuple) -> value } })
+       .values.flatten.toIterator
+  }
+
+  override def +(tv: (DTuple, Value)): Instance = {
+    val (tuple, value) = tv
+    val head = tuple.head
+    require(domainHead.contains(head))
+    val sub = mapd(head)
+    val newSub = sub + (tuple.tail -> value)
+    val newMap = map + (head -> newSub)
+    InstanceInd(domainHead, domainTail, newMap)
+  }
+  override def -(tuple: DTuple): Instance = {
+    val head = tuple.head
+    require(domainHead.contains(head))
+    if (map.contains(head)) InstanceInd(domainHead, domainTail, map + (head -> (map(head) - tuple.tail)))
+    else this
+  }
+
   override def ++(that: Map[DTuple, Value]): Instance = ???
   override def --(that: Map[DTuple, Value]): Instance = ???
 }

@@ -35,13 +35,19 @@ object Domain {
 // Tuples and relations (aka predicates)
 
 case class DTuple(private val fields: Atom*) extends Seq[Atom] {
+  require(fields.nonEmpty)
   override def apply(index: Int): Atom = fields(index)
   override def iterator: Iterator[Atom] = fields.iterator
   override val length: Int = fields.length
+  override def tail: DTuple = DTuple(fields.tail)
+  def +:(field: Atom): DTuple = DTuple(field +: fields)
+  def :+(field: Atom): DTuple = DTuple(fields :+ field)
   override def toString: String = s"(${fields.mkString(", ")})"
 }
 
 case class Relation(name: Any, signature: Domain*) {
+  require(signature.nonEmpty)
+
   def contains(tuple: DTuple): Boolean = {
     signature.length == tuple.length &&
     signature.zip(tuple).forall { case (domain, field) => domain.contains(field) }
@@ -55,5 +61,5 @@ case class Relation(name: Any, signature: Domain*) {
     require(this.contains(ans))
     ans
   }
-  def apply(parameters: Parameter*): Literal = Literal(Zero(), this, parameters:_*)
+  def apply(parameters: Parameter*): Literal = Literal(Zero(Empty), this, parameters:_*)
 }
