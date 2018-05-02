@@ -11,11 +11,11 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
       require(tuple.length == 1)
       val atom = tuple.head
       require(domain.contains(atom))
-      map.getOrElse(atom, Zero)
+      map.getOrElse(atom, Value.Zero)
     case InstanceInd(domHead, _, map) =>
       val atomHead = tuple.head
       require(domHead.contains(atomHead))
-      map.get(atomHead).map(_(tuple.tail)).getOrElse(Zero)
+      map.get(atomHead).map(_(tuple.tail)).getOrElse(Value.Zero)
   }
 
   def support: Map[DTuple, Value] = this match {
@@ -48,7 +48,23 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
       }
   }
 
-  def ++(that: Instance): Instance = this ++ that.support
+  def ++(that: Instance): Instance = (this, that) match {
+    case (InstanceBase(dom1, map1), InstanceBase(dom2, map2)) =>
+      require(dom1 == dom2)
+      val newMap = for (atom <- map1.keySet ++ map2.keySet;
+                        v1 = map1.getOrElse(atom, Value.Zero);
+                        v2 = map2.getOrElse(atom, Value.Zero))
+                   yield atom -> (v1 + v2)
+      InstanceBase(dom1, newMap.toMap)
+    case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, domT2, map2)) =>
+      require(domH1 == domH2)
+      val newMap = for (atom <- map1.keySet ++ map2.keySet;
+                        v1 = map1.getOrElse(atom, Instance(domT1:_*));
+                        v2 = map2.getOrElse(atom, Instance(domT2:_*)))
+                   yield atom -> (v1 ++ v2)
+      InstanceInd(domH1, domT1, newMap.toMap)
+  }
+
   def ++(tvs: Map[DTuple, Value]): Instance = tvs.foldLeft(this)(_ + _)
   def +(tv: (DTuple, Value)): Instance = this.add(tv._1, tv._2)
   def add(tuple: DTuple, value: Value): Instance = this match {
@@ -56,7 +72,7 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
       require(tuple.length == 1)
       val atom = tuple.head
       require(domain.contains(atom))
-      val oldValue = map.getOrElse(atom, Zero)
+      val oldValue = map.getOrElse(atom, Value.Zero)
       val newValue = value + oldValue
       InstanceBase(domain, map + (atom -> newValue))
     case InstanceInd(domHead, domTail, map) =>
@@ -74,7 +90,7 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
       require(tuple.length == 1)
       val atom = tuple.head
       require(domain.contains(atom))
-      val oldValue = map.getOrElse(atom, Zero)
+      val oldValue = map.getOrElse(atom, Value.Zero)
       if (oldValue <= value) InstanceBase(domain, map - atom) else this
     case InstanceInd(domHead, domTail, map) =>
       val atom = tuple.head

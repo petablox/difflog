@@ -9,7 +9,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
     while (delta.nonEmptySupport) {
-      // println(s"N: ${LocalTime.now}")
+      println(s"N: ${LocalTime.now}")
       val cd = immediateConsequence(config)
       oldConfig = config
       config = cd._1

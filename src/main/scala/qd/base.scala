@@ -18,7 +18,7 @@ case class Domain(name: Any, private val set: Set[Atom]) extends Set[Atom] {
   override def toString: String = s"$name[${set.mkString(", ")}]"
 
   def equalityRelation: Instance = {
-    set.foldLeft(Instance(this, this)) { case (instance, atom) => instance + (DTuple(atom, atom) -> One )}
+    set.foldLeft(Instance(this, this)) { case (instance, atom) => instance + (DTuple(atom, atom) -> Value.One )}
   }
 }
 
@@ -40,8 +40,8 @@ case class DTuple(private val fields: Atom*) extends Seq[Atom] {
   override def iterator: Iterator[Atom] = fields.iterator
   override val length: Int = fields.length
   override def tail: DTuple = DTuple(fields.tail:_*)
-  def +:(field: Atom): DTuple = DTuple((field +: fields):_*)
-  def :+(field: Atom): DTuple = DTuple((fields :+ field):_*)
+  def +:(field: Atom): DTuple = DTuple(field +: fields:_*)
+  def :+(field: Atom): DTuple = DTuple(fields :+ field:_*)
   override def toString: String = s"(${fields.mkString(", ")})"
 }
 
@@ -61,5 +61,5 @@ case class Relation(name: Any, signature: Domain*) {
     require(this.contains(ans))
     ans
   }
-  def apply(parameters: Parameter*): Literal = Literal(Zero, this, parameters:_*)
+  def apply(parameters: Parameter*): Literal = Literal(Value.Zero, this, parameters:_*)
 }

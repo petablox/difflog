@@ -9,7 +9,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
     while (delta.nonEmptySupport) {
-      // println(s"S: ${LocalTime.now}")
+      println(s"S: ${LocalTime.now}")
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       oldConfig = config
       config = newConfig
