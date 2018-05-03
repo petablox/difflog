@@ -62,4 +62,17 @@ case class Relation(name: Any, signature: Domain*) {
     ans
   }
   def apply(parameters: Parameter*): Literal = Literal(Value.Zero, this, parameters:_*)
+
+  def populate: Set[DTuple] = {
+    def p(sign: Seq[Domain]): Set[DTuple] = {
+      if (sign.length == 1) {
+        val domain = sign.head
+        domain.map(atom => DTuple(atom))
+      } else {
+        val domHead = sign.head
+        for (tail <- p(sign.tail); atom <- domHead) yield atom +: tail
+      }
+    }
+    p(signature)
+  }
 }

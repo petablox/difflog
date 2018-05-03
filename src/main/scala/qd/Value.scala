@@ -12,6 +12,7 @@ case class Value(private val v: Double, prov: Provenance) extends Ordered[Value]
   def *(that: Value): Value = Value(v * that.v, prov * that.prov)
   override def compare(that: Value): Int = v.compareTo(that.v)
 
+  def toDouble: Double = v
   override def toString: String = v.toString
 }
 
