@@ -1,7 +1,5 @@
 package qd
 
-import qd.value.One
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Atoms and domains
 
@@ -67,13 +65,8 @@ case class Relation(name: Any, signature: Domain*) {
 
   def populate: Set[DTuple] = {
     def p(sign: Seq[Domain]): Set[DTuple] = {
-      if (sign.tail.nonEmpty) {
-        val domain = sign.head
-        domain.map(atom => DTuple(atom))
-      } else {
-        val domHead = sign.head
-        for (tail <- p(sign.tail); atom <- domHead) yield atom +: tail
-      }
+      if (sign.tail.isEmpty) sign.head.map(atom => DTuple(atom))
+      else for (tail <- p(sign.tail); head <- sign.head) yield head +: tail
     }
     p(signature)
   }
