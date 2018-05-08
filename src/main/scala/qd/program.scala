@@ -44,7 +44,7 @@ object Valuation {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Literal and rules
 
-case class Literal(coeff: Value, relation: Relation, parameters: Parameter*) {
+case class Literal(relation: Relation, parameters: Parameter*) {
   require(relation.signature == parameters.map(_.domain))
   val freeVariables: Set[Variable] = parameters.collect({ case v: Variable => v }).toSet
   override def toString: String = s"${relation.name}(${parameters.mkString(", ")})"

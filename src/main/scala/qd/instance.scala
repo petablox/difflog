@@ -63,6 +63,8 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
                         v2 = map2.getOrElse(atom, Instance(domT2:_*)))
                    yield atom -> (v1 ++ v2)
       InstanceInd(domH1, domT1, newMap.toMap)
+    case (InstanceBase(_, _), InstanceInd(_, _, _)) => throw new IllegalArgumentException
+    case (InstanceInd(_, _, _), InstanceBase(_, _)) => throw new IllegalArgumentException
   }
 
   def ++(tvs: Map[DTuple, Value]): Instance = tvs.foldLeft(this)(_ + _)

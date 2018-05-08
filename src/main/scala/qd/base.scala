@@ -61,11 +61,11 @@ case class Relation(name: Any, signature: Domain*) {
     require(this.contains(ans))
     ans
   }
-  def apply(parameters: Parameter*): Literal = Literal(Value.Zero, this, parameters:_*)
+  def apply(parameters: Parameter*): Literal = Literal(this, parameters:_*)
 
   def populate: Set[DTuple] = {
     def p(sign: Seq[Domain]): Set[DTuple] = {
-      if (sign.length == 1) {
+      if (sign.tail.nonEmpty) {
         val domain = sign.head
         domain.map(atom => DTuple(atom))
       } else {
