@@ -11,11 +11,11 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
       require(tuple.length == 1)
       val atom = tuple.head
       require(domain.contains(atom))
-      map.getOrElse(atom, Value.Zero)
+      map.getOrElse(atom, Zero)
     case InstanceInd(domHead, _, map) =>
       val atomHead = tuple.head
       require(domHead.contains(atomHead))
-      map.get(atomHead).map(_(tuple.tail)).getOrElse(Value.Zero)
+      map.get(atomHead).map(_(tuple.tail)).getOrElse(Zero)
   }
 
   def support: Map[DTuple, Value] = this match {
@@ -52,8 +52,8 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
     case (InstanceBase(dom1, map1), InstanceBase(dom2, map2)) =>
       require(dom1 == dom2)
       val newMap = for (atom <- map1.keySet ++ map2.keySet;
-                        v1 = map1.getOrElse(atom, Value.Zero);
-                        v2 = map2.getOrElse(atom, Value.Zero))
+                        v1 = map1.getOrElse(atom, Zero);
+                        v2 = map2.getOrElse(atom, Zero))
                    yield atom -> (v1 + v2)
       InstanceBase(dom1, newMap.toMap)
     case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, domT2, map2)) =>
@@ -74,7 +74,7 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
       require(tuple.length == 1)
       val atom = tuple.head
       require(domain.contains(atom))
-      val oldValue = map.getOrElse(atom, Value.Zero)
+      val oldValue = map.getOrElse(atom, Zero)
       val newValue = value + oldValue
       InstanceBase(domain, map + (atom -> newValue))
     case InstanceInd(domHead, domTail, map) =>

@@ -18,7 +18,7 @@ case class Domain(name: Any, private val set: Set[Atom]) extends Set[Atom] {
   override def toString: String = s"$name[${set.mkString(", ")}]"
 
   def equalityRelation: Instance = {
-    set.foldLeft(Instance(this, this)) { case (instance, atom) => instance + (DTuple(atom, atom) -> Value.One )}
+    set.foldLeft(Instance(this, this)) { case (instance, atom) => instance + (DTuple(atom, atom) -> One )}
   }
 }
 

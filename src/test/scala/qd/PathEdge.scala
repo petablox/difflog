@@ -37,7 +37,7 @@ class PathEdge extends FunSuite {
     val edge = Relation("edge", nodes, nodes)
     val path = Relation("path", nodes, nodes)
 
-    def edb: Config = Config(edge -> edgeSet.map({ case (from, to) => DTuple(from, to) -> Value.One})
+    def edb: Config = Config(edge -> edgeSet.map({ case (from, to) => DTuple(from, to) -> One})
                                             .foldLeft(Instance(nodes, nodes))(_ + _))
 
     val reachable: Set[(Atom, Atom)] = reachable(nodeSet.size + 1)
