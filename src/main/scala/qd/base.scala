@@ -3,7 +3,8 @@ package qd
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Atoms and domains
 
-case class Atom(t: Any) {
+sealed case class Atom(t: Any) {
+  override val hashCode: Int = t.##
   override def toString: String = s"<$t>"
 }
 
@@ -39,6 +40,8 @@ case class DTuple(private val fields: Atom*) extends Seq[Atom] {
   override def apply(index: Int): Atom = fields(index)
   override def iterator: Iterator[Atom] = fields.iterator
   override val length: Int = fields.length
+  override def hashCode(): Int = fields.hashCode()
+  override def head: Atom = fields.head
   override def tail: DTuple = DTuple(fields.tail:_*)
   def +:(field: Atom): DTuple = DTuple(field +: fields:_*)
   def :+(field: Atom): DTuple = DTuple(fields :+ field:_*)
