@@ -1,11 +1,15 @@
 package qd
 
+import java.time.LocalTime
+
 case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
+
+  private var numAppliedRules = 0
 
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
     while (delta.nonEmptySupport) {
-      // println(s"S: ${LocalTime.now}")
+      println(s"S ${program.name}: ${LocalTime.now}")
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       oldConfig = config
       config = newConfig
@@ -16,11 +20,26 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
 
   def immediateConsequence(config: Config, delta: Config): (Config, Config) = {
     var (newConfig, deltaCurr, deltaNext) = (config, delta, Config())
+    numAppliedRules = 0
     for (rule <- rules) {
+      println(s"  $numAppliedRules. Evaluating rule ${rule.name}")
+      val startTime = System.nanoTime()
+      val supportSizeOrig = newConfig(rule.head.relation).support.size
+
       val cdd = immediateConsequence(rule, newConfig, deltaCurr, deltaNext)
       newConfig = cdd._1
       deltaCurr = cdd._2
       deltaNext = cdd._3
+
+      val endTime = System.nanoTime()
+      val supportSizeFinal = newConfig(rule.head.relation).support.size
+      val numFreeVars = rule.freeVariables.size
+      val numPossibleVals = rule.freeVariables.toSeq.map(_.domain.size).product
+      println(s"  Done! Rule ${rule.name}. Relation ${rule.head.relation.name}. " +
+              s"Support size original: $supportSizeOrig. Support size final: $supportSizeFinal. " +
+              s"numFreeVars: $numFreeVars. numPossibleVals: $numPossibleVals. " +
+              s"Time: ${(endTime - startTime) / 1.0e9} s.")
+      numAppliedRules += 1
     }
     (newConfig, deltaNext)
   }
@@ -41,6 +60,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   def immediateConsequence(rule: Rule, deltaLiteral: Literal,
                            config: Config, deltaCurr: Config, deltaNext: Config): (Config, Config, Config) = {
     require(rule.body.contains(deltaLiteral))
+    // println(s"    deltaLiteral: $deltaLiteral")
 
     var bodyVals = Set(Valuation())
     for (literal <- rule.body) {
