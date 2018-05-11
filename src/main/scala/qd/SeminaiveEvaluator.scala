@@ -5,6 +5,7 @@ import java.time.LocalTime
 case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
 
   private var numAppliedRules = 0
+  private var numIters = 0
 
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
@@ -14,6 +15,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
       oldConfig = config
       config = newConfig
       delta = newDelta
+      numIters += 1
     }
     config
   }
@@ -38,7 +40,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
       println(s"  Done! Rule ${rule.name}. Relation ${rule.head.relation.name}. " +
               s"Support size original: $supportSizeOrig. Support size final: $supportSizeFinal. " +
               s"numFreeVars: $numFreeVars. numPossibleVals: $numPossibleVals. " +
-              s"Time: ${(endTime - startTime) / 1.0e9} s.")
+              s"numIters: $numIters. Time: ${(endTime - startTime) / 1.0e9} s.")
       numAppliedRules += 1
     }
     (newConfig, deltaNext)
