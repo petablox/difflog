@@ -18,14 +18,17 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
       map.get(atomHead).map(_(tuple.tail)).getOrElse(Zero)
   }
 
-  def support: Map[DTuple, Value] = this match {
+  def supportSeq: Seq[(DTuple, Value)] = this match {
     case InstanceBase(_, map) => map.filter({ case (_, value) => value.nonzero })
+                                    .toSeq
                                     .map({ case (atom, value) => DTuple(atom) -> value })
-    case InstanceInd(_, _, map) => for ((atom, mapA) <- map;
-                                        tv <- mapA.support;
+    case InstanceInd(_, _, map) => for ((atom, mapA) <- map.toSeq;
+                                        tv <- mapA.supportSeq;
                                         (tuple, value) = tv)
                                    yield (atom +: tuple) -> value
   }
+
+  def support: Map[DTuple, Value] = supportSeq.toMap
 
   val nonEmpty: Boolean = this match {
     case InstanceBase(_, map) => map.values.exists(_.nonzero)

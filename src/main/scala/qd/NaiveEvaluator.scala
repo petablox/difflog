@@ -25,7 +25,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
 
   // Applies a rule to a configuration
   def immediateConsequence(rule: Rule, config: Config): (Config, Boolean) = {
-    var bodyVals = Set(Valuation())
+    var bodyVals = Seq(Valuation())
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
     }
@@ -41,11 +41,10 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     (newConfig, changed)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: Seq[Valuation]): Seq[Valuation] = {
     for (valuation <- bodyVals;
          f = valuation.filter(literal);
-         tv <- config(literal.relation).filter(f).support;
-         (tuple, score) = tv;
+         (tuple, score) <- config(literal.relation).filter(f).support;
          newValuation <- extend(literal, tuple, valuation))
     yield newValuation * score
   }

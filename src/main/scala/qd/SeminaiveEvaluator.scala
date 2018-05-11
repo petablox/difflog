@@ -64,7 +64,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     require(rule.body.contains(deltaLiteral))
     // println(s"    deltaLiteral: $deltaLiteral")
 
-    var bodyVals = Set(Valuation())
+    var bodyVals = Seq(Valuation())
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, deltaCurr, bodyVals)
                  else extend(literal, config, bodyVals)
@@ -89,11 +89,10 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     (newConfig, newDeltaCurr, newDeltaNext)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: Set[Valuation]): Set[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: Seq[Valuation]): Seq[Valuation] = {
     for (valuation <- bodyVals;
          f = valuation.filter(literal);
-         tv <- config(literal.relation).filter(f).support;
-         (tuple, score) = tv;
+         (tuple, score) <- config(literal.relation).filter(f).supportSeq;
          newValuation <- extend(literal, tuple, valuation))
     yield newValuation * score
   }

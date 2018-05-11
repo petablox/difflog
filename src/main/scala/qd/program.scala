@@ -1,10 +1,13 @@
 package qd
 
+import scala.util.hashing.MurmurHash3
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Parameters: Variables or Constants
 
 sealed abstract class Parameter(val domain: Domain)
 case class Variable(name: Any, override val domain: Domain) extends Parameter(domain) {
+  override val hashCode: Int = MurmurHash3.finalizeHash(MurmurHash3.mix(name.##, domain.hashCode()), 2)
   override def toString: String = name.toString
 }
 case class Constant(value: Atom, override val domain: Domain) extends Parameter(domain) {

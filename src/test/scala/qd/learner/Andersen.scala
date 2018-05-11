@@ -1,8 +1,9 @@
 package qd
 package learner
 
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 
+@Ignore
 class Andersen extends FunSuite {
 
   val heapSet: Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
