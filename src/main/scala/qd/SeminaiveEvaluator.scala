@@ -49,8 +49,15 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   def immediateConsequence(rule: Rule, config: Config,
                            deltaCurr: Config, deltaNext: Config): (Config, Config, Config) = {
     var (newConfig, newDeltaCurr, newDeltaNext) = (config, deltaCurr, deltaNext)
-    for (literal <- rule.body) {
-      val cdd = immediateConsequence(rule, literal, newConfig, newDeltaCurr, newDeltaNext)
+    if (numIters > 0) {
+      for (literal <- rule.body) {
+        val cdd = immediateConsequence(rule, literal, newConfig, newDeltaCurr, newDeltaNext)
+        newConfig = cdd._1
+        newDeltaCurr = cdd._2
+        newDeltaNext = cdd._3
+      }
+    } else {
+      val cdd = immediateConsequence(rule, rule.body.head, newConfig, newDeltaCurr, newDeltaNext)
       newConfig = cdd._1
       newDeltaCurr = cdd._2
       newDeltaNext = cdd._3
@@ -92,7 +99,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   def extend(literal: Literal, config: Config, bodyVals: Seq[Valuation]): Seq[Valuation] = {
     for (valuation <- bodyVals;
          f = valuation.toFilter(literal);
-         (tuple, score) <- config(literal.relation).filter(f).support;
+         (tuple, score) <- config(literal.relation).filter(f);
          newValuation <- extend(literal, tuple, valuation))
     yield newValuation * score
   }

@@ -4,7 +4,8 @@ import scala.util.Random
 
 object Graphs {
 
-  val Graphs: Set[Graph] = /* Set(line(64)) */ Set(smallGraph) ++
+  // val Graphs: Set[Graph] = Set(line(64))
+  val Graphs: Set[Graph] = Set(smallGraph) ++
                            Range(1, 64).map(line).toSet ++
                            Range(1, 32).map(circle).toSet +
                            erdosRenyi(50, 0.1, 0) + erdosRenyi(100, 0.01, 0)

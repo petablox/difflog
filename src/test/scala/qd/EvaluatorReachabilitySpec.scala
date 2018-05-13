@@ -12,7 +12,7 @@ class EvaluatorReachabilitySpec(evalCtr: Program => Evaluator) extends FunSuite 
       // val endTime = System.nanoTime()
       val produced = idb(graph.path)
       assert(produced.support.forall(_._1.length == 2))
-      assert(produced.support.map(tv => (tv._1(0), tv._1(1))) == graph.reachable)
+      assert(produced.support.map(tv => (tv._1(0), tv._1(1))).toSet == graph.reachable)
       // println(s"TIME! ${graph.name}, ${program.name}, ${evaluator.name}: ${(endTime - startTime) / 1.0e9}")
     }
   }

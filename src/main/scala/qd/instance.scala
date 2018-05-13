@@ -32,19 +32,20 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
     case InstanceInd(_, _, map) => map.values.exists(_.nonEmpty)
   }
 
-  def filter(f: Seq[Option[Atom]]): Instance = this match {
+  def filter(f: Seq[Option[Atom]]): Seq[(DTuple, Value)] = this match {
     case InstanceBase(domain, map) =>
       require(f.lengthCompare(1) == 0 /* f.length == 1. Suggested by IDE. */)
-      f.head match {
-        case Some(atom) => InstanceBase(domain, map.filterKeys(_ == atom))
-        case None => this
+      val ans = f.head match {
+        case Some(fh) => map.filter { case (atom, value) => atom == fh && value.nonzero }
+        case None => map
       }
-    case InstanceInd(domHead, domTail, map) =>
+      ans.toSeq.map { case (atom, value) => (DTuple(atom), value) }
+    case InstanceInd(_, _, map) =>
       val newMap = f.head match {
-        case Some(atom) => map.filterKeys(_ == atom).mapValues(_.filter(f.tail))
-        case None => map.mapValues(_.filter(f.tail))
+        case Some(atom) => map.filterKeys(_ == atom).mapValues(_.filter(f.tail)).filter(_._2.nonEmpty)
+        case None => map.mapValues(_.filter(f.tail)).filter(_._2.nonEmpty)
       }
-      InstanceInd(domHead, domTail, newMap)
+      for ((atom, s) <- newMap.toSeq; (tuple, value) <- s) yield (atom +: tuple, value)
   }
 
   def ++(that: Instance): Instance = (this, that) match {
