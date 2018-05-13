@@ -1,5 +1,7 @@
 package qd
 
+import scala.collection.parallel.ParSeq
+
 case class NaiveEvaluator(override val program: Program) extends Evaluator("Naive", program) {
 
   override def apply(edb: Config): Config = {
@@ -25,9 +27,17 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
 
   // Applies a rule to a configuration
   def immediateConsequence(rule: Rule, config: Config): (Config, Boolean) = {
-    var bodyVals = Seq(Valuation())
+    var bodyVals = ParSeq(Valuation.Empty)
+    var remainingLits = rule.body
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
+
+      remainingLits = remainingLits - literal
+      val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
+      bodyVals = bodyVals.map(_.project(relevantVars))
+      bodyVals = bodyVals.groupBy(_.backingMap)
+                         .mapValues(_.map(_.score).max)
+                         .toSeq.map(mv => Valuation(mv._1, mv._2))
     }
     val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
 
@@ -41,7 +51,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     (newConfig, changed)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: Seq[Valuation]): Seq[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: ParSeq[Valuation]): ParSeq[Valuation] = {
     for (valuation <- bodyVals;
          f = valuation.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

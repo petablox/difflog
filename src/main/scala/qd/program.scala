@@ -17,23 +17,25 @@ case class Constant(value: Atom, override val domain: Domain) extends Parameter(
 
 // A valuation is a mapping from variables to atoms
 // They are intermediate objects encountered while applying rules
-class Valuation private (map: Map[Variable, Atom], val score: Value) extends Map[Variable, Atom] {
-  override def get(variable: Variable): Option[Atom] = map.get(variable)
-  override def iterator: Iterator[(Variable, Atom)] = map.iterator
+class Valuation private (val backingMap: Map[Variable, Atom], val score: Value) extends Map[Variable, Atom] {
+  override def get(variable: Variable): Option[Atom] = backingMap.get(variable)
+  override def iterator: Iterator[(Variable, Atom)] = backingMap.iterator
 
   def +(va: (Variable, Atom)): Valuation = {
     val (variable, atom) = va
     require(variable.domain.contains(atom))
-    new Valuation(map + va, score)
+    new Valuation(backingMap + va, score)
   }
-  override def +[V >: Atom](kv: (Variable, V)): Map[Variable, V] = map + kv
-  override def -(variable: Variable): Valuation = Valuation(map - variable, score)
-  def *(coeff: Value): Valuation = Valuation(map, score * coeff)
+  override def +[V >: Atom](kv: (Variable, V)): Map[Variable, V] = backingMap + kv
+  override def -(variable: Variable): Valuation = Valuation(backingMap - variable, score)
+  def *(coeff: Value): Valuation = Valuation(backingMap, score * coeff)
 
   def toFilter(literal: Literal): Seq[Option[Atom]] = literal.parameters.map {
-    case v @ Variable(_, _) => map.get(v)
+    case v @ Variable(_, _) => backingMap.get(v)
     case Constant(atom, _) => Some(atom)
   }
+
+  def project(rvs: Set[Variable]): Valuation = new Valuation(backingMap.filterKeys(v => rvs.contains(v)), score)
 }
 
 object Valuation {
@@ -41,7 +43,7 @@ object Valuation {
     require(map.forall { case (variable, atom) => variable.domain.contains(atom) })
     new Valuation(map, score)
   }
-  def apply(): Valuation = new Valuation(Map(), One)
+  val Empty: Valuation = new Valuation(Map(), One)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

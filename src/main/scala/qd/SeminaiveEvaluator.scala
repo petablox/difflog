@@ -2,6 +2,8 @@ package qd
 
 import java.time.LocalTime
 
+import scala.collection.parallel.ParSeq
+
 case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
 
   private var numAppliedRules = 0
@@ -71,12 +73,22 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     require(rule.body.contains(deltaLiteral))
     // println(s"    deltaLiteral: $deltaLiteral")
 
-    var bodyVals = Seq(Valuation())
+    var bodyVals = ParSeq(Valuation.Empty)
+    var remainingLits = rule.body
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, deltaCurr, bodyVals)
                  else extend(literal, config, bodyVals)
+
+      remainingLits = remainingLits - literal
+      val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
+      println(s"  bodyVals.size: ${bodyVals.size}. relevantVars: ${relevantVars.mkString(", ")}")
+      bodyVals = bodyVals.map(_.project(relevantVars))
+      bodyVals = bodyVals.groupBy(_.backingMap)
+                         .mapValues(_.map(_.score).max)
+                         .toSeq.map(mv => Valuation(mv._1, mv._2))
     }
     val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
+    println(s"  newTuples.size: ${newTuples.size}")
 
     val relation = rule.head.relation
     val oldInstance = config(relation)
@@ -96,7 +108,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     (newConfig, newDeltaCurr, newDeltaNext)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: Seq[Valuation]): Seq[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: ParSeq[Valuation]): ParSeq[Valuation] = {
     for (valuation <- bodyVals;
          f = valuation.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
