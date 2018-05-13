@@ -21,6 +21,8 @@ case class Domain(name: Any, private val set: Set[Atom]) extends Set[Atom] {
   def equalityRelation: Instance = {
     set.foldLeft(Instance(this, this)) { case (instance, atom) => instance + (DTuple(atom, atom) -> One )}
   }
+
+  override val hashCode: Int = (classOf[Domain], name, set).hashCode()
 }
 
 object Domain {
@@ -73,4 +75,6 @@ case class Relation(name: Any, signature: Domain*) {
     }
     p(signature)
   }
+
+  override val hashCode: Int = (classOf[Relation], name, signature).hashCode()
 }

@@ -506,6 +506,12 @@ class ObjectPointer extends FunSuite {
     val endTime = System.nanoTime()
     println(s"OP ${idb(pointsto).support.size}. ${(endTime - startTime) / 1.0e9}")
     println(s"OP ${idb(heappointsto).support.size}. ${(endTime - startTime) / 1.0e9}")
+    println(s"OP instance.applyTime: ${Instance.applyTime / 1.0e9} s.")
+    println(s"OP instance.supportTime: ${Instance.supportTime / 1.0e9} s.")
+    println(s"OP instance.filterTime: ${Instance.filterTime / 1.0e9} s.")
+    println(s"OP instance.plusPlusInstanceTime: ${Instance.plusPlusInstanceTime / 1.0e9} s.")
+    println(s"OP instance.plusPlusMapTime: ${Instance.plusPlusMapTime / 1.0e9} s.")
+    println(s"OP instance.plusTime: ${Instance.plusTime / 1.0e9} s.")
   }
 
 }

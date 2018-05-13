@@ -6,69 +6,100 @@ package qd
 sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Value) {
   require(signature.nonEmpty)
 
-  override def apply(tuple: DTuple): Value = this match {
-    case InstanceBase(domain, map) =>
-      require(tuple.length == 1)
-      val atom = tuple.head
-      require(domain.contains(atom))
-      map.getOrElse(atom, Zero)
-    case InstanceInd(domHead, _, map) =>
-      val atomHead = tuple.head
-      require(domHead.contains(atomHead))
-      map.get(atomHead).map(_(tuple.tail)).getOrElse(Zero)
+  override def apply(tuple: DTuple): Value = {
+    val startTime = System.nanoTime()
+    val ans = this match {
+      case InstanceBase(domain, map) =>
+        require(tuple.length == 1)
+        val atom = tuple.head
+        require(domain.contains(atom))
+        map.getOrElse(atom, Zero)
+      case InstanceInd(domHead, _, map) =>
+        val atomHead = tuple.head
+        require(domHead.contains(atomHead))
+        map.get(atomHead).map(_(tuple.tail)).getOrElse(Zero)
+    }
+    val endTime = System.nanoTime()
+    Instance.applyTime += endTime - startTime
+    ans
   }
 
-  val support: Seq[(DTuple, Value)] = this match {
-    case InstanceBase(_, map) => map.toSeq.view
-                                    .filter({ case (_, value) => value.nonzero })
-                                    .map({ case (atom, value) => DTuple(atom) -> value })
-    case InstanceInd(_, _, map) => for ((atom, mapA) <- map.toSeq.view;
-                                        (tuple, value) <- mapA.support)
-                                   yield (atom +: tuple) -> value
+  val support: Seq[(DTuple, Value)] = {
+    val startTime = System.nanoTime()
+    val ans = this match {
+      case InstanceBase(_, map) => map.toSeq.view
+        .filter({ case (_, value) => value.nonzero })
+        .map({ case (atom, value) => DTuple(atom) -> value })
+      case InstanceInd(_, _, map) => for ((atom, mapA) <- map.toSeq.view;
+                                          (tuple, value) <- mapA.support)
+        yield (atom +: tuple) -> value
+    }
+    val endTime = System.nanoTime()
+    Instance.supportTime += endTime - startTime
+    ans
   }
 
-  val nonEmpty: Boolean = this match {
-    case InstanceBase(_, map) => map.values.exists(_.nonzero)
-    case InstanceInd(_, _, map) => map.values.exists(_.nonEmpty)
+  val nonEmpty: Boolean = support.nonEmpty
+
+  def filter(f: Seq[Option[Atom]]): Seq[(DTuple, Value)] = {
+    val startTime = System.nanoTime()
+    val ans = (this, f.head) match {
+      case (InstanceBase(_, map), Some(fh)) =>
+        val mfh = map.getOrElse(fh, Zero)
+        if (mfh.nonzero) Seq((DTuple(fh), mfh)) else Seq()
+      case (InstanceBase(_, map), None) =>
+        for ((atom, value) <- map.view.toSeq; if value.nonzero) yield (DTuple(atom), value)
+      case (InstanceInd(_, _, map), Some(fh)) =>
+        val mfh = map.get(fh)
+        if (mfh.nonEmpty) mfh.get.filter(f.tail).map { case (tuple, value) => (fh +: tuple, value) }
+        else Seq()
+      case (InstanceInd(_, _, map), None) =>
+        for ((atom, s) <- map.mapValues(_.filter(f.tail)).toSeq; (tuple, value) <- s) yield (atom +: tuple, value)
+    }
+    val endTime = System.nanoTime()
+    Instance.filterTime += endTime - startTime
+    ans
   }
 
-  def filter(f: Seq[Option[Atom]]): Seq[(DTuple, Value)] = this match {
-    case InstanceBase(domain, map) =>
-      require(f.lengthCompare(1) == 0 /* f.length == 1. Suggested by IDE. */)
-      val ans = f.head match {
-        case Some(fh) => map.filter { case (atom, value) => atom == fh && value.nonzero }
-        case None => map
-      }
-      ans.toSeq.map { case (atom, value) => (DTuple(atom), value) }
-    case InstanceInd(_, _, map) =>
-      val newMap = f.head match {
-        case Some(atom) => map.filterKeys(_ == atom).mapValues(_.filter(f.tail)).filter(_._2.nonEmpty)
-        case None => map.mapValues(_.filter(f.tail)).filter(_._2.nonEmpty)
-      }
-      for ((atom, s) <- newMap.toSeq; (tuple, value) <- s) yield (atom +: tuple, value)
+  def ++(that: Instance): Instance = {
+    val startTime = System.nanoTime()
+    val ans = (this, that) match {
+      case (InstanceBase(dom1, map1), InstanceBase(dom2, map2)) =>
+        require(dom1 == dom2)
+        val newMap = for (atom <- map1.keySet ++ map2.keySet;
+                          v1 = map1.getOrElse(atom, Zero);
+                          v2 = map2.getOrElse(atom, Zero))
+          yield atom -> (v1 + v2)
+        InstanceBase(dom1, newMap.toMap)
+      case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, domT2, map2)) =>
+        require(domH1 == domH2)
+        val newMap = for (atom <- map1.keySet ++ map2.keySet;
+                          v1 = map1.getOrElse(atom, Instance(domT1:_*));
+                          v2 = map2.getOrElse(atom, Instance(domT2:_*)))
+          yield atom -> (v1 ++ v2)
+        InstanceInd(domH1, domT1, newMap.toMap)
+      case (InstanceBase(_, _), InstanceInd(_, _, _)) => throw new IllegalArgumentException
+      case (InstanceInd(_, _, _), InstanceBase(_, _)) => throw new IllegalArgumentException
+    }
+    val endTime = System.nanoTime()
+    Instance.plusPlusInstanceTime += endTime - startTime
+    ans
   }
 
-  def ++(that: Instance): Instance = (this, that) match {
-    case (InstanceBase(dom1, map1), InstanceBase(dom2, map2)) =>
-      require(dom1 == dom2)
-      val newMap = for (atom <- map1.keySet ++ map2.keySet;
-                        v1 = map1.getOrElse(atom, Zero);
-                        v2 = map2.getOrElse(atom, Zero))
-                   yield atom -> (v1 + v2)
-      InstanceBase(dom1, newMap.toMap)
-    case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, domT2, map2)) =>
-      require(domH1 == domH2)
-      val newMap = for (atom <- map1.keySet ++ map2.keySet;
-                        v1 = map1.getOrElse(atom, Instance(domT1:_*));
-                        v2 = map2.getOrElse(atom, Instance(domT2:_*)))
-                   yield atom -> (v1 ++ v2)
-      InstanceInd(domH1, domT1, newMap.toMap)
-    case (InstanceBase(_, _), InstanceInd(_, _, _)) => throw new IllegalArgumentException
-    case (InstanceInd(_, _, _), InstanceBase(_, _)) => throw new IllegalArgumentException
+  def ++(tvs: Map[DTuple, Value]): Instance = {
+    val startTime = System.nanoTime()
+    val ans = tvs.foldLeft(this)(_ + _)
+    val endTime = System.nanoTime()
+    Instance.plusPlusMapTime += endTime - startTime
+    ans
   }
-
-  def ++(tvs: Map[DTuple, Value]): Instance = tvs.foldLeft(this)(_ + _)
-  def +(tv: (DTuple, Value)): Instance = this.add(tv._1, tv._2)
+  def +(tv: (DTuple, Value)): Instance = {
+    val startTime = System.nanoTime()
+    val ans = this.add(tv._1, tv._2)
+    val endTime = System.nanoTime()
+    Instance.plusTime += endTime - startTime
+    ans
+  }
   def add(tuple: DTuple, value: Value): Instance = this match {
     case InstanceBase(domain, map) =>
       require(tuple.length == 1)
@@ -89,6 +120,13 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
 }
 
 object Instance {
+  var applyTime: Long = 0
+  var supportTime: Long = 0
+  var filterTime: Long = 0
+  var plusPlusInstanceTime: Long = 0
+  var plusPlusMapTime: Long = 0
+  var plusTime: Long = 0
+
   def apply(signature: Domain*): Instance = {
     require(signature.nonEmpty)
     if (signature.length == 1) InstanceBase(signature.head, Map())
