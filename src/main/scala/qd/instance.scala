@@ -18,17 +18,14 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
       map.get(atomHead).map(_(tuple.tail)).getOrElse(Zero)
   }
 
-  def supportSeq: Seq[(DTuple, Value)] = this match {
-    case InstanceBase(_, map) => map.filter({ case (_, value) => value.nonzero })
-                                    .toSeq
+  val support: Seq[(DTuple, Value)] = this match {
+    case InstanceBase(_, map) => map.toSeq.view
+                                    .filter({ case (_, value) => value.nonzero })
                                     .map({ case (atom, value) => DTuple(atom) -> value })
-    case InstanceInd(_, _, map) => for ((atom, mapA) <- map.toSeq;
-                                        tv <- mapA.supportSeq;
-                                        (tuple, value) = tv)
+    case InstanceInd(_, _, map) => for ((atom, mapA) <- map.toSeq.view;
+                                        (tuple, value) <- mapA.support)
                                    yield (atom +: tuple) -> value
   }
-
-  def support: Map[DTuple, Value] = supportSeq.toMap
 
   val nonEmpty: Boolean = this match {
     case InstanceBase(_, map) => map.values.exists(_.nonzero)
@@ -43,12 +40,11 @@ sealed abstract class Instance(val signature: Seq[Domain]) extends (DTuple => Va
         case None => this
       }
     case InstanceInd(domHead, domTail, map) =>
-      f.head match {
-        case Some(atom) =>
-          val newMap = map.filterKeys(_ == atom).mapValues(_.filter(f.tail))
-          InstanceInd(domHead, domTail, newMap)
-        case None => this
+      val newMap = f.head match {
+        case Some(atom) => map.filterKeys(_ == atom).mapValues(_.filter(f.tail))
+        case None => map.mapValues(_.filter(f.tail))
       }
+      InstanceInd(domHead, domTail, newMap)
   }
 
   def ++(that: Instance): Instance = (this, that) match {
