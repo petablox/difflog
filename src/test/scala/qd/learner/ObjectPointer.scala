@@ -1,7 +1,7 @@
 package qd
 package learner
 
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 
 class ObjectPointer extends FunSuite {
 

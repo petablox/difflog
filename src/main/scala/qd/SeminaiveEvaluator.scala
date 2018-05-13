@@ -91,7 +91,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
 
   def extend(literal: Literal, config: Config, bodyVals: Seq[Valuation]): Seq[Valuation] = {
     for (valuation <- bodyVals;
-         f = valuation.filter(literal);
+         f = valuation.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f).supportSeq;
          newValuation <- extend(literal, tuple, valuation))
     yield newValuation * score

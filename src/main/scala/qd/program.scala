@@ -30,7 +30,7 @@ class Valuation private (map: Map[Variable, Atom], val score: Value) extends Map
   override def -(variable: Variable): Valuation = Valuation(map - variable, score)
   def *(coeff: Value): Valuation = Valuation(map, score * coeff)
 
-  def filter(literal: Literal): Seq[Option[Atom]] = literal.parameters.map {
+  def toFilter(literal: Literal): Seq[Option[Atom]] = literal.parameters.map {
     case v @ Variable(_, _) => map.get(v)
     case Constant(atom, _) => Some(atom)
   }
