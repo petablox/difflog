@@ -59,7 +59,11 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       val vt = out(rel)(t).toDouble
       val prov = out(rel)(t).prov.toSeq
       val freq = tokens.map(t => t -> prov.count(_ == t)).toMap
-      TokenVec(tokens.map(t => t -> freq(t) * vt / pos(t)).toMap)
+      def gw(t: Token): Double = {
+        val ans = freq(t) * vt / pos(t)
+        if (!ans.isNaN) ans else 0.0
+      }
+      TokenVec(tokens.map(t => t -> gw(t)).toMap)
     }
 
     lazy val gradientS0: TokenVec = {
@@ -107,7 +111,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
     }
 
     lazy val nextStateL2Newton: LearnerState = {
-      val (score, grad) = (errorL2Total, gradientL2)
+      val grad = gradientL2
       // if (grad.abs == 0) { this }
       val delta = grad.unit / grad.abs * errorL2Total
 
@@ -116,12 +120,12 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
 
       println(s"  grad: $grad")
       println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${newPosLim.count(_._2 > 0)}.")
-      println("Token, pos, gradS0, gradS1, grad, unit, delta, newPos, newPosLim")
+      /* println("Token, pos, gradS0, gradS1, grad, unit, delta, newPos, newPosLim")
       for (t <- tokens.toSeq.sortBy(_.name.asInstanceOf[Int])) {
         if (pos(t) < 1.0) {
           println(s"$t, ${pos(t)}, ${gradientL2(t)}, ${grad(t)}, ${grad.unit(t)}, ${delta(t)}, ${newPos(t)}, ${newPosLim(t)}")
         }
-      }
+      } */
 
       LearnerState(newPosLim)
     }
