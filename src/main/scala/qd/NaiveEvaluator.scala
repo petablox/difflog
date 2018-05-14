@@ -7,7 +7,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
   override def apply(edb: Config): Config = {
     var (config, changed) = (edb, true)
     while (changed) {
-      // println(s"N: ${LocalTime.now}")
+      // println("Starting immediate consequence epoch!")
       val cd = immediateConsequence(config)
       config = cd._1
       changed = cd._2
@@ -36,7 +36,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
       val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
       bodyVals = bodyVals.map(_.project(relevantVars))
       bodyVals = bodyVals.groupBy(_.backingMap)
-                         .mapValues(_.map(_.score).max) // TODO! Please change this back to .sum
+                         .mapValues(_.map(_.score).foldLeft(Zero: Value)(_ + _))
                          .toSeq.map(mv => Valuation(mv._1, mv._2))
     }
     val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap

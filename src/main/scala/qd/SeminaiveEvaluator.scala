@@ -1,9 +1,5 @@
 package qd
 
-import java.time.LocalTime
-
-import scala.collection.parallel.ParSeq
-
 case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
 
   private var numAppliedRules = 0
@@ -12,7 +8,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
     while (delta.nonEmptySupport) {
-      // println(s"S ${program.name}: ${LocalTime.now}")
+      // println("Starting immediate consequence epoch!")
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       oldConfig = config
       config = newConfig
@@ -27,18 +23,18 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     numAppliedRules = 0
     for (rule <- rules) {
       // println(s"  $numAppliedRules. Evaluating rule ${rule.name}")
-      val startTime = System.nanoTime()
-      val supportSizeOrig = newConfig(rule.head.relation).support.size
+      // val startTime = System.nanoTime()
+      // val supportSizeOrig = newConfig(rule.head.relation).support.size
 
       val cdd = immediateConsequence(rule, newConfig, deltaCurr, deltaNext)
       newConfig = cdd._1
       deltaCurr = cdd._2
       deltaNext = cdd._3
 
-      val endTime = System.nanoTime()
-      val supportSizeFinal = newConfig(rule.head.relation).support.size
-      val numFreeVars = rule.freeVariables.size
-      val numPossibleVals = rule.freeVariables.toSeq.map(_.domain.size).product
+      // val endTime = System.nanoTime()
+      // val supportSizeFinal = newConfig(rule.head.relation).support.size
+      // val numFreeVars = rule.freeVariables.size
+      // val numPossibleVals = rule.freeVariables.toSeq.map(_.domain.size).product
       /* println(s"  Done! Rule ${rule.name}. Relation ${rule.head.relation.name}. " +
               s"Support size original: $supportSizeOrig. Support size final: $supportSizeFinal. " +
               s"numFreeVars: $numFreeVars. numPossibleVals: $numPossibleVals. " +
@@ -66,21 +62,22 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     require(rule.body.contains(deltaLiteral))
     // println(s"    deltaLiteral: $deltaLiteral")
 
-    var bodyVals = ParSeq(Valuation.Empty)
+    var bodyVals = Seq(Valuation.Empty)
     var remainingLits = rule.body
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, deltaCurr, bodyVals)
                  else extend(literal, config, bodyVals)
 
       remainingLits = remainingLits - literal
-      val originalSize = bodyVals.size
-      if (bodyVals.size > 1000) {
+      if (bodyVals.lengthCompare(1000) > 0) {
+        // val originalSize = bodyVals.size
         val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
         bodyVals = bodyVals.map(_.project(relevantVars))
         bodyVals = bodyVals.groupBy(_.backingMap)
-                           .mapValues(_.map(_.score).max) // TODO! Please change this back to .sum
+                           .mapValues(_.map(_.score).foldLeft(Zero: Value)(_ + _))
                            .toSeq.map(mv => Valuation(mv._1, mv._2))
-        // println(s"  bodyVals.size: ${bodyVals.size}. Was originally $originalSize. relevantVars: ${relevantVars.mkString(", ")}")
+        // println(s"  bodyVals.size: ${bodyVals.size}. Was originally $originalSize. " +
+        //         s"relevantVars: ${relevantVars.mkString(", ")}")
       }
     }
     val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
@@ -104,7 +101,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     (newConfig, newDeltaCurr, newDeltaNext)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: ParSeq[Valuation]): ParSeq[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: Seq[Valuation]): Seq[Valuation] = {
     for (valuation <- bodyVals;
          f = valuation.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
