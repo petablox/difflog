@@ -20,6 +20,11 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
                           (_, lt) <- refOut(relation).support)
                      yield lt.toDouble).sum
 
+  // Begin debug!
+  val state1 = LearnerState(TokenVec(tokens.map(t => t -> 1.0).toMap))
+  println(s" Initial program. ${state1.score}. ${state1.s0}. ${state1.s1}. ${state1.errorL2Total}.")
+  // End debug!
+
   private var state = LearnerState(TokenVec(tokens, random))
   def getState: LearnerState = state
   def update(): Unit = { state = state.nextStateL2Newton }
@@ -90,7 +95,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       val newPos = pos + delta
       val newPosLim = newPos.limitLower(0.0).limitUpper(1.0)
 
-      //println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${ans.pos.count(_._2 > 0)}.")
+      // println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${newPosLim.count(_._2 > 0)}.")
       /* println("Token, pos, gradS0, gradS1, grad, unit, delta, newPos, newPosLim")
       for (t <- tokens.toSeq.sortBy(_.name.asInstanceOf[Int])) {
         if (pos(t) < 1.0) {
@@ -106,20 +111,19 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       // if (grad.abs == 0) { this }
       val delta = grad.unit / grad.abs * errorL2Total
 
-      val newPos: TokenVec = pos + delta
+      val newPos: TokenVec = pos - delta
       val newPosLim: TokenVec = newPos.limitLower(0.0).limitUpper(1.0)
 
-      val ans = LearnerState(newPosLim)
       println(s"  grad: $grad")
-      println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${ans.pos.count(_._2 > 0)}.")
-       println("Token, pos, gradS0, gradS1, grad, unit, delta, newPos, newPosLim")
+      println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${newPosLim.count(_._2 > 0)}.")
+      println("Token, pos, gradS0, gradS1, grad, unit, delta, newPos, newPosLim")
       for (t <- tokens.toSeq.sortBy(_.name.asInstanceOf[Int])) {
         if (pos(t) < 1.0) {
           println(s"$t, ${pos(t)}, ${gradientL2(t)}, ${grad(t)}, ${grad.unit(t)}, ${delta(t)}, ${newPos(t)}, ${newPosLim(t)}")
         }
       }
 
-      ans
+      LearnerState(newPosLim)
     }
 
     lazy val settle: LearnerState = {
