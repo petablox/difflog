@@ -19,15 +19,11 @@ case class TokenVec(map: Map[Token, Double]) extends Map[Token, Double] {
     TokenVec(for ((k, v) <- map) yield k -> (v - that(k)))
   }
 
-  def *(coeff: Double): TokenVec = {
-    require(0.0 <= coeff && coeff <= 1.0)
-    TokenVec(map.map { case (token, value) => token -> value * coeff })
-  }
-
-  def /(denom: Double): TokenVec = {
-    require(0.0 <= denom)
-    TokenVec(map.map { case (token, value) => token -> value / denom })
-  }
+  def *(coeff: Double): TokenVec = TokenVec(map.map { case (token, value) => token -> value * coeff })
+  def /(denom: Double): TokenVec = TokenVec(map.map { case (token, value) =>
+    val vd = value / denom
+    token -> (if (!vd.isNaN) vd else 0)
+  })
 
   def abs: Double = map.values.map(v => v * v).sum
   def unit: TokenVec = this / abs

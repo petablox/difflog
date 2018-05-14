@@ -74,13 +74,16 @@ class Andersen extends FunSuite {
   }
 
   test(s"Applying learner to program ${soupProg.name}") {
-    val learner = new Learner(edb, refOut, soupProg, new Random(0))
-    for (i <- Range(0, 50)) {
-      println(s"s0: ${learner.getState.s0}")
-      println(s"s1: ${learner.getState.s1}")
-      println(s"pos: ${learner.getState.pos}")
+    val learner = new Learner(edb, refOut, soupProg, new Random)
+    for (_ <- Range(0, 500)) {
       learner.update()
     }
+
+    val finalState = learner.getState.settle
+    println(finalState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
+    val extState = finalState.extreme
+    println(s"extState.score: ${extState.score}. extState.s0: ${extState.s0}. extState.s1: ${extState.s1}.")
+    // println(extState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
   }
 
 }
