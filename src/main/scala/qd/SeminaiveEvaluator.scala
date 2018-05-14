@@ -74,11 +74,14 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
 
       remainingLits = remainingLits - literal
       val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
-      println(s"  bodyVals.size: ${bodyVals.size}. relevantVars: ${relevantVars.mkString(", ")}")
-      bodyVals = bodyVals.map(_.project(relevantVars))
-      bodyVals = bodyVals.groupBy(_.backingMap)
-                         .mapValues(_.map(_.score).max)
-                         .toSeq.map(mv => Valuation(mv._1, mv._2))
+      val originalSize = bodyVals.size
+      if (bodyVals.size > 1000) {
+        bodyVals = bodyVals.map(_.project(relevantVars))
+        bodyVals = bodyVals.groupBy(_.backingMap)
+                           .mapValues(_.map(_.score).max)
+                           .toSeq.map(mv => Valuation(mv._1, mv._2))
+      }
+      println(s"  bodyVals.size: ${bodyVals.size}. Was originally $originalSize. relevantVars: ${relevantVars.mkString(", ")}")
     }
     val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
     println(s"  newTuples.size: ${newTuples.size}")
