@@ -3,6 +3,7 @@ package learner
 
 import org.scalatest.{FunSuite, Ignore}
 
+@Ignore
 class ObjectPointer extends FunSuite {
 
   val h: Domain = Domain("H", Range(0, 12).map(i => Atom(i)).toSet)
