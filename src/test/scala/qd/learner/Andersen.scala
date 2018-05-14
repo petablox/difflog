@@ -3,7 +3,8 @@ package learner
 
 import org.scalatest.{FunSuite, Ignore}
 
-@Ignore
+import scala.util.Random
+
 class Andersen extends FunSuite {
 
   val heapSet: Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
@@ -70,6 +71,16 @@ class Andersen extends FunSuite {
     val idb = evaluator(edb)
     val endTime = System.nanoTime()
     println(s"A ${idb(pt).support.size}. ${(endTime - startTime) / 1.0e9}")
+  }
+
+  test(s"Applying learner to program ${soupProg.name}") {
+    val learner = new Learner(edb, refOut, soupProg, new Random(0))
+    for (i <- Range(0, 50)) {
+      println(s"s0: ${learner.getState.s0}")
+      println(s"s1: ${learner.getState.s1}")
+      println(s"pos: ${learner.getState.pos}")
+      learner.update()
+    }
   }
 
 }

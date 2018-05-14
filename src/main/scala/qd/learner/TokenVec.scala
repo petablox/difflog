@@ -36,6 +36,9 @@ case class TokenVec(map: Map[Token, Double]) extends Map[Token, Double] {
     val map2 = map.map { case (token, v) => token -> Value(v, token) }
     Program(p.name, p.rules.map(r => Rule(r.name, Value(r.coeff.prov, map2), r.head, r.body)))
   }
+
+  def limitUpper(v: Double): TokenVec = TokenVec(map.mapValues(x => Math.min(v, x)))
+  def limitLower(v: Double): TokenVec = TokenVec(map.mapValues(x => Math.max(v, x)))
 }
 
 object TokenVec {

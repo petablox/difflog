@@ -12,7 +12,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
   override def apply(edb: Config): Config = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
     while (delta.nonEmptySupport) {
-      println(s"S ${program.name}: ${LocalTime.now}")
+      // println(s"S ${program.name}: ${LocalTime.now}")
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       oldConfig = config
       config = newConfig
@@ -26,7 +26,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     var (newConfig, deltaCurr, deltaNext) = (config, delta, Config())
     numAppliedRules = 0
     for (rule <- rules) {
-      println(s"  $numAppliedRules. Evaluating rule ${rule.name}")
+      // println(s"  $numAppliedRules. Evaluating rule ${rule.name}")
       val startTime = System.nanoTime()
       val supportSizeOrig = newConfig(rule.head.relation).support.size
 
@@ -39,10 +39,10 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
       val supportSizeFinal = newConfig(rule.head.relation).support.size
       val numFreeVars = rule.freeVariables.size
       val numPossibleVals = rule.freeVariables.toSeq.map(_.domain.size).product
-      println(s"  Done! Rule ${rule.name}. Relation ${rule.head.relation.name}. " +
+      /* println(s"  Done! Rule ${rule.name}. Relation ${rule.head.relation.name}. " +
               s"Support size original: $supportSizeOrig. Support size final: $supportSizeFinal. " +
               s"numFreeVars: $numFreeVars. numPossibleVals: $numPossibleVals. " +
-              s"numIters: $numIters. Time: ${(endTime - startTime) / 1.0e9} s.")
+              s"numIters: $numIters. Time: ${(endTime - startTime) / 1.0e9} s.") */
       numAppliedRules += 1
     }
     (newConfig, deltaNext)
@@ -80,11 +80,11 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
         bodyVals = bodyVals.groupBy(_.backingMap)
                            .mapValues(_.map(_.score).max) // TODO! Please change this back to .sum
                            .toSeq.map(mv => Valuation(mv._1, mv._2))
-        println(s"  bodyVals.size: ${bodyVals.size}. Was originally $originalSize. relevantVars: ${relevantVars.mkString(", ")}")
+        // println(s"  bodyVals.size: ${bodyVals.size}. Was originally $originalSize. relevantVars: ${relevantVars.mkString(", ")}")
       }
     }
     val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
-    println(s"  newTuples.size: ${newTuples.size}")
+    // println(s"  newTuples.size: ${newTuples.size}")
 
     val relation = rule.head.relation
     val oldInstance = config(relation)

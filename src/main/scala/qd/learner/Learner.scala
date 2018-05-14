@@ -21,6 +21,9 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
                      yield lt.toDouble).sum
 
   private var state = LearnerState(TokenVec(tokens, random))
+  def getState: LearnerState = state
+  def update(): Unit = { state = state.nextState }
+
   case class LearnerState(pos: TokenVec) {
     val p: Program = pos.reorient(p0)
     val out: Config = SeminaiveEvaluator(p)(edb)
@@ -70,11 +73,13 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
 
     def nextState: LearnerState = {
       val (score, grad) = if (s0 < s1) (s0, gradientS0) else (s1, gradientS1)
+      println(s"  score: $score")
+      println(s"  grad: ${grad.abs}")
       // We want to make score 1
       // We have to increase by (1 - score).
       // This will need us to move by (1 - score) / |grad|
       val delta = grad.unit * (1 - score) / grad.abs
-      LearnerState(pos + delta)
+      LearnerState((pos + delta).limitLower(0.0).limitUpper(1.0))
     }
 
     def errorL2(rel: Relation, t: DTuple) : Double = {
@@ -83,7 +88,4 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       (vt - ct) * (vt - ct)
     }
   }
-
-  println(s"s0: ${state.s0}")
-  println(s"s1: ${state.s1}")
 }

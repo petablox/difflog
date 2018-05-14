@@ -3,6 +3,7 @@ package learner
 
 import org.scalatest.{FunSuite, Ignore}
 
+@Ignore
 class CallSite1 extends FunSuite {
   val CSet : Set[Atom] = Range(0, 4).map(i => Atom(i)).toSet
   val C : Domain = Domain("C", CSet)
