@@ -75,8 +75,9 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
 
     lazy val gradientL2: TokenVec = {
       val numeratorVecs = for (rel <- outputRels.toSeq;
-                               (t, lt) <- refOut(rel).support)
-                          yield gradient(rel, t) * (out(rel)(t).toDouble - lt.toDouble)
+                               (t, _) <- refOutCompl(rel))
+                          yield gradient(rel, t) * (out(rel)(t).toDouble - refOut(rel)(t).toDouble)
+
       numeratorVecs.foldLeft(TokenVec.zero(tokens))(_ + _)
     }
 
@@ -110,7 +111,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
 
     lazy val nextStateL2: LearnerState = {
       val (score, grad) = (errorL2Total, gradientL2)
-      if (grad.abs == 0) { this }
+      //if (grad.abs == 0) { this }
       val delta0 = grad.unit / grad.abs * errorL2Total
 
       def newPos(delta: TokenVec) : TokenVec = pos + delta
@@ -154,7 +155,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
     }
 
     val errorL2Total = {
-      val errors = for (rel <- outputRels.toSeq; t <- out(rel).support) yield errorL2(rel, t._1)
+      val errors = for (rel <- outputRels.toSeq; t <- refOutCompl(rel)) yield errorL2(rel, t._1)
       errors.sum
     }
   }
