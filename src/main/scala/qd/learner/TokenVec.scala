@@ -29,7 +29,8 @@ case class TokenVec(map: Map[Token, Double]) extends Map[Token, Double] {
     TokenVec(map.map { case (token, value) => token -> value / denom })
   }
 
-  def abs: Double = map.values.map(v => v * v).sum / map.size
+  def abs: Double = map.values.map(v => v * v).sum
+  def unit: TokenVec = this / abs
 
   def reorient(p: Program): Program = {
     val map2 = map.map { case (token, v) => token -> Value(v, token) }
@@ -41,4 +42,5 @@ object TokenVec {
   def apply(tokens: Set[Token], random: Random): TokenVec = {
     TokenVec(tokens.map(t => t -> random.nextDouble()).toMap)
   }
+  def zero(tokens: Set[Token]): TokenVec = TokenVec(tokens.map(t => t -> 0.0).toMap)
 }

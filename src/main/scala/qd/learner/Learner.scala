@@ -30,7 +30,9 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
                      (t, omlt) <- refOutCompl(relation);
                      vt = out(relation)(t).toDouble)
                 yield (1.0 - vt) * omlt
-      s0T.sum / s0D
+      val ans = s0T.sum / s0D
+      require(0.0 <= ans && ans <= 1.0)
+      ans
     }
 
     val s1: Double = {
@@ -38,7 +40,9 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
                      (t, lt) <- refOut(relation).support;
                      vt = out(relation)(t).toDouble)
                 yield vt * lt.toDouble
-      s1T.sum / s1D
+      val ans = s1T.sum / s1D
+      require(0.0 <= ans && ans <= 1.0)
+      ans
     }
 
     def gradient(rel: Relation, t: DTuple): TokenVec = {
@@ -48,18 +52,35 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       TokenVec(tokens.map(t => t -> freq(t) * vt / pos(t)).toMap)
     }
 
-    def error(rel: Relation, t: DTuple) : Double = {
-      val vt = out(rel)(t).toDouble
-      val ct = refOut(rel)(t).toDouble
-      vt - ct
+    def gradientS0: TokenVec = {
+      val numeratorVecs = for (rel <- outputRels.toSeq;
+                               (t, omlt) <- refOutCompl(rel))
+                          yield gradient(rel, t) * omlt
+      val numerator = numeratorVecs.foldLeft(TokenVec.zero(tokens))(_ + _)
+      numerator / s0D
     }
 
-    def full_gradient() : TokenVec = {
-      val vecs = for (rel <- outputRels.toSeq;
-                      (t, omlt) <- refOut(rel).support;
-                      (g, e) = (gradient(rel, t), error(rel, t)))
-                 yield g.map(t => (t._1, g(t._2) * e))
-      vecs.foldLeft(Map[Token, Double]())((acc, i) -> acc + i)
+    def gradientS1: TokenVec = {
+      val numeratorVecs = for (rel <- outputRels.toSeq;
+                               (t, lt) <- refOut(rel).support)
+                          yield gradient(rel, t) * lt.toDouble
+      val numerator: TokenVec = numeratorVecs.foldLeft(TokenVec.zero(tokens))(_ + _)
+      numerator / s1D
+    }
+
+    def nextState: LearnerState = {
+      val (score, grad) = if (s0 < s1) (s0, gradientS0) else (s1, gradientS1)
+      // We want to make score 1
+      // We have to increase by (1 - score).
+      // This will need us to move by (1 - score) / |grad|
+      val delta = grad.unit * (1 - score) / grad.abs
+      LearnerState(pos + delta)
+    }
+
+    def errorL2(rel: Relation, t: DTuple) : Double = {
+      val vt = out(rel)(t).toDouble
+      val ct = refOut(rel)(t).toDouble
+      (vt - ct) * (vt - ct)
     }
   }
 
