@@ -18,7 +18,7 @@ case class Value(private val v: Double, prov: Provenance) extends Ordered[Value]
 
 object Value {
   def apply(p: Provenance, v: Token => Value): Value = p match {
-    case Empty => Zero
+    case Empty => One
     case t @ Token(_) => v(t)
     case ProvenanceProduct(p1, p2) => Value(p1, v) * Value(p2, v)
   }

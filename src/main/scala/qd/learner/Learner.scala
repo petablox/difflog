@@ -47,6 +47,20 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       val freq = tokens.map(t => t -> prov.count(_ == t)).toMap
       TokenVec(tokens.map(t => t -> freq(t) * vt / pos(t)).toMap)
     }
+
+    def error(rel: Relation, t: DTuple) : Double = {
+      val vt = out(rel)(t).toDouble
+      val ct = refOut(rel)(t).toDouble
+      vt - ct
+    }
+
+    def full_gradient() : TokenVec = {
+      val vecs = for (rel <- outputRels.toSeq;
+                      (t, omlt) <- refOut(rel).support;
+                      (g, e) = (gradient(rel, t), error(rel, t)))
+                 yield g.map(t => (t._1, g(t._2) * e))
+      vecs.foldLeft(Map[Token, Double]())((acc, i) -> acc + i)
+    }
   }
 
   println(s"s0: ${state.s0}")

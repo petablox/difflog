@@ -17,8 +17,9 @@ class EvaluatorReachabilitySpec(evalCtr: Program => Evaluator) extends FunSuite 
     }
   }
 }
-
+/*
 @Ignore
 class NaiveEvaluatorSpec extends EvaluatorReachabilitySpec(NaiveEvaluator)
 @Ignore
 class SeminaiveEvaluatorSpec extends EvaluatorReachabilitySpec(SeminaiveEvaluator)
+*/
