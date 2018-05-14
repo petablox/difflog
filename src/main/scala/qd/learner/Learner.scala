@@ -22,7 +22,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
 
   private var state = LearnerState(TokenVec(tokens, random))
   def getState: LearnerState = state
-  def update(): Unit = { state = state.nextStateL2 }
+  def update(): Unit = { state = state.nextStateL2Newton }
 
   case class LearnerState(pos: TokenVec) {
     val p: Program = pos.reorient(p0)
@@ -81,22 +81,14 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       numeratorVecs.foldLeft(TokenVec.zero(tokens))(_ + _)
     }
 
-    lazy val nextState: LearnerState = {
+    lazy val nextStateS0S1Newton: LearnerState = {
       val (score, grad) = if (s0 < s1) (s0, gradientS0) else (s1, gradientS1)
       // We want to make score 1
       // We have to increase by (1 - score).
       // This will need us to move by (1 - score) / |grad|
-      val delta0 = grad.unit * (1 - score) / grad.abs
-
-      def newPos(delta: TokenVec): TokenVec = pos + delta
-      def newPosLim(delta: TokenVec): TokenVec = newPos(delta).limitLower(0.0).limitUpper(1.0)
-
-      var (delta, ans) = (delta0, LearnerState(newPosLim(delta0)))
-      while (ans.score < this.score && delta.abs > 0.1) {
-        print(".")
-        delta = delta / 2
-        ans = LearnerState(newPosLim(delta))
-      }
+      val delta = grad.unit * (1 - score) / grad.abs
+      val newPos = pos + delta
+      val newPosLim = newPos.limitLower(0.0).limitUpper(1.0)
 
       println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${ans.pos.count(_._2 > 0)}.")
       /* println("Token, pos, gradS0, gradS1, grad, unit, delta, newPos, newPosLim")
@@ -106,25 +98,18 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
         }
       } */
 
-      ans
+      LearnerState(newPosLim)
     }
 
-    lazy val nextStateL2: LearnerState = {
+    lazy val nextStateL2Newton: LearnerState = {
       val (score, grad) = (errorL2Total, gradientL2)
-      //if (grad.abs == 0) { this }
-      val delta0 = grad.unit / grad.abs * errorL2Total
+      // if (grad.abs == 0) { this }
+      val delta = grad.unit / grad.abs * errorL2Total
 
-      def newPos(delta: TokenVec) : TokenVec = pos + delta
-      def newPosLim(delta: TokenVec): TokenVec = newPos(delta).limitLower(0.0).limitUpper(1.0)
+      val newPos: TokenVec = pos + delta
+      val newPosLim: TokenVec = newPos.limitLower(0.0).limitUpper(1.0)
 
-      var (delta, ans) = (delta0, LearnerState(newPosLim(delta0)))
-      while (ans.score < this.score && delta.abs > 0.1) {
-        print(".")
-        delta = delta / 2
-        ans = LearnerState(newPosLim(delta))
-      }
-
-      println(s" grad: ${grad}")
+      println(s"  grad: $grad")
       println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${ans.pos.count(_._2 > 0)}.")
       /* println("Token, pos, gradS0, gradS1, grad, unit, delta, newPos, newPosLim")
       for (t <- tokens.toSeq.sortBy(_.name.asInstanceOf[Int])) {
@@ -133,7 +118,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
         }
       } */
 
-      ans
+      LearnerState(newPosLim)
     }
 
     lazy val settle: LearnerState = {
