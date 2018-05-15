@@ -86,6 +86,8 @@ class Andersen extends Problem {
 
     for (_ <- Range(0, 80)) learner.update()
 
+    for (r <- learner.p0.rules) println(s"rule: ${r.index}")
+
     val finalState = learner.getState.settle
     println(finalState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
     println(s"finalState:l2error: ${finalState.errorL2Total}")

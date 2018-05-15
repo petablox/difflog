@@ -10,8 +10,8 @@ class TypePointer extends Problem {
   val h: Domain = Domain("H", Range(0, 12).map(i => Atom(i)).toSet)
   val f: Domain = Domain("F", Range(0, 3).map(i => Atom(i)).toSet)
   val v: Domain = Domain("V", Range(0, 12).map(i => Atom(i)).toSet)
-  val z: Domain = Domain("F", Range(0, 2).map(i => Atom(i)).toSet)
-  val m: Domain = Domain("F", Range(0, 4).map(i => Atom(i)).toSet)
+  val z: Domain = Domain("Z", Range(0, 2).map(i => Atom(i)).toSet)
+  val m: Domain = Domain("M", Range(0, 4).map(i => Atom(i)).toSet)
   val t: Domain = Domain("T", Range(0, 4).map(i => Atom(i)).toSet)
 
   val points_initial: Relation = Relation("points_initial", v, h)
