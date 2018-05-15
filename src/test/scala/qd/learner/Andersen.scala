@@ -1,9 +1,9 @@
 package qd
 package learner
 
+import scala.util.Random
 import org.scalatest.Ignore
 
-@Ignore
 class Andersen extends Problem {
   override val name: String = "Andersen"
 
@@ -86,18 +86,8 @@ class Andersen extends Problem {
 
     for (_ <- Range(0, 80)) learner.update()
 
-    for (r <- learner.p0.rules) println(s"rule: ${r.index}")
+    for (r <- learner.getProgram.rules) println(s"name: ${r.name}, coeff: ${r.coeff}")
 
-    val finalState = learner.getState.settle
-    println(finalState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
-    println(s"finalState:l2error: ${finalState.errorL2Total}")
-    println(s"finalState.score: ${finalState.score}. finalState.s0: ${finalState.s0}. finalState.s1: ${finalState.s1}.")
-
-    val extState = finalState.extreme
-    println(s"extState:l2error: ${extState.errorL2Total}")
-    println(s"extState.score: ${extState.score}. extState.s0: ${extState.s0}. extState.s1: ${extState.s1}.")
-
-    // println(extState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
   }
   
 }
