@@ -11,11 +11,20 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
   private var pos: TokenVec = TokenVec(tokens, random)
   private var p: Program = pos.reorient(p0)
   private var out: Config = SeminaiveEvaluator(p)(edb)
+  private var best: Option[(Program, Double)] = None
+
+  def getPos: TokenVec = pos
+  def getProgram: Program = p
+  def getOutput: Config = out
+  def getBest: (Program, Double) = best.get
 
   def update(): Unit = {
     pos = newPosL2Newton
     p = pos.reorient(p)
     out = SeminaiveEvaluator(p)(edb)
+
+    val l2 = scorer.errorL2(out)
+    if (best.isEmpty || l2 < best.get._2) best = Some((p, l2))
   }
 
   def newPosS0S1Newton(): TokenVec = {
@@ -36,14 +45,15 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
   }
 
   def newPosL2Newton: TokenVec = {
-    val grad = scorer.gradL2(pos, out)
+    val (l2, grad) = (scorer.errorL2(out), scorer.gradL2(pos, out))
     // if (grad.abs == 0) { this }
     val delta = grad.unit * scorer.errorL2(out) / grad.abs
     val newPos = pos - delta
-    val newPosLim = newPos.limitLower(0.0).limitUpper(1.0)
+    val newPosLim = newPos.limitLower(0.01).limitUpper(0.99)
     val step = newPosLim - pos
+    val bestL2 = best.map(_._2).getOrElse(Double.PositiveInfinity)
     // println(s"  grad: $grad")
-    println(s"  |grad|: ${grad.abs}. |step|: ${step.abs}")
+    println(s"  l2: $l2. best.l2: $bestL2. |grad|: ${grad.abs}. |step|: ${step.abs}.")
     newPosLim
   }
 
