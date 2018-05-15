@@ -97,6 +97,7 @@ class Downcast extends FunSuite {
   val x3T : Variable = Variable("x3T", T)
   val x4T : Variable = Variable("x4T", T)
 
+  // Expected: 20, 104, 166, 307
   val soup : Set[Rule] = Set(
     Rule(1	,Value(0.5, Token(1	)),badCast(x1V,x2T), McheckCastInst(x0M,x1V,x2T,x3V)),
     Rule(2	,Value(0.5, Token(2	)),badCast(x3V,x2T), McheckCastInst(x0M,x1V,x2T,x3V)),

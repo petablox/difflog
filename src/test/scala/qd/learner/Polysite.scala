@@ -67,6 +67,7 @@ class Polysite extends FunSuite {
   val x3C : Variable = Variable("x3C", C)
   val x4C : Variable = Variable("x4C", C)
 
+  // Expected: 2, 139, 160
   val soup : Set[Rule] = Set(
     Rule(1	,Value(0.5, Token(1	)),virtI(x0I), insvIM(x0I,x1M)),
     Rule(2	,Value(0.5, Token(2	)),virtI(x0I), virtIM(x0I,x1M)),
