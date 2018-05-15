@@ -20,7 +20,7 @@ class Scorer(edb: Config, refOut: Config) {
   // L2
 
   def gradL2(pos: TokenVec, out: Config): TokenVec = {
-    val numeratorVecs = for (rel <- outputRels.toSeq; t <- allTuples(rel))
+    val numeratorVecs = for (rel <- outputRels.toSeq; t <- allTuples(rel).toSeq)
                         yield gradient(pos, out, rel, t) * (out(rel)(t).toDouble - refOut(rel)(t).toDouble)
     numeratorVecs.foldLeft(TokenVec.zero(pos.keySet))(_ + _)
   }
@@ -28,7 +28,7 @@ class Scorer(edb: Config, refOut: Config) {
   def errorL2(out: Config): Double = outputRels.toSeq.map(rel => errorL2(out, rel)).sum
 
   def errorL2(out: Config, rel: Relation): Double = {
-    val allErrors = for (rel <- outputRels.toSeq; t <- allTuples(rel)) yield errorL2(out, rel, t)
+    val allErrors = for (rel <- outputRels.toSeq; t <- allTuples(rel).toSeq) yield errorL2(out, rel, t)
     allErrors.sum
   }
 
