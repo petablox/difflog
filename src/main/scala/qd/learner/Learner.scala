@@ -22,7 +22,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
 
   // Begin debug!
   val state1 = LearnerState(TokenVec(tokens.map(t => t -> 1.0).toMap))
-  println(s" Initial program. ${state1.score}. ${state1.s0}. ${state1.s1}. ${state1.errorL2Total}.")
+  println(s" Initial program. S0: ${state1.s0}. S1: ${state1.s1}. L2: ${state1.errorL2Total}.")
   // End debug!
 
   private var state = LearnerState(TokenVec(tokens, random))
