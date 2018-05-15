@@ -1,5 +1,7 @@
 package qd
 
+import scala.collection.parallel.ParSeq
+
 case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
 
   private var numAppliedRules = 0
@@ -62,14 +64,14 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     require(rule.body.contains(deltaLiteral))
     // println(s"    deltaLiteral: $deltaLiteral")
 
-    var bodyVals = Seq(Valuation.Empty)
+    var bodyVals = ParSeq(Valuation.Empty)
     var remainingLits = rule.body
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, deltaCurr, bodyVals)
                  else extend(literal, config, bodyVals)
 
       remainingLits = remainingLits - literal
-      if (bodyVals.lengthCompare(1000) > 0) {
+      if (bodyVals.size > 1000) {
         // val originalSize = bodyVals.size
         val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
         bodyVals = bodyVals.map(_.project(relevantVars))
@@ -101,7 +103,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     (newConfig, newDeltaCurr, newDeltaNext)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: Seq[Valuation]): Seq[Valuation] = {
+  def extend(literal: Literal, config: Config, bodyVals: ParSeq[Valuation]): ParSeq[Valuation] = {
     for (valuation <- bodyVals;
          f = valuation.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

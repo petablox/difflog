@@ -57,9 +57,11 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
   }
 
   def newPosL2Newton: TokenVec = {
-    val (l2, grad) = (scorer.errorL2(out), scorer.gradL2(pos, out))
+    val l2 = scorer.errorL2(out)
+    val grad = scorer.gradL2(pos, out)
+
     // if (grad.abs == 0) { this }
-    val delta = grad.unit * scorer.errorL2(out) / grad.abs
+    val delta = grad.unit * l2 / grad.abs
     val newPos = pos - delta
     val newPosLim = newPos.limitLower(0.01).limitUpper(0.99)
     val step = newPosLim - pos
@@ -71,7 +73,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
 
   def reinterpretL2(cutoff: Double): (Program, Double) = scorer.cutoffL2(p, cutoff)
 
-  def printWeights() = {
+  def printWeights(): Unit = {
     for (r <- p.rules) println(s"name: ${r.name}, coeff: ${r.coeff}")
   }
 }
