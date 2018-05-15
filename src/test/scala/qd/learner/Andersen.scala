@@ -65,4 +65,37 @@ class Andersen extends Problem {
   )
 
   override val expected: Set[Any] = Set(1, 7, 17, 23)
+
+  val soupProg: Program = Program("AndersonSoup", soup)
+  val evaluator = SeminaiveEvaluator(soupProg)
+
+  test(s"Applying evaluator ${evaluator.name} to program ${soupProg.name}") {
+    val startTime = System.nanoTime()
+    val idb = evaluator(edb)
+    val endTime = System.nanoTime()
+    println(s"A ${idb(pt).support.size}. ${(endTime - startTime) / 1.0e9}")
+  }
+
+  test(s"Applying learner to program ${soupProg.name}") {
+    val scorer = new Scorer(edb, refOut)
+    println(scorer.cutoffL2(soupProg, 0.2))
+    println(scorer.cutoffL2(soupProg, 0.3))
+    println(scorer.cutoffL2(soupProg, 0.6))
+
+    val learner = new Learner(edb, refOut, soupProg, new Random)
+
+    for (_ <- Range(0, 80)) learner.update()
+
+    val finalState = learner.getState.settle
+    println(finalState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
+    println(s"finalState:l2error: ${finalState.errorL2Total}")
+    println(s"finalState.score: ${finalState.score}. finalState.s0: ${finalState.s0}. finalState.s1: ${finalState.s1}.")
+
+    val extState = finalState.extreme
+    println(s"extState:l2error: ${extState.errorL2Total}")
+    println(s"extState.score: ${extState.score}. extState.s0: ${extState.s0}. extState.s1: ${extState.s1}.")
+
+    // println(extState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
+  }
+  
 }
