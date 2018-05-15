@@ -28,7 +28,7 @@ class Scorer(edb: Config, refOut: Config) {
   def errorL2(out: Config): Double = outputRels.toSeq.map(rel => errorL2(out, rel)).sum
 
   def errorL2(out: Config, rel: Relation): Double = {
-    val allErrors = for (rel <- outputRels.toSeq; t <- allTuples(rel).toSeq) yield errorL2(out, rel, t)
+    val allErrors = allTuples(rel).toSeq.map(t => errorL2(out, rel, t))
     allErrors.sum
   }
 

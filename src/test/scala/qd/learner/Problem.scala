@@ -49,7 +49,7 @@ abstract class Problem extends FunSuite {
     println(s"Expected: ${expected.toSeq.sortBy(_.asInstanceOf[Int])}")
 
     println("Final program")
-    for (cutoff <- Range(0, 10).map(_ / 10.0)) {
+    for (cutoff <- Range(0, 11).map(_ / 10.0)) {
       val (p, l2) = learner.reinterpretL2(cutoff)
       val coeffs = p.rules.toSeq.sortBy(_.name.asInstanceOf[Int]).map(r => r.name)
       println(s"cutoff: $cutoff. l2: $l2. pos: ${coeffs.mkString(", ")}")
@@ -57,7 +57,7 @@ abstract class Problem extends FunSuite {
 
     println("Best program")
     val bestP = learner.getBest
-    for (cutoff <- Range(0, 10).map(_ / 10.0)) {
+    for (cutoff <- Range(0, 11).map(_ / 10.0)) {
       val (p, l2) = scorer.cutoffL2(bestP._1, cutoff)
       val coeffs = p.rules.toSeq.sortBy(_.name.asInstanceOf[Int]).map(r => r.name)
       println(s"cutoff: $cutoff. l2: $l2. pos: ${coeffs.mkString(", ")}")
