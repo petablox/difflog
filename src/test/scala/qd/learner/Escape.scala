@@ -58,6 +58,7 @@ class Escape extends FunSuite {
   val x2M : Variable = Variable("x2M", method)
   val x3M : Variable = Variable("x3M", method)
 
+  // Expected: 1, 4, 6, 14, 18, 22
   val soup: Set[Rule] = Set(
     Rule(1,Value(0.5, Token(1)),rHH(x0H,x2H), HFH(x0H,x2H)),
     Rule(2,Value(0.5, Token(2)),rHH(x3H,x2H), HFH(x0H,x2H),rHH(x3H,x0H)),

@@ -109,7 +109,7 @@ class CallSite1 extends FunSuite {
   val x3M: Variable = Variable("x3M", M)
   val x4M: Variable = Variable("x4M", M)
 
-  // Expected output: 1, 8, 61, 93
+  // expected: 1, 8, 61, 93
   val soup : Set[Rule] = Set(
     Rule(1,Value(0.5, Token(1)),pointsto(x2C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),
     Rule(2,Value(0.5, Token(2)),pointsto(x3C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),

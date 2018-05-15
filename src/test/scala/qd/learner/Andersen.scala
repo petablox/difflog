@@ -5,6 +5,7 @@ import org.scalatest.{FunSuite, Ignore}
 
 import scala.util.Random
 
+@Ignore
 class Andersen extends FunSuite {
 
   val heapSet: Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
@@ -65,6 +66,7 @@ class Andersen extends FunSuite {
     Rule(27, Value(0.5, Token(27)), pt(x3, x1), pt(x2, x0), pt(x3, x2), store(x0, x1))
   )
 
+
   val soupProg: Program = Program("AndersonSoup", soup)
   val evaluator = SeminaiveEvaluator(soupProg)
 
@@ -77,15 +79,24 @@ class Andersen extends FunSuite {
 
   test(s"Applying learner to program ${soupProg.name}") {
     val learner = new Learner(edb, refOut, soupProg, new Random)
+<<<<<<< HEAD
     /* for (_ <- Range(0, 30)) {
+=======
+    for (_ <- Range(0, 80)) {
+>>>>>>> Update tests
       learner.update()
     }
 
     val finalState = learner.getState.settle
     println(finalState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
+<<<<<<< HEAD
     val extState = finalState.extreme
     println(s"extState:l2error: ${extState.errorL2Total}")
     println(s"extState.score: ${extState.score}. extState.s0: ${extState.s0}. extState.s1: ${extState.s1}.") */
+=======
+    println(s"finalState:l2error: ${finalState.errorL2Total}")
+    println(s"finalState.score: ${finalState.score}. finalState.s0: ${finalState.s0}. finalState.s1: ${finalState.s1}.")
+>>>>>>> Update tests
     // println(extState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
   }
 
