@@ -122,6 +122,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       // println(s"  grad: $grad")
       println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${newPosLim.count(_._2 > 0)}. |step|: ${step.abs}")
       /* println("Token, pos, gradS0, gradS1, grad, unit, delta, newPos, newPosLim")
+
       for (t <- tokens.toSeq.sortBy(_.name.asInstanceOf[Int])) {
         if (pos(t) < 1.0) {
           println(s"$t, ${pos(t)}, ${gradientL2(t)}, ${grad(t)}, ${grad.unit(t)}, ${delta(t)}, ${newPos(t)}, ${newPosLim(t)}")

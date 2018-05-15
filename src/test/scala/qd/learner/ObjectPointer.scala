@@ -85,6 +85,7 @@ class ObjectPointer extends FunSuite {
   val x3M: Variable = Variable("x3M", m)
   val x4M: Variable = Variable("x4M", m)
 
+  // Expected: 83, 90, 386, 387
   def soup1: Set[Rule] = Set(
     Rule(1,Value(0.5,Token(1)),heappointsto(x2H,x4F,x1H),heappointsto(x3H,x4F,x2H),points_initial(x0V,x1H),receiver_formal(x2H,x0V)),
     Rule(2,Value(0.5,Token(2)),heappointsto(x3H,x4F,x1H),heappointsto(x3H,x4F,x2H),points_initial(x0V,x1H),receiver_formal(x2H,x0V)),
