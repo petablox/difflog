@@ -86,7 +86,7 @@ class Andersen extends Problem {
 
     for (_ <- Range(0, 80)) learner.update()
 
-    for (r <- learner.getProgram.rules) println(s"name: ${r.name}, coeff: ${r.coeff}")
+    learner.printWeights
 
   }
   
