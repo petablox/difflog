@@ -3,6 +3,8 @@ package learner
 
 import org.scalatest.{FunSuite, Ignore}
 
+import scala.util.Random
+
 @Ignore
 class CallSite1 extends FunSuite {
   val CSet : Set[Atom] = Range(0, 4).map(i => Atom(i)).toSet
@@ -107,6 +109,7 @@ class CallSite1 extends FunSuite {
   val x3M: Variable = Variable("x3M", M)
   val x4M: Variable = Variable("x4M", M)
 
+  // Expected output: 1, 8, 61, 93
   val soup : Set[Rule] = Set(
     Rule(1,Value(0.5, Token(1)),pointsto(x2C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),
     Rule(2,Value(0.5, Token(2)),pointsto(x3C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),
@@ -212,5 +215,19 @@ class CallSite1 extends FunSuite {
     val idb = evaluator(edb)
     val endTime = System.nanoTime()
     println(s"A ${idb(pointsto).support.size}. ${(endTime - startTime) / 1.0e9}")
+  }
+
+  test(s"Applying learner to program ${soupProg.name}") {
+    val learner = new Learner(edb, refOut, soupProg, new Random)
+    for (_ <- Range(0, 100)) {
+      learner.update()
+    }
+
+    val finalState = learner.getState.settle
+    println(finalState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
+    val extState = finalState.extreme
+    println(s"extState:l2error: ${extState.errorL2Total}")
+    println(s"extState.score: ${extState.score}. extState.s0: ${extState.s0}. extState.s1: ${extState.s1}.")
+    // println(extState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
   }
 }

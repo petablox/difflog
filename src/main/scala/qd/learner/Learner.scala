@@ -113,13 +113,14 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
     lazy val nextStateL2Newton: LearnerState = {
       val grad = gradientL2
       // if (grad.abs == 0) { this }
-      val delta = grad.unit / grad.abs * errorL2Total
+      val delta = grad.unit * errorL2Total / grad.abs
 
       val newPos: TokenVec = pos - delta
       val newPosLim: TokenVec = newPos.limitLower(0.0).limitUpper(1.0)
+      val step: TokenVec = newPosLim - pos
 
-      println(s"  grad: $grad")
-      println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${newPosLim.count(_._2 > 0)}.")
+      // println(s"  grad: $grad")
+      println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. numRules: ${newPosLim.count(_._2 > 0)}. |step|: ${step.abs}")
       /* println("Token, pos, gradS0, gradS1, grad, unit, delta, newPos, newPosLim")
       for (t <- tokens.toSeq.sortBy(_.name.asInstanceOf[Int])) {
         if (pos(t) < 1.0) {
@@ -132,7 +133,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
 
     lazy val settle: LearnerState = {
       val usefulTokens = for (rel <- outputRels; t <- out(rel).support; token <- t._2.prov.toSeq) yield token
-      println(usefulTokens)
+      println(usefulTokens.toSeq.sortBy(_.name.asInstanceOf[Int]))
       val newMap = for ((key, value) <- pos.map) yield key -> (if (usefulTokens.contains(key)) value else 0.0)
       LearnerState(TokenVec(newMap))
     }
@@ -148,7 +149,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       (vt - ct) * (vt - ct)
     }
 
-    val errorL2Total = {
+    val errorL2Total: Double = {
       val errors = for (rel <- outputRels.toSeq; t <- refOutCompl(rel)) yield errorL2(rel, t._1)
       errors.sum
     }
