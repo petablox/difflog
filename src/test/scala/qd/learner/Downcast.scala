@@ -1,10 +1,12 @@
 package qd
 package learner
 
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.Ignore
 
 @Ignore
-class Downcast extends FunSuite {
+class Downcast extends Problem {
+  override val name: String = "Downcast"
+
   val HSet = Range(0, 5).map(i => Atom(i)).toSet
   val H = Domain("H", HSet)
 
@@ -59,14 +61,14 @@ class Downcast extends FunSuite {
     case (a,b) => DTuple(Atom(a), Atom(b))
   }
 
-  val edb : Config = Config(
+  override val edb : Config = Config(
     VH -> (Instance(VH) ++ VHTuples.map(t => t -> One).toMap),
     HT -> (Instance(HT) ++ HTTuples.map(t => t -> One).toMap),
     McheckCastInst -> (Instance(McheckCastInst) ++ McheckCastInstTuples.map(t => t -> One).toMap),
     notSub -> (Instance(notSub) ++ notSubTuples.map(t => t -> One).toMap),
   )
 
-  val refOut : Config = Config (
+  override val refOut : Config = Config (
     badCast -> (Instance(badCast) ++ badCastTuples.map(t => t -> One).toMap),
     unsafeDowncast -> (Instance(unsafeDowncast) ++ unsafeDowncastTuples.map(t => t -> One).toMap),
     ptsVT -> (Instance(ptsVT) ++ ptsVTTuples.map(t => t -> One).toMap),
@@ -98,7 +100,7 @@ class Downcast extends FunSuite {
   val x4T : Variable = Variable("x4T", T)
 
   // Expected: 20, 104, 166, 307
-  val soup : Set[Rule] = Set(
+  override val soup : Set[Rule] = Set(
     Rule(1	,Value(0.5, Token(1	)),badCast(x1V,x2T), McheckCastInst(x0M,x1V,x2T,x3V)),
     Rule(2	,Value(0.5, Token(2	)),badCast(x3V,x2T), McheckCastInst(x0M,x1V,x2T,x3V)),
     Rule(3	,Value(0.5, Token(3	)),badCast(x0V,x1T), ptsVT(x0V,x1T)),
@@ -407,6 +409,7 @@ class Downcast extends FunSuite {
     Rule(306	,Value(0.5, Token(306	)),unsafeDowncast(x4V,x1T), McheckCastInst(x2M,x3V,x1T,x4V),ptsVT(x4V,x1T)),
     Rule(307	,Value(0.5, Token(307	)),unsafeDowncast(x2V,x0T), badCast(x2V,x0T),reachableCast(x0T,x2V)),
     Rule(308	,Value(0.5, Token(308	)),unsafeDowncast(x2V,x0T), ptsVT(x2V,x0T),reachableCast(x0T,x2V)),
-
   )
+
+  override val expected: Set[Any] = Set(20, 104, 166, 307)
 }

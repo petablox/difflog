@@ -1,12 +1,10 @@
 package qd
 package learner
 
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.Ignore
 
-import scala.util.Random
-
-@Ignore
-class Andersen extends FunSuite {
+class Andersen extends Problem {
+  override val name: String = "Andersen"
 
   val heapSet: Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
   val heap: Domain = Domain("Heap", heapSet)
@@ -21,22 +19,21 @@ class Andersen extends FunSuite {
   val assgnTuples: Set[DTuple] = Set((4, 1)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
   val storeTuples: Set[DTuple] = Set((4, 5)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
   val loadTuples: Set[DTuple] = Set((7, 2)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
-  val edb: Config = Config(addr -> (Instance(addr) ++ addrTuples.map(t => t -> One).toMap),
-                           assgn -> (Instance(assgn) ++ assgnTuples.map(t => t -> One).toMap),
-                           store -> (Instance(store) ++ storeTuples.map(t => t -> One).toMap),
-                           load -> (Instance(load) ++ loadTuples.map(t => t -> One).toMap))
+  override val edb: Config = Config(addr -> (Instance(addr) ++ addrTuples.map(t => t -> One).toMap),
+                                    assgn -> (Instance(assgn) ++ assgnTuples.map(t => t -> One).toMap),
+                                    store -> (Instance(store) ++ storeTuples.map(t => t -> One).toMap),
+                                    load -> (Instance(load) ++ loadTuples.map(t => t -> One).toMap))
 
   val ptTuples: Set[DTuple] = Set((1, 2), (2, 3), (3, 5), (5, 6), (4, 2), (7, 5), (2, 6))
                               .map { case (a, b) => DTuple(Atom(a), Atom(b)) }
-  val refOut: Config = Config(pt -> (Instance(pt) ++ ptTuples.map(t => t -> One).toMap))
+  override val refOut: Config = Config(pt -> (Instance(pt) ++ ptTuples.map(t => t -> One).toMap))
 
   val x0: Variable = Variable("x0", heap)
   val x1: Variable = Variable("x1", heap)
   val x2: Variable = Variable("x2", heap)
   val x3: Variable = Variable("x3", heap)
 
-  // Expected: 1, 7, 17, 23
-  val soup: Set[Rule] = Set(
+  override val soup: Set[Rule] = Set(
     Rule(1, Value(0.5, Token(1)), pt(x0, x1), addr(x0, x1)),
     /* Rule(2, Value(0.5, Token(2)), pt(x0, x1), assgn(x0, x1)),
     Rule(3, Value(0.5, Token(3)), pt(x0, x1), load(x0, x1)),
@@ -66,35 +63,5 @@ class Andersen extends FunSuite {
     Rule(27, Value(0.5, Token(27)), pt(x3, x1), pt(x2, x0), pt(x3, x2), store(x0, x1)) */
   )
 
-
-  val soupProg: Program = Program("AndersonSoup", soup)
-  val evaluator = SeminaiveEvaluator(soupProg)
-
-  test(s"Applying evaluator ${evaluator.name} to program ${soupProg.name}") {
-    val startTime = System.nanoTime()
-    val idb = evaluator(edb)
-    val endTime = System.nanoTime()
-    println(s"A ${idb(pt).support.size}. ${(endTime - startTime) / 1.0e9}")
-  }
-
-  test(s"Applying learner to program ${soupProg.name}") {
-    val scorer = new Scorer(edb, refOut)
-    println(scorer.cutoffL2(soupProg, 0.2))
-    println(scorer.cutoffL2(soupProg, 0.3))
-    println(scorer.cutoffL2(soupProg, 0.6))
-
-    val learner = new Learner(edb, refOut, soupProg, new Random)
-    for (_ <- Range(0, 80)) learner.update()
-
-    val finalState = learner.getState.settle
-    println(finalState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
-    println(s"finalState:l2error: ${finalState.errorL2Total}")
-    println(s"finalState.score: ${finalState.score}. finalState.s0: ${finalState.s0}. finalState.s1: ${finalState.s1}.")
-
-    val extState = finalState.extreme
-    println(s"extState:l2error: ${extState.errorL2Total}")
-    println(s"extState.score: ${extState.score}. extState.s0: ${extState.s0}. extState.s1: ${extState.s1}.")
-    // println(extState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
-  }
-
+  override val expected: Set[Any] = Set(1, 7, 17, 23)
 }

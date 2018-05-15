@@ -1,10 +1,12 @@
 package qd
 package learner
 
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.Ignore
 
 @Ignore
-class Modref extends FunSuite {
+class Modref extends Problem {
+  override val name: String = "Modref"
+
   val mSet : Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
   val m : Domain = Domain("Method", mSet)
 
@@ -42,7 +44,7 @@ class Modref extends FunSuite {
   val MITuples : Set[DTuple] = Set((0,0), (1,1), (2,2), (3,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
   val IMTuples : Set[DTuple] = Set((0,1), (1,2), (2,3), (3,4)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
 
-  val edb : Config = Config(
+  override val edb : Config = Config(
     MgetInstFldInst -> (Instance(MgetInstFldInst) ++ MgetInstFldInstTuples.map(t => t -> One).toMap),
     MputInstFldInst -> (Instance(MputInstFldInst) ++ MputInstFldInstTuples.map(t => t -> One).toMap),
     MgetStatFldInst -> (Instance(MgetStatFldInst) ++ MgetStatFldInstTuples.map(t => t -> One).toMap),
@@ -58,7 +60,7 @@ class Modref extends FunSuite {
   val refInstFieldTuples : Set[DTuple] = Set((0,2,2),(1,2,2),(2,2,2),(3,2,2),(4,2,2)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c)) }
   val modInstFieldTuples : Set[DTuple] = Set((0,4,3),(1,4,3),(2,4,3),(3,4,3),(4,4,3)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c))}
 
-  val refOut : Config = Config (
+  override val refOut : Config = Config (
     rMM -> (Instance(rMM) ++ rMMTuples.map(t => t -> One).toMap),
     refStatField -> (Instance(refStatField) ++ refStatFieldTuples.map(t => t -> One).toMap),
     modStatField -> (Instance(modStatField) ++ modStatFieldTuples.map(t => t -> One).toMap),
@@ -93,7 +95,7 @@ class Modref extends FunSuite {
   val x3F : Variable = Variable("x3F", f)
 
   // expected: 1, 2, 9, 13, 15, 17, 25, 26, 27, 29
-  val soup: Set[Rule] = Set(
+  override val soup: Set[Rule] = Set(
     Rule(1	,Value(0.5, Token(1	)),rMM(x0M,x1M), rMM(x0M,x2M),rMM(x2M,x1M)),
     Rule(2	,Value(0.5, Token(2	)),rMM(x0M,x1M), IM(x2I,x1M),MI(x0M,x2I)),
     Rule(3	,Value(0.5, Token(3	)),rMM(x0M,x1M), rMM(x2M,x0M),rMM(x2M,x3M),rMM(x3M,x1M)),
@@ -126,13 +128,5 @@ class Modref extends FunSuite {
     Rule(30	,Value(0.5, Token(30	)),modInstField(x0M,x1H,x2F), MgetInstFldInst(x0M,x3V,x4V,x2F),VH(x4V,x1H)),
   )
 
-  val soupProg: Program = Program("EscapeSoup", soup)
-  val evaluator = SeminaiveEvaluator(soupProg)
-
-  test(s"Applying evaluator ${evaluator.name} to program ${soupProg.name}") {
-    val startTime = System.nanoTime()
-    val idb = evaluator(edb)
-    val endTime = System.nanoTime()
-    println(s"A ${idb(modInstField).support.size}. ${(endTime - startTime) / 1.0e9}")
-  }
+  override val expected: Set[Any] = Set(1, 2, 9, 13, 15, 17, 25, 26, 27, 29)
 }

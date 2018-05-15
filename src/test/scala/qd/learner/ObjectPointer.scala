@@ -1,10 +1,11 @@
 package qd
 package learner
 
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.Ignore
 
 @Ignore
-class ObjectPointer extends FunSuite {
+class ObjectPointer extends Problem {
+  override val name: String = "ObjectPointer"
 
   val h: Domain = Domain("H", Range(0, 12).map(i => Atom(i)).toSet)
   val f: Domain = Domain("F", Range(0, 3).map(i => Atom(i)).toSet)
@@ -34,7 +35,7 @@ class ObjectPointer extends FunSuite {
   val receiverActualTuples: Set[DTuple] = Set((1,3),(2,4),(3,5)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
   val receiverFormalTuples: Set[DTuple] = Set((1,2),(2,10),(5,3),(9,4),(11,6)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
 
-  val edb: Config = Config(points_initial -> (Instance(points_initial) ++ pointsInitialTuples.map(t => t -> One).toMap),
+  override val edb: Config = Config(points_initial -> (Instance(points_initial) ++ pointsInitialTuples.map(t => t -> One).toMap),
                            load -> (Instance(load) ++ loadTuples.map(t => t -> One).toMap),
                            store -> (Instance(store) ++ storeTuples.map(t => t -> One).toMap),
                            assign -> (Instance(assign) ++ assignTuples.map(t => t -> One).toMap),
@@ -46,7 +47,7 @@ class ObjectPointer extends FunSuite {
 
   val pointstoTuples: Set[DTuple] = Set((3,1,1),(4,2,2),(3,5,5),(5,9,9),(3,11,11),(5,4,2),(3,8,11),(3,4,5),(3,2,5)).map { case (a, b, c) => DTuple(Atom(a), Atom(b), Atom(c)) }
   val heappointstoTuples: Set[DTuple] = Set((5,2,11),(5,1,1),(5,1,5),(1,2,5)).map { case (a, b, c) => DTuple(Atom(a), Atom(b), Atom(c)) }
-  val refOut: Config = Config(pointsto -> (Instance(pointsto) ++ pointstoTuples.map(t => t -> One).toMap),
+  override val refOut: Config = Config(pointsto -> (Instance(pointsto) ++ pointstoTuples.map(t => t -> One).toMap),
                               heappointsto -> (Instance(heappointsto) ++ heappointstoTuples.map(t => t -> One).toMap))
 
   val x0H: Variable = Variable("x0H", h)
@@ -497,23 +498,7 @@ class ObjectPointer extends FunSuite {
     Rule(387,Value(0.5,Token(387)),pointsto(x0V,x1V,x2H),assign(x0V,x1V,x3V,x4V),pointsto(x3V,x4V,x2H))
   )
 
-  val soup: Set[Rule] = soup1 ++ soup2 ++ soup3 ++ soup4 ++ soup5 ++ soup6 ++ soup7 ++ soup8
+  override val soup: Set[Rule] = soup1 ++ soup2 ++ soup3 ++ soup4 ++ soup5 ++ soup6 ++ soup7 ++ soup8
 
-  val soupProg: Program = Program("ObjectPointerSoup", soup)
-  val evaluator = SeminaiveEvaluator(soupProg)
-
-  test(s"Applying evaluator ${evaluator.name} to program ${soupProg.name}") {
-    val startTime = System.nanoTime()
-    val idb = evaluator(edb)
-    val endTime = System.nanoTime()
-    println(s"OP ${idb(pointsto).support.size}. ${(endTime - startTime) / 1.0e9}")
-    println(s"OP ${idb(heappointsto).support.size}. ${(endTime - startTime) / 1.0e9}")
-    println(s"OP instance.applyTime: ${Instance.applyTime / 1.0e9} s.")
-    println(s"OP instance.supportTime: ${Instance.supportTime / 1.0e9} s.")
-    println(s"OP instance.filterTime: ${Instance.filterTime / 1.0e9} s.")
-    println(s"OP instance.plusPlusInstanceTime: ${Instance.plusPlusInstanceTime / 1.0e9} s.")
-    println(s"OP instance.plusPlusMapTime: ${Instance.plusPlusMapTime / 1.0e9} s.")
-    println(s"OP instance.plusTime: ${Instance.plusTime / 1.0e9} s.")
-  }
-
+  override val expected: Set[Any] = Set(83, 90, 386, 387)
 }

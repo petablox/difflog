@@ -1,10 +1,12 @@
 package qd
 package learner
 
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.Ignore
 
 @Ignore
-class Escape extends FunSuite {
+class Escape extends Problem {
+  override val name: String = "Escape"
+
   val methodSet : Set[Atom] = Range(0, 3).map(i => Atom(i)).toSet
   val method : Domain = Domain("Method", methodSet)
 
@@ -30,14 +32,14 @@ class Escape extends FunSuite {
   val rRHTuples : Set[DTuple] = Set((0,1),(0,2),(0,3),(2,1),(2,2),(2,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
   val rHHTuples : Set[DTuple] = Set((0,1),(1,2),(2,3),(0,2),(1,3),(0,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
 
-  val edb : Config = Config(
+  override val edb : Config = Config(
     MmethArg -> (Instance(MmethArg) ++ MmethArgTuples.map(t => t -> One).toMap),
     MmethRet -> (Instance(MmethRet) ++ MmethRetTuples.map(t => t -> One).toMap),
     VH -> (Instance(VH) ++ VHTuples.map(t => t -> One).toMap),
     HFH -> (Instance(HFH) ++ HFHTuples.map(t => t -> One).toMap)
   )
 
-  val refOut : Config = Config (
+  override val refOut : Config = Config (
     rMH -> (Instance(rMH) ++ rMHTuples.map(t => t -> One).toMap),
     rRH -> (Instance(rRH) ++ rRHTuples.map(t => t -> One).toMap),
     rHH -> (Instance(rHH) ++ rHHTuples.map(t => t -> One).toMap)
@@ -59,7 +61,7 @@ class Escape extends FunSuite {
   val x3M : Variable = Variable("x3M", method)
 
   // Expected: 1, 4, 6, 14, 18, 22
-  val soup: Set[Rule] = Set(
+  override val soup: Set[Rule] = Set(
     Rule(1,Value(0.5, Token(1)),rHH(x0H,x2H), HFH(x0H,x2H)),
     Rule(2,Value(0.5, Token(2)),rHH(x3H,x2H), HFH(x0H,x2H),rHH(x3H,x0H)),
     Rule(3,Value(0.5, Token(3)),rHH(x0H,x3H), HFH(x0H,x2H),rHH(x2H,x3H)),
@@ -88,13 +90,5 @@ class Escape extends FunSuite {
     Rule(26,Value(0.5, Token(26)),rRH(x0M,x2H), rHH(x1H,x2H),rMH(x0M,x1H))
   )
 
-  val soupProg: Program = Program("EscapeSoup", soup)
-  val evaluator = SeminaiveEvaluator(soupProg)
-
-  test(s"Applying evaluator ${evaluator.name} to program ${soupProg.name}") {
-    val startTime = System.nanoTime()
-    val idb = evaluator(edb)
-    val endTime = System.nanoTime()
-    println(s"A ${idb(rHH).support.size}. ${(endTime - startTime) / 1.0e9}")
-  }
+  override val expected: Set[Any] = Set(1, 4, 6, 14, 18, 22)
 }

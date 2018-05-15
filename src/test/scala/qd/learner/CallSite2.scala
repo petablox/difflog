@@ -1,10 +1,12 @@
 package qd
 package learner
 
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.Ignore
 
 @Ignore
-class CallSite2 extends FunSuite {
+class CallSite2 extends Problem {
+  override val name: String = "CallSite2"
+
   val CSet : Set[Atom] = Range(0, 5).map(i => Atom(i)).toSet
   val C : Domain = Domain("C", CSet)
 
@@ -50,7 +52,7 @@ class CallSite2 extends FunSuite {
     (2,3,7,2),(1,1,10,1),(1,1,7,1),(2,3,7,1),(3,1,8,1),(2,3,10,1)).map{ case (a,b,c,d) => DTuple(Atom(a), Atom(b), Atom(c), Atom(d)) }
   val heappointstoTuples : Set[DTuple] = Set((1,1,1),(2,2,1),(1,2,1),(9,2,1)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c)) }
 
-  val edb : Config = Config(
+  override val edb : Config = Config(
     points_initial -> (Instance(points_initial) ++ points_initialTuples.map(t => t -> One).toMap),
     store -> (Instance(store) ++ storeTuples.map(t => t -> One).toMap),
     load -> (Instance(load) ++ loadTuples.map(t => t -> One).toMap),
@@ -60,7 +62,7 @@ class CallSite2 extends FunSuite {
     assign -> (Instance(assign) ++ assignTuples.map(t => t -> One).toMap),
   )
 
-  val refOut : Config = Config (
+  override val refOut : Config = Config (
     pointsto -> (Instance(pointsto) ++ pointstoTuples.map(t => t -> One).toMap),
     heappointsto -> (Instance(heappointsto) ++ heappointstoTuples.map(t => t -> One).toMap)
   )
@@ -115,7 +117,7 @@ class CallSite2 extends FunSuite {
   val x7M: Variable = Variable("x7M", M)
 
   // expected: 1, 8, 61, 93
-  val soup : Set[Rule] = Set(
+  override val soup : Set[Rule] = Set(
     Rule(1	,Value(0.5, Token(1	)),pointsto(x2C,x3C,x0V,x1H), invocation(x2C,x3C,x1H,x4C,x5C,x6M),points_initial(x0V,x1H)),
     Rule(2	,Value(0.5, Token(2	)),pointsto(x2C,x4C,x0V,x1H), invocation(x2C,x3C,x1H,x4C,x5C,x6M),points_initial(x0V,x1H)),
     Rule(3	,Value(0.5, Token(3	)),pointsto(x2C,x5C,x0V,x1H), invocation(x2C,x3C,x1H,x4C,x5C,x6M),points_initial(x0V,x1H)),
@@ -220,13 +222,5 @@ class CallSite2 extends FunSuite {
     Rule(102	,Value(0.5, Token(102	)),heappointsto(x0H,x1F,x2H), load(x3V,x1F,x4V),pointsto(x5C,x6C,x3V,x0H),pointsto(x5C,x6C,x4V,x2H)),
   )
 
-  val soupProg: Program = Program("1CallSiteSoup", soup)
-  val evaluator = SeminaiveEvaluator(soupProg)
-
-  test(s"Applying evaluator ${evaluator.name} to program ${soupProg.name}") {
-    val startTime = System.nanoTime()
-    val idb = evaluator(edb)
-    val endTime = System.nanoTime()
-    println(s"A ${idb(pointsto).support.size}. ${(endTime - startTime) / 1.0e9}")
-  }
+  override val expected: Set[Any] = Set(1, 8, 61, 93)
 }

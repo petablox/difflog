@@ -1,12 +1,12 @@
 package qd
 package learner
 
-import org.scalatest.{FunSuite, Ignore}
-
-import scala.util.Random
+import org.scalatest.Ignore
 
 @Ignore
-class CallSite1 extends FunSuite {
+class CallSite1 extends Problem {
+  override val name: String = "CallSite1"
+
   val CSet : Set[Atom] = Range(0, 4).map(i => Atom(i)).toSet
   val C : Domain = Domain("C", CSet)
 
@@ -207,27 +207,5 @@ class CallSite1 extends FunSuite {
     Rule(94,Value(0.5, Token(94)),heappointsto(x0H,x1F,x2H), load(x3V,x1F,x4V),pointsto(x5C,x3V,x0H),pointsto(x5C,x4V,x2H))
   )
 
-  val soupProg: Program = Program("1CallSiteSoup", soup)
-  val evaluator = SeminaiveEvaluator(soupProg)
-
-  test(s"Applying evaluator ${evaluator.name} to program ${soupProg.name}") {
-    val startTime = System.nanoTime()
-    val idb = evaluator(edb)
-    val endTime = System.nanoTime()
-    println(s"A ${idb(pointsto).support.size}. ${(endTime - startTime) / 1.0e9}")
-  }
-
-  test(s"Applying learner to program ${soupProg.name}") {
-    val learner = new Learner(edb, refOut, soupProg, new Random)
-    for (_ <- Range(0, 100)) {
-      learner.update()
-    }
-
-    val finalState = learner.getState.settle
-    println(finalState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
-    val extState = finalState.extreme
-    println(s"extState:l2error: ${extState.errorL2Total}")
-    println(s"extState.score: ${extState.score}. extState.s0: ${extState.s0}. extState.s1: ${extState.s1}.")
-    // println(extState.pos.toSeq.sortBy(_._1.name.asInstanceOf[Int]).mkString(System.lineSeparator()))
-  }
+  override val expected: Set[Any] = Set(1, 8, 61, 93)
 }
