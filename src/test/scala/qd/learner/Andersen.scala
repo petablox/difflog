@@ -65,5 +65,6 @@ class Andersen extends Problem {
   )
 
   override val expected: Set[Any] = Set(1, 7, 17, 23)
+  override val maxVarCount: Int = 20
   
 }

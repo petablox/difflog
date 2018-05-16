@@ -1,7 +1,7 @@
 package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
-@Ignore
+
 class Path extends Problem {
 	override val name = "path"
 	val VSet = Range(0, 7).map(i => Atom(i)).toSet
@@ -38,6 +38,5 @@ Rule(14, Value(0.5, Token(14)), path(x2V,x1V),edge(x0V,x1V),path(x2V,x0V)),
 Rule(15, Value(0.5, Token(15)), path(x2V,x1V),edge(x0V,x1V),edge(x2V,x0V)),
 )
 	override val expected = Set()
-val soupProg = Program("pathSoup", soup)
-val evaluator = SeminaiveEvaluator(soupProg)
+	override val maxVarCount: Int = 20
 }

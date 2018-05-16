@@ -1,7 +1,7 @@
 package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
-@Ignore
+
 class Samegen extends Problem {
 	override val name = "samegen"
 	val VSet = Range(0, 10).map(i => Atom(i)).toSet
@@ -177,6 +177,5 @@ Rule(152, Value(0.5, Token(152)), sgen(x3V,x1V),parent(x0V,x1V),parent(x1V,x2V),
 Rule(153, Value(0.5, Token(153)), sgen(x3V,x1V),parent(x0V,x1V),parent(x1V,x2V),parent(x3V,x2V)),
 )
 	override val expected = Set()
-val soupProg = Program("samegenSoup", soup)
-val evaluator = SeminaiveEvaluator(soupProg)
+	override val maxVarCount: Int = 20
 }

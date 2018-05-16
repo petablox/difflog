@@ -3,7 +3,6 @@ package learner
 
 import org.scalatest.Ignore
 
-@Ignore
 class Escape extends Problem {
   override val name: String = "Escape"
 
@@ -91,4 +90,5 @@ class Escape extends Problem {
   )
 
   override val expected: Set[Any] = Set(1, 4, 6, 14, 18, 22)
+  override val maxVarCount: Int = 20
 }

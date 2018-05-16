@@ -143,4 +143,5 @@ class TypePointer extends Problem {
   )
 
   override val expected: Set[Any] = Set(1, 31, 32, 38)
+  override val maxVarCount: Int = 20
 }

@@ -1,6 +1,6 @@
 package qd
 
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.FunSuite
 
 class EvaluatorReachabilitySpec(evalCtr: Program => Evaluator) extends FunSuite {
   for (graph <- Graphs.Graphs; gp <- Reachability.Programs) {
@@ -17,9 +17,6 @@ class EvaluatorReachabilitySpec(evalCtr: Program => Evaluator) extends FunSuite 
     }
   }
 }
-/*
-@Ignore
-class NaiveEvaluatorSpec extends EvaluatorReachabilitySpec(NaiveEvaluator)
-@Ignore
-class SeminaiveEvaluatorSpec extends EvaluatorReachabilitySpec(SeminaiveEvaluator)
-*/
+
+/* class NaiveEvaluatorSpec extends EvaluatorReachabilitySpec(NaiveEvaluator)
+class SeminaiveEvaluatorSpec extends EvaluatorReachabilitySpec(SeminaiveEvaluator) */

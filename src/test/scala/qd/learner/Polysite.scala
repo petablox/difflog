@@ -360,4 +360,5 @@ class Polysite extends Problem {
   )
 
   override val expected: Set[Any] = Set(2, 139, 160)
+  override val maxVarCount: Int = 3
 }

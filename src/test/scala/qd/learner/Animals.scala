@@ -133,4 +133,5 @@ Rule(75, Value(0.5, Token(75)), reptile(x0A),has_covering(x0A,x1C),none(x1C)),
 )
 
 	override val expected = Set()
+	override val maxVarCount: Int = 20
 }

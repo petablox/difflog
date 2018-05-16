@@ -128,4 +128,5 @@ class Modref extends Problem {
   )
 
   override val expected: Set[Any] = Set(1, 2, 9, 13, 15, 17, 25, 26, 27, 29)
+  override val maxVarCount: Int = 20
 }

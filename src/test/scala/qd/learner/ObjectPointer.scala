@@ -500,4 +500,5 @@ class ObjectPointer extends Problem {
   override val soup: Set[Rule] = soup1 ++ soup2 ++ soup3 ++ soup4 ++ soup5 ++ soup6 ++ soup7 ++ soup8
 
   override val expected: Set[Any] = Set(83, 90, 386, 387)
+  override val maxVarCount: Int = 6
 }

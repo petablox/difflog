@@ -1,7 +1,7 @@
 package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
-@Ignore
+
 class Inflammation extends Problem {
 	override val name = "inflammation"
 	val PSet = Range(0, 120).map(i => Atom(i)).toSet
@@ -129,6 +129,5 @@ inflamation -> (Instance(inflamation) ++ inflamationTuples.map(t => t -> One).to
 	)
 
 	override val expected = Set()
-	val soupProg = Program("inflammationSoup", soup)
-	val evaluator = SeminaiveEvaluator(soupProg)
+	override val maxVarCount: Int = 20
 }
