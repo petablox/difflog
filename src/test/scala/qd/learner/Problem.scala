@@ -3,7 +3,7 @@ package learner
 
 import org.scalatest.FunSuite
 
-import scala.util.Random
+import scala.util.{Random, Try}
 
 abstract class Problem extends FunSuite {
   def name: Any
@@ -53,9 +53,11 @@ abstract class Problem extends FunSuite {
   }
 
   test(s"Learning $name") {
-    val random: Random = new Random
+    val seed = Try(sys.env.getOrElse("RANDOM_SEED", "0").toInt).getOrElse(0)
+    val random: Random = new Random(seed)
     val learner = new Learner(edb, refOut, p0, random)
     learner.learn(0.01, 500)
+    println(s"Final program: ${learner.getPos}")
     println(s"Expected: ${expected.toSeq.sortBy(_.asInstanceOf[Int])}")
 
     println("Final program")

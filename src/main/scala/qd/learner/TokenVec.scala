@@ -40,7 +40,7 @@ case class TokenVec(m: Map[Token, Double]) extends Map[Token, Double] {
 
   def limitLower(minV: Double, pos: TokenVec): TokenVec = {
     val mp = m.map { case (token, oldV) => token -> (if (minV <= oldV || pos(token) < minV) oldV else minV) }
-    TokenVec(m.mapValues(x => Math.max(minV, x)))
+    TokenVec(mp)
   }
 
 }

@@ -411,5 +411,5 @@ class Downcast extends Problem {
   )
 
   override val expected: Set[Any] = Set(20, 104, 166, 307)
-  override val maxVarCount: Int = 20
+  override val maxVarCount: Int = 4
 }
