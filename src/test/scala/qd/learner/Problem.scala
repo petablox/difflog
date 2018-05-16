@@ -15,6 +15,15 @@ abstract class Problem extends FunSuite {
   def p0: Program = Program(s"Soup-$name", soup)
   lazy val scorer = new Scorer(edb, refOut)
 
+  test("Counting number of free variables in each rule") {
+    var idx = 0
+    for (rule <- soup.toSeq.sortBy(-_.freeVariables.size)) {
+      val desired = if (expected.contains(rule.name)) "EXP" else "UXP"
+      println(s"Rulevars $idx ${rule.name} $desired ${rule.freeVariables.size}")
+      idx += 1
+    }
+  }
+
   test(s"Applying seminaive evaluator to initial program of $name") {
     val startTime = System.nanoTime()
     val evaluator = SeminaiveEvaluator(p0)
