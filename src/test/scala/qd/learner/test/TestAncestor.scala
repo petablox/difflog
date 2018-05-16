@@ -1,6 +1,9 @@
 package qd
 package learner
 
+import jdk.nashorn.internal.ir.annotations.Ignore
+
+@Ignore
 class TestAncestor extends Problem {
 	override val name = "ancestor"
 	val PSet = Range(0, 8).map(i => Atom(i)).toSet

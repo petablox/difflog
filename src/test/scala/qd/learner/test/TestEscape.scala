@@ -3,6 +3,7 @@ package learner
 
 import org.scalatest.Ignore
 
+@Ignore
 class TestEscape extends Problem {
   override val name: String = "Escape"
 
