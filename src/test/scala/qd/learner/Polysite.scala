@@ -1,9 +1,6 @@
 package qd
 package learner
 
-import org.scalatest.Ignore
-
-@Ignore
 class Polysite extends Problem {
   override val name: String = "Polysite"
 

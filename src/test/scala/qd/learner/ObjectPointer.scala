@@ -3,7 +3,6 @@ package learner
 
 import org.scalatest.Ignore
 
-@Ignore
 class ObjectPointer extends Problem {
   override val name: String = "ObjectPointer"
 

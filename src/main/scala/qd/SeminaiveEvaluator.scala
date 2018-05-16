@@ -25,7 +25,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     numAppliedRules = 0
     for (rule <- rules) {
       // println(s"  $numAppliedRules. Evaluating rule ${rule.name}")
-      // val startTime = System.nanoTime()
+      val startTime = System.nanoTime()
       // val supportSizeOrig = newConfig(rule.head.relation).support.size
 
       val cdd = immediateConsequence(rule, newConfig, deltaCurr, deltaNext)
@@ -33,7 +33,8 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
       deltaCurr = cdd._2
       deltaNext = cdd._3
 
-      // val endTime = System.nanoTime()
+      val endTime = System.nanoTime()
+      time += (rule -> (time.getOrElse(rule, 0l) + endTime - startTime))
       // val supportSizeFinal = newConfig(rule.head.relation).support.size
       // val numFreeVars = rule.freeVariables.size
       // val numPossibleVals = rule.freeVariables.toSeq.map(_.domain.size).product

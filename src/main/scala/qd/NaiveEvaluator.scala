@@ -18,9 +18,12 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
   def immediateConsequence(config: Config): (Config, Boolean) = {
     var (c, d) = (config, false)
     for (rule <- rules) {
+      val startTime = System.nanoTime()
       val (cPrime, id) = immediateConsequence(rule, c)
       c = cPrime
       d = d || id
+      val endTime = System.nanoTime()
+      time += (rule -> (time.getOrElse(rule, 0l) + endTime - startTime))
     }
     (c, d)
   }

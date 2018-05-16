@@ -10,7 +10,8 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
 
   private var pos: TokenVec = TokenVec(tokens, random)
   private var p: Program = pos.reorient(p0)
-  private var out: Config = SeminaiveEvaluator(p)(edb)
+  private var evaluator: Evaluator = SeminaiveEvaluator(p)
+  private var out: Config = evaluator(edb)
   private var best: Option[(Program, TokenVec, Config, Double)] = None
 
   def getPos: TokenVec = pos
@@ -33,7 +34,8 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
   def update(): Unit = {
     pos = newPosL2Newton
     p = pos.reorient(p)
-    out = SeminaiveEvaluator(p)(edb)
+    evaluator = SeminaiveEvaluator(p)
+    out = evaluator(edb)
 
     val l2 = scorer.errorL2(out)
     if (best.isEmpty || l2 < best.get._4) best = Some((p, pos, out, l2))
@@ -49,9 +51,11 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
     // This will need us to move by (1 - score) / |grad|
     val delta = grad.unit * (1 - score) / grad.abs
     val newPos = pos + delta
-    val newPosLim = newPos.limitLower(0.0).limitUpper(1.0)
+    val newPosLim = newPos.limitLower(0.0, pos).limitUpper(1.0, pos)
     val step = newPosLim - pos
-    println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. |step|: ${step.abs}")
+    val longestRule = evaluator.getTime.toSeq.sortBy(-_._2).head
+    println(s"  score: $score. s0: $s0. s1: $s1. |grad|: ${grad.abs}. |step|: ${step.abs}. " +
+            s"Longest rule: ${longestRule._1.name} needed ${longestRule._2 / 1.0e9} seconds.")
 
     newPosLim
   }
@@ -63,11 +67,13 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
     // if (grad.abs == 0) { this }
     val delta = grad.unit * l2 / grad.abs
     val newPos = pos - delta
-    val newPosLim = newPos.limitLower(0.01).limitUpper(0.99)
+    val newPosLim = newPos.limitLower(0.01, pos).limitUpper(0.99, pos)
     val step = newPosLim - pos
     val bestL2 = best.map(_._4).getOrElse(Double.PositiveInfinity)
+    val longestRule = evaluator.getTime.toSeq.sortBy(-_._2).head
     // println(s"  grad: $grad")
-    println(s"  l2: $l2. best.l2: $bestL2. |grad|: ${grad.abs}. |step|: ${step.abs}.")
+    println(s"  l2: $l2. best.l2: $bestL2. |grad|: ${grad.abs}. |step|: ${step.abs}. " +
+            s"Longest rule: ${longestRule._1.name} needed ${longestRule._2 / 1.0e9} seconds.")
     newPosLim
   }
 

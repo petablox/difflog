@@ -3,7 +3,6 @@ package learner
 
 import org.scalatest.Ignore
 
-@Ignore
 class Downcast extends Problem {
   override val name: String = "Downcast"
 

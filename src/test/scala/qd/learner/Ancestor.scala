@@ -1,7 +1,6 @@
 package qd
 package learner
-import org.scalatest.{FunSuite, Ignore}
-@Ignore
+
 class Ancestor extends Problem {
 	override val name = "ancestor"
 	val PSet = Range(0, 5).map(i => Atom(i)).toSet
@@ -67,6 +66,4 @@ Rule(37, Value(0.5, Token(37)), ancestor(x2P,x1P),mother(x0P,x1P),mother(x2P,x0P
 )
 
 	override val expected = Set()
-val soupProg = Program("ancestorSoup", soup)
-val evaluator = SeminaiveEvaluator(soupProg)
 }

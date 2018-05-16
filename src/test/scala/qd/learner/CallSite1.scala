@@ -1,9 +1,6 @@
 package qd
 package learner
 
-import org.scalatest.Ignore
-
-@Ignore
 class CallSite1 extends Problem {
   override val name: String = "CallSite1"
 

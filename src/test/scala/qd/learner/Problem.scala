@@ -11,7 +11,9 @@ abstract class Problem extends FunSuite {
   def refOut: Config
   def soup: Set[Rule]
   def expected: Set[Any]
+  // def maxVarCount: Int
 
+  // def p0: Program = Program(s"Soup-$name", soup.filter(_.freeVariables.size <= maxVarCount))
   def p0: Program = Program(s"Soup-$name", soup)
   lazy val scorer = new Scorer(edb, refOut)
 

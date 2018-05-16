@@ -1,5 +1,6 @@
 package qd
 
+import scala.collection.mutable
 import scala.util.hashing.MurmurHash3
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,4 +107,6 @@ abstract class Evaluator(val name: Any, val program: Program) extends (Config =>
   val rules: Set[Rule] = program.rules
   val allRelations: Set[Relation] = program.allRelations
   val allDomains: Set[Domain] = program.allDomains
+  protected val time: mutable.Map[Rule, Long] = new mutable.HashMap()
+  def getTime: Map[Rule, Long] = time.toMap
 }

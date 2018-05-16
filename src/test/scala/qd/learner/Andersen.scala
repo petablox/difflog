@@ -65,29 +65,5 @@ class Andersen extends Problem {
   )
 
   override val expected: Set[Any] = Set(1, 7, 17, 23)
-
-  val soupProg: Program = Program("AndersonSoup", soup)
-  val evaluator = SeminaiveEvaluator(soupProg)
-
-  test(s"Applying evaluator ${evaluator.name} to program ${soupProg.name}") {
-    val startTime = System.nanoTime()
-    val idb = evaluator(edb)
-    val endTime = System.nanoTime()
-    println(s"A ${idb(pt).support.size}. ${(endTime - startTime) / 1.0e9}")
-  }
-
-  test(s"Applying learner to program ${soupProg.name}") {
-    val scorer = new Scorer(edb, refOut)
-    println(scorer.cutoffL2(soupProg, 0.2))
-    println(scorer.cutoffL2(soupProg, 0.3))
-    println(scorer.cutoffL2(soupProg, 0.6))
-
-    val learner = new Learner(edb, refOut, soupProg, new Random)
-
-    for (_ <- Range(0, 80)) learner.update()
-
-    learner.printWeights
-
-  }
   
 }

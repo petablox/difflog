@@ -3,7 +3,6 @@ package learner
 
 import org.scalatest.Ignore
 
-@Ignore
 class Modref extends Problem {
   override val name: String = "Modref"
 

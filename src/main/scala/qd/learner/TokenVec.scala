@@ -33,8 +33,16 @@ case class TokenVec(m: Map[Token, Double]) extends Map[Token, Double] {
     Program(p.name, p.rules.map(r => Rule(r.name, Value(r.coeff.prov, map2), r.head, r.body)))
   }
 
-  def limitUpper(v: Double): TokenVec = TokenVec(m.mapValues(x => Math.min(v, x)))
-  def limitLower(v: Double): TokenVec = TokenVec(m.mapValues(x => Math.max(v, x)))
+  def limitUpper(maxV: Double, pos: TokenVec): TokenVec = {
+    val mp = m.map { case (token, oldV) => token -> (if (maxV >= oldV || pos(token) > maxV) oldV else maxV) }
+    TokenVec(mp)
+  }
+
+  def limitLower(minV: Double, pos: TokenVec): TokenVec = {
+    val mp = m.map { case (token, oldV) => token -> (if (minV <= oldV || pos(token) < minV) oldV else minV) }
+    TokenVec(m.mapValues(x => Math.max(minV, x)))
+  }
+
 }
 
 object TokenVec {
