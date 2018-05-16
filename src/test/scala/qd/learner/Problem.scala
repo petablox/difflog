@@ -56,7 +56,7 @@ abstract class Problem extends FunSuite {
   test(s"Learning $name") {
     val random: Random = new Random
     val learner = new Learner(edb, refOut, p0, random)
-    for (_ <- Range(0, 500)) learner.update()
+    learner.learn(0.01, 500)
     println(s"Expected: ${expected.toSeq.sortBy(_.asInstanceOf[Int])}")
 
     println("Final program")
