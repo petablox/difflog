@@ -25,6 +25,17 @@ class Scorer(edb: Config, refOut: Config) {
     numeratorVecs.foldLeft(TokenVec.zero(pos.keySet))(_ + _)
   }
 
+  def rmse(out: Config): Double = {
+    val ses = for (rel <- outputRels.toSeq; t <- allTuples(rel).toSeq)
+              yield {
+                val vt = out(rel)(t).toDouble
+                val lt = refOut(rel)(t).toDouble
+                (vt - lt) * (vt - lt)
+              }
+    val mse = ses.sum / ses.length
+    Math.sqrt(mse)
+  }
+
   def errorL2(out: Config): Double = outputRels.toSeq.map(rel => errorL2(out, rel)).sum
 
   def errorL2(out: Config, rel: Relation): Double = {
