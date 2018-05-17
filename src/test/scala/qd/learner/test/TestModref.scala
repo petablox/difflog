@@ -1,9 +1,6 @@
 package qd
 package learner
 
-import org.scalatest.Ignore
-
-@Ignore
 class TestModref extends Problem {
   override val name: String = "Modref"
 

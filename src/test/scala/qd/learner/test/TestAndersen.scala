@@ -1,11 +1,8 @@
 package qd
 package learner
-package test
 
 import scala.util.Random
-import org.scalatest.Ignore
 
-@Ignore
 class TestAndersen extends Problem {
   override val name: String = "Andersen"
 
