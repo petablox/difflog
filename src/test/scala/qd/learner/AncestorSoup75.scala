@@ -1,7 +1,7 @@
 package qd
 package learner
 
-class Ancestor extends Problem {
+class AncestorSoup75 extends Problem {
   override val name = "ancestor"
   val PSet = Range(0, 5).map(i => Atom(i)).toSet
   val P = Domain("P", PSet)
@@ -33,34 +33,25 @@ class Ancestor extends Problem {
     Rule(5, Value(0.5, Token(5)), parent(x2P,x1P),ancestor(x0P,x1P),father(x2P,x0P)),
     Rule(6, Value(0.5, Token(6)), parent(x2P,x1P),ancestor(x0P,x1P),mother(x2P,x0P)),
     Rule(7, Value(0.5, Token(7)), parent(x2P,x1P),ancestor(x2P,x0P),parent(x0P,x1P)),
-    Rule(8, Value(0.5, Token(8)), parent(x2P,x1P),parent(x0P,x1P),parent(x2P,x0P)),
     Rule(9, Value(0.5, Token(9)), parent(x2P,x1P),father(x2P,x0P),parent(x0P,x1P)),
-    Rule(10, Value(0.5, Token(10)), parent(x2P,x1P),mother(x2P,x0P),parent(x0P,x1P)),
     Rule(11, Value(0.5, Token(11)), parent(x2P,x1P),ancestor(x2P,x0P),father(x0P,x1P)),
     Rule(12, Value(0.5, Token(12)), parent(x2P,x1P),father(x0P,x1P),parent(x2P,x0P)),
     Rule(13, Value(0.5, Token(13)), parent(x2P,x1P),father(x0P,x1P),father(x2P,x0P)),
-    Rule(14, Value(0.5, Token(14)), parent(x2P,x1P),father(x0P,x1P),mother(x2P,x0P)),
     Rule(15, Value(0.5, Token(15)), parent(x2P,x1P),ancestor(x2P,x0P),mother(x0P,x1P)),
     Rule(16, Value(0.5, Token(16)), parent(x2P,x1P),mother(x0P,x1P),parent(x2P,x0P)),
     Rule(17, Value(0.5, Token(17)), parent(x2P,x1P),father(x2P,x0P),mother(x0P,x1P)),
     Rule(18, Value(0.5, Token(18)), parent(x2P,x1P),mother(x0P,x1P),mother(x2P,x0P)),
     Rule(19, Value(0.5, Token(19)), ancestor(x0P,x1P),parent(x0P,x1P)),
-    Rule(20, Value(0.5, Token(20)), ancestor(x0P,x1P),father(x0P,x1P)),
     Rule(21, Value(0.5, Token(21)), ancestor(x0P,x1P),mother(x0P,x1P)),
     Rule(22, Value(0.5, Token(22)), ancestor(x2P,x1P),ancestor(x0P,x1P),ancestor(x2P,x0P)),
     Rule(23, Value(0.5, Token(23)), ancestor(x2P,x1P),ancestor(x0P,x1P),parent(x2P,x0P)),
     Rule(24, Value(0.5, Token(24)), ancestor(x2P,x1P),ancestor(x0P,x1P),father(x2P,x0P)),
-    Rule(25, Value(0.5, Token(25)), ancestor(x2P,x1P),ancestor(x0P,x1P),mother(x2P,x0P)),
     Rule(26, Value(0.5, Token(26)), ancestor(x2P,x1P),ancestor(x2P,x0P),parent(x0P,x1P)),
     Rule(27, Value(0.5, Token(27)), ancestor(x2P,x1P),parent(x0P,x1P),parent(x2P,x0P)),
-    Rule(28, Value(0.5, Token(28)), ancestor(x2P,x1P),father(x2P,x0P),parent(x0P,x1P)),
     Rule(29, Value(0.5, Token(29)), ancestor(x2P,x1P),mother(x2P,x0P),parent(x0P,x1P)),
-    Rule(30, Value(0.5, Token(30)), ancestor(x2P,x1P),ancestor(x2P,x0P),father(x0P,x1P)),
     Rule(31, Value(0.5, Token(31)), ancestor(x2P,x1P),father(x0P,x1P),parent(x2P,x0P)),
     Rule(32, Value(0.5, Token(32)), ancestor(x2P,x1P),father(x0P,x1P),father(x2P,x0P)),
-    Rule(33, Value(0.5, Token(33)), ancestor(x2P,x1P),father(x0P,x1P),mother(x2P,x0P)),
     Rule(34, Value(0.5, Token(34)), ancestor(x2P,x1P),ancestor(x2P,x0P),mother(x0P,x1P)),
-    Rule(35, Value(0.5, Token(35)), ancestor(x2P,x1P),mother(x0P,x1P),parent(x2P,x0P)),
     Rule(36, Value(0.5, Token(36)), ancestor(x2P,x1P),father(x2P,x0P),mother(x0P,x1P)),
     Rule(37, Value(0.5, Token(37)), ancestor(x2P,x1P),mother(x0P,x1P),mother(x2P,x0P)),
     )

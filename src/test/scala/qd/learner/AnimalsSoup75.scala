@@ -2,7 +2,7 @@ package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
 
-class Animals extends Problem {
+class AnimalsSoup75 extends Problem {
   override val name = "animals"
   val ASet = Range(0, 21).map(i => Atom(i)).toSet
   val A = Domain("A", ASet)
@@ -18,9 +18,9 @@ class Animals extends Problem {
   val has_eggs = Relation("has_eggs", A)
   val has_gills = Relation("has_gills", A)
   val mammal = Relation("mammal", A)
-  val fish = Relation("fish", A)
+  val fish = Relation("fish", A,A)
   val reptile = Relation("reptile", A)
-  val bird = Relation("bird", A)
+  val bird = Relation("bird", A,A)
   val noneTuples = Set((3)).map { case (x0) => DTuple(Atom(x0)) }
   val homeothermicTuples = Set((0),(1),(2),(3),(13),(14),(15),(16)).map { case (x0) => DTuple(Atom(x0)) }
   val scalesTuples = Set((1)).map { case (x0) => DTuple(Atom(x0)) }
@@ -71,59 +71,39 @@ class Animals extends Problem {
     Rule(14, Value(0.5, Token(14)), bird(x0A),has_covering(x0A,x1C),has_gills(x0A)),
     Rule(15, Value(0.5, Token(15)), bird(x0A),feathers(x1C),has_covering(x0A,x1C)),
     Rule(16, Value(0.5, Token(16)), bird(x0A),has_covering(x0A,x1C),scales(x1C)),
-    Rule(17, Value(0.5, Token(17)), bird(x0A),hair(x1C),has_covering(x0A,x1C)),
     Rule(18, Value(0.5, Token(18)), bird(x0A),has_covering(x0A,x1C),none(x1C)),
     Rule(19, Value(0.5, Token(19)), fish(x0A),reptile(x0A)),
-    Rule(20, Value(0.5, Token(20)), fish(x0A),mammal(x0A)),
     Rule(21, Value(0.5, Token(21)), fish(x0A),bird(x0A)),
     Rule(22, Value(0.5, Token(22)), fish(x0A),homeothermic(x0A)),
-    Rule(23, Value(0.5, Token(23)), fish(x0A),has_eggs(x0A)),
     Rule(24, Value(0.5, Token(24)), fish(x0A),has_milk(x0A)),
     Rule(25, Value(0.5, Token(25)), fish(x0A),has_gills(x0A)),
     Rule(26, Value(0.5, Token(26)), fish(x0A),has_covering(x0A,x1C)),
-    Rule(27, Value(0.5, Token(27)), fish(x0A),has_covering(x0A,x1C),reptile(x0A)),
     Rule(28, Value(0.5, Token(28)), fish(x0A),has_covering(x0A,x1C),mammal(x0A)),
     Rule(29, Value(0.5, Token(29)), fish(x0A),bird(x0A),has_covering(x0A,x1C)),
-    Rule(30, Value(0.5, Token(30)), fish(x0A),has_covering(x0A,x1C),homeothermic(x0A)),
     Rule(31, Value(0.5, Token(31)), fish(x0A),has_covering(x0A,x1C),has_eggs(x0A)),
     Rule(32, Value(0.5, Token(32)), fish(x0A),has_covering(x0A,x1C),has_milk(x0A)),
     Rule(33, Value(0.5, Token(33)), fish(x0A),has_covering(x0A,x1C),has_gills(x0A)),
-    Rule(34, Value(0.5, Token(34)), fish(x0A),feathers(x1C),has_covering(x0A,x1C)),
     Rule(35, Value(0.5, Token(35)), fish(x0A),has_covering(x0A,x1C),scales(x1C)),
     Rule(36, Value(0.5, Token(36)), fish(x0A),hair(x1C),has_covering(x0A,x1C)),
     Rule(37, Value(0.5, Token(37)), fish(x0A),has_covering(x0A,x1C),none(x1C)),
-    Rule(38, Value(0.5, Token(38)), mammal(x0A),reptile(x0A)),
     Rule(39, Value(0.5, Token(39)), mammal(x0A),fish(x0A)),
     Rule(40, Value(0.5, Token(40)), mammal(x0A),bird(x0A)),
     Rule(41, Value(0.5, Token(41)), mammal(x0A),homeothermic(x0A)),
     Rule(42, Value(0.5, Token(42)), mammal(x0A),has_eggs(x0A)),
-    Rule(43, Value(0.5, Token(43)), mammal(x0A),has_milk(x0A)),
     Rule(44, Value(0.5, Token(44)), mammal(x0A),has_gills(x0A)),
     Rule(45, Value(0.5, Token(45)), mammal(x0A),has_covering(x0A,x1C)),
     Rule(46, Value(0.5, Token(46)), mammal(x0A),has_covering(x0A,x1C),reptile(x0A)),
-    Rule(47, Value(0.5, Token(47)), mammal(x0A),fish(x0A),has_covering(x0A,x1C)),
     Rule(48, Value(0.5, Token(48)), mammal(x0A),bird(x0A),has_covering(x0A,x1C)),
     Rule(49, Value(0.5, Token(49)), mammal(x0A),has_covering(x0A,x1C),homeothermic(x0A)),
     Rule(50, Value(0.5, Token(50)), mammal(x0A),has_covering(x0A,x1C),has_eggs(x0A)),
     Rule(51, Value(0.5, Token(51)), mammal(x0A),has_covering(x0A,x1C),has_milk(x0A)),
     Rule(52, Value(0.5, Token(52)), mammal(x0A),has_covering(x0A,x1C),has_gills(x0A)),
     Rule(53, Value(0.5, Token(53)), mammal(x0A),feathers(x1C),has_covering(x0A,x1C)),
-    Rule(54, Value(0.5, Token(54)), mammal(x0A),has_covering(x0A,x1C),scales(x1C)),
     Rule(55, Value(0.5, Token(55)), mammal(x0A),hair(x1C),has_covering(x0A,x1C)),
     Rule(56, Value(0.5, Token(56)), mammal(x0A),has_covering(x0A,x1C),none(x1C)),
     Rule(57, Value(0.5, Token(57)), reptile(x0A),mammal(x0A)),
-    Rule(58, Value(0.5, Token(58)), reptile(x0A),fish(x0A)),
     Rule(59, Value(0.5, Token(59)), reptile(x0A),bird(x0A)),
-    Rule(60, Value(0.5, Token(60)), reptile(x0A),homeothermic(x0A)),
     Rule(61, Value(0.5, Token(61)), reptile(x0A),has_eggs(x0A)),
-    Rule(62, Value(0.5, Token(62)), reptile(x0A),has_milk(x0A)),
-    Rule(63, Value(0.5, Token(63)), reptile(x0A),has_gills(x0A)),
-    Rule(64, Value(0.5, Token(64)), reptile(x0A),has_covering(x0A,x1C)),
-    Rule(65, Value(0.5, Token(65)), reptile(x0A),has_covering(x0A,x1C),mammal(x0A)),
-    Rule(66, Value(0.5, Token(66)), reptile(x0A),fish(x0A),has_covering(x0A,x1C)),
-    Rule(67, Value(0.5, Token(67)), reptile(x0A),bird(x0A),has_covering(x0A,x1C)),
-    Rule(68, Value(0.5, Token(68)), reptile(x0A),has_covering(x0A,x1C),homeothermic(x0A)),
-    Rule(69, Value(0.5, Token(69)), reptile(x0A),has_covering(x0A,x1C),has_eggs(x0A)),
     Rule(70, Value(0.5, Token(70)), reptile(x0A),has_covering(x0A,x1C),has_milk(x0A)),
     Rule(71, Value(0.5, Token(71)), reptile(x0A),has_covering(x0A,x1C),has_gills(x0A)),
     Rule(72, Value(0.5, Token(72)), reptile(x0A),feathers(x1C),has_covering(x0A,x1C)),

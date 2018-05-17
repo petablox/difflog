@@ -2,7 +2,7 @@ package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
 
-class Inflammation extends Problem {
+class InflammationSoup75 extends Problem {
 	override val name = "inflammation"
 	val PSet = Range(0, 120).map(i => Atom(i)).toSet
 	val P = Domain("P", PSet)
@@ -46,13 +46,8 @@ class Inflammation extends Problem {
 	val x0P = Variable("x0P",P)
 	val soup = Set(
 		Rule(0, Value(0.5, Token(0)), inflamation(x0P),lumbar_pain(x0P),not_burning_urethra(x0P)),
-		Rule(1, Value(0.5, Token(1)), inflamation(x0P),lumbar_pain(x0P),not_micturition_pain(x0P)),
-		Rule(2, Value(0.5, Token(2)), inflamation(x0P),lumbar_pain(x0P),urine_pushing(x0P)),
 		Rule(3, Value(0.5, Token(3)), inflamation(x0P),lumbar_pain(x0P),micturition_pain(x0P)),
 		Rule(4, Value(0.5, Token(4)), inflamation(x0P),burning_urethra(x0P),lumbar_pain(x0P)),
-		Rule(5, Value(0.5, Token(5)), inflamation(x0P),lumbar_pain(x0P),not_nausea(x0P)),
-		Rule(6, Value(0.5, Token(6)), inflamation(x0P),lumbar_pain(x0P),not_lumbar_pain(x0P)),
-		Rule(7, Value(0.5, Token(7)), inflamation(x0P),lumbar_pain(x0P),not_urine_pushing(x0P)),
 		Rule(8, Value(0.5, Token(8)), inflamation(x0P),lumbar_pain(x0P),nausea(x0P)),
 		Rule(9, Value(0.5, Token(9)), inflamation(x0P),not_burning_urethra(x0P),not_micturition_pain(x0P)),
 		Rule(10, Value(0.5, Token(10)), inflamation(x0P),not_burning_urethra(x0P),urine_pushing(x0P)),
@@ -79,24 +74,14 @@ class Inflammation extends Problem {
 		Rule(31, Value(0.5, Token(31)), inflamation(x0P),not_urine_pushing(x0P),urine_pushing(x0P)),
 		Rule(32, Value(0.5, Token(32)), inflamation(x0P),nausea(x0P),urine_pushing(x0P)),
 		Rule(33, Value(0.5, Token(33)), inflamation(x0P),micturition_pain(x0P),not_burning_urethra(x0P)),
-		Rule(34, Value(0.5, Token(34)), inflamation(x0P),micturition_pain(x0P),not_micturition_pain(x0P)),
 		Rule(35, Value(0.5, Token(35)), inflamation(x0P),micturition_pain(x0P),urine_pushing(x0P)),
 		Rule(36, Value(0.5, Token(36)), inflamation(x0P),burning_urethra(x0P),micturition_pain(x0P)),
 		Rule(37, Value(0.5, Token(37)), inflamation(x0P),micturition_pain(x0P),not_nausea(x0P)),
 		Rule(38, Value(0.5, Token(38)), inflamation(x0P),micturition_pain(x0P),not_lumbar_pain(x0P)),
 		Rule(39, Value(0.5, Token(39)), inflamation(x0P),micturition_pain(x0P),not_urine_pushing(x0P)),
 		Rule(40, Value(0.5, Token(40)), inflamation(x0P),micturition_pain(x0P),nausea(x0P)),
-		Rule(41, Value(0.5, Token(41)), inflamation(x0P),burning_urethra(x0P),not_burning_urethra(x0P)),
-		Rule(42, Value(0.5, Token(42)), inflamation(x0P),burning_urethra(x0P),not_micturition_pain(x0P)),
 		Rule(43, Value(0.5, Token(43)), inflamation(x0P),burning_urethra(x0P),urine_pushing(x0P)),
 		Rule(44, Value(0.5, Token(44)), inflamation(x0P),burning_urethra(x0P),micturition_pain(x0P)),
-		Rule(45, Value(0.5, Token(45)), inflamation(x0P),burning_urethra(x0P),not_nausea(x0P)),
-		Rule(46, Value(0.5, Token(46)), inflamation(x0P),burning_urethra(x0P),not_lumbar_pain(x0P)),
-		Rule(47, Value(0.5, Token(47)), inflamation(x0P),burning_urethra(x0P),not_urine_pushing(x0P)),
-		Rule(48, Value(0.5, Token(48)), inflamation(x0P),burning_urethra(x0P),nausea(x0P)),
-		Rule(49, Value(0.5, Token(49)), inflamation(x0P),not_burning_urethra(x0P),not_nausea(x0P)),
-		Rule(50, Value(0.5, Token(50)), inflamation(x0P),not_micturition_pain(x0P),not_nausea(x0P)),
-		Rule(51, Value(0.5, Token(51)), inflamation(x0P),not_nausea(x0P),urine_pushing(x0P)),
 		Rule(52, Value(0.5, Token(52)), inflamation(x0P),micturition_pain(x0P),not_nausea(x0P)),
 		Rule(53, Value(0.5, Token(53)), inflamation(x0P),burning_urethra(x0P),not_nausea(x0P)),
 		Rule(54, Value(0.5, Token(54)), inflamation(x0P),not_lumbar_pain(x0P),not_nausea(x0P)),
@@ -104,12 +89,6 @@ class Inflammation extends Problem {
 		Rule(56, Value(0.5, Token(56)), inflamation(x0P),nausea(x0P),not_nausea(x0P)),
 		Rule(57, Value(0.5, Token(57)), inflamation(x0P),not_burning_urethra(x0P),not_lumbar_pain(x0P)),
 		Rule(58, Value(0.5, Token(58)), inflamation(x0P),not_lumbar_pain(x0P),not_micturition_pain(x0P)),
-		Rule(59, Value(0.5, Token(59)), inflamation(x0P),not_lumbar_pain(x0P),urine_pushing(x0P)),
-		Rule(60, Value(0.5, Token(60)), inflamation(x0P),micturition_pain(x0P),not_lumbar_pain(x0P)),
-		Rule(61, Value(0.5, Token(61)), inflamation(x0P),burning_urethra(x0P),not_lumbar_pain(x0P)),
-		Rule(62, Value(0.5, Token(62)), inflamation(x0P),not_lumbar_pain(x0P),not_nausea(x0P)),
-		Rule(63, Value(0.5, Token(63)), inflamation(x0P),not_lumbar_pain(x0P),not_urine_pushing(x0P)),
-		Rule(64, Value(0.5, Token(64)), inflamation(x0P),nausea(x0P),not_lumbar_pain(x0P)),
 		Rule(65, Value(0.5, Token(65)), inflamation(x0P),not_burning_urethra(x0P),not_urine_pushing(x0P)),
 		Rule(66, Value(0.5, Token(66)), inflamation(x0P),not_micturition_pain(x0P),not_urine_pushing(x0P)),
 		Rule(67, Value(0.5, Token(67)), inflamation(x0P),not_urine_pushing(x0P),urine_pushing(x0P)),
