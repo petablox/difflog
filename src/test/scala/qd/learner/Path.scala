@@ -37,6 +37,6 @@ Rule(13, Value(0.5, Token(13)), path(x2V,x1V),edge(x2V,x0V),path(x0V,x1V)),
 Rule(14, Value(0.5, Token(14)), path(x2V,x1V),edge(x0V,x1V),path(x2V,x0V)),
 Rule(15, Value(0.5, Token(15)), path(x2V,x1V),edge(x0V,x1V),edge(x2V,x0V)),
 )
-	override val expected = Set()
+	override val expected = Set(0,13)
 	override val maxVarCount: Int = 20
 }

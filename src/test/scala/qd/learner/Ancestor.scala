@@ -65,6 +65,6 @@ Rule(36, Value(0.5, Token(36)), ancestor(x2P,x1P),father(x2P,x0P),mother(x0P,x1P
 Rule(37, Value(0.5, Token(37)), ancestor(x2P,x1P),mother(x0P,x1P),mother(x2P,x0P)),
 )
 
-	override val expected = Set()
+	override val expected = Set(1,2,19,23)
 	override val maxVarCount: Int = 20
 }
