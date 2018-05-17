@@ -13,3 +13,4 @@ project/plugins/project/
 .history
 .cache
 .lib/
+.*.swp
