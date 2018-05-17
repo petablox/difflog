@@ -57,7 +57,8 @@ abstract class Problem extends FunSuite {
     val random: Random = new Random(seed)
     val learner = new Learner(edb, refOut, p0, random)
     learner.learn(0.01, 500)
-    println(s"Final program: ${learner.getPos}")
+    println(s"Best program: ${learner.getBest._2.toSeq.sortBy(_._1.name.asInstanceOf[Int])}")
+    println(s"Final program: ${learner.getPos.toSeq.sortBy(_._1.name.asInstanceOf[Int])}")
     println(s"Expected: ${expected.toSeq.sortBy(_.asInstanceOf[Int])}")
 
     println("Final program")

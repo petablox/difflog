@@ -54,12 +54,12 @@ class Scorer(edb: Config, refOut: Config) {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // S0 and S1
 
-  val s0D: Double = (for (rel <- outputRels.toSeq; t <- allTuples(rel)) yield 1.0 - refOut(rel)(t).toDouble).sum
-  val s1D: Double = (for (rel <- outputRels.toSeq; (_, lt) <- refOut(rel).support) yield lt.toDouble).sum
+  val s0D: Double = (for (rel <- outputRels.toSeq; t <- allTuples(rel).toSeq) yield 1.0 - refOut(rel)(t).toDouble).sum
+  val s1D: Double = (for (rel <- outputRels.toSeq; t <- allTuples(rel).toSeq) yield refOut(rel)(t).toDouble).sum
 
   def s0(out: Config): Double = {
     val s0T = for (rel <- outputRels.toSeq;
-                   t <- allTuples(rel);
+                   t <- allTuples(rel).toSeq;
                    vt = out(rel)(t).toDouble;
                    omlt = 1.0 - refOut(rel)(t).toDouble)
               yield (1.0 - vt) * omlt
@@ -69,7 +69,7 @@ class Scorer(edb: Config, refOut: Config) {
   }
 
   def gradS0(pos: TokenVec, out: Config): TokenVec = {
-    val numeratorVecs = for (rel <- outputRels.toSeq; t <- allTuples(rel); omlt = 1.0 - refOut(rel)(t).toDouble)
+    val numeratorVecs = for (rel <- outputRels.toSeq; t <- allTuples(rel).toSeq; omlt = 1.0 - refOut(rel)(t).toDouble)
                         yield gradient(pos, out, rel, t) * -omlt
     val numerator = numeratorVecs.foldLeft(TokenVec.zero(pos.keySet))(_ + _)
     numerator / s0D
@@ -77,7 +77,7 @@ class Scorer(edb: Config, refOut: Config) {
 
   def s1(out: Config): Double = {
     val s1T = for (rel <- outputRels.toSeq;
-                   t <- allTuples(rel);
+                   t <- allTuples(rel).toSeq;
                    vt = out(rel)(t).toDouble;
                    lt = refOut(rel)(t).toDouble)
               yield vt * lt
@@ -87,7 +87,7 @@ class Scorer(edb: Config, refOut: Config) {
   }
 
   def gradS1(pos: TokenVec, out: Config): TokenVec = {
-    val numeratorVecs = for (rel <- outputRels.toSeq; t <- allTuples(rel); lt = refOut(rel)(t).toDouble)
+    val numeratorVecs = for (rel <- outputRels.toSeq; t <- allTuples(rel).toSeq; lt = refOut(rel)(t).toDouble)
                         yield gradient(pos, out, rel, t) * lt
     val numerator: TokenVec = numeratorVecs.foldLeft(TokenVec.zero(pos.keySet))(_ + _)
     numerator / s1D
