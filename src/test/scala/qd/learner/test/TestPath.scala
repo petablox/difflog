@@ -4,7 +4,7 @@ import org.scalatest.{FunSuite, Ignore}
 
 class TestPath extends Problem {
 	override val name = "path"
-	val VSet = Range(0, 7).map(i => Atom(i)).toSet
+	val VSet = Range(0, 8).map(i => Atom(i)).toSet
 	val V = Domain("V", VSet)
 	val edge = Relation("edge", V,V)
 	val path = Relation("path", V,V)

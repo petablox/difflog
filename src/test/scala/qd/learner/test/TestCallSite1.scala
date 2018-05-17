@@ -1,9 +1,6 @@
 package qd
 package learner
 
-import jdk.nashorn.internal.ir.annotations.Ignore
-
-@Ignore
 class TestCallSite1 extends Problem {
   override val name: String = "CallSite1"
 
