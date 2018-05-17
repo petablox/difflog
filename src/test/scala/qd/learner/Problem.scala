@@ -28,9 +28,11 @@ abstract class Problem extends FunSuite {
   test(s"Applying seminaive evaluator to initial program of $name") {
     val startTime = System.nanoTime()
     val evaluator = SeminaiveEvaluator(p0)
-    evaluator(edb)
+    val out = evaluator(edb)
     val endTime = System.nanoTime()
+    val rmse = scorer.rmse(out)
     println(s"Evaluation finished in ${(endTime - startTime) / 1.0e9} seconds.")
+    println(s"RMS Error : ${rmse}.")
   }
 
   test(s"Estimating goodness of initial program of $name") {
