@@ -18,9 +18,9 @@ class Animals extends Problem {
 	val has_eggs = Relation("has_eggs", A)
 	val has_gills = Relation("has_gills", A)
 	val mammal = Relation("mammal", A)
-	val fish = Relation("fish", A,A)
+	val fish = Relation("fish", A)
 	val reptile = Relation("reptile", A)
-	val bird = Relation("bird", A,A)
+	val bird = Relation("bird", A)
 	val noneTuples = Set((3)).map { case (x0) => DTuple(Atom(x0)) }
 	val homeothermicTuples = Set((0),(1),(2),(3),(13),(14),(15),(16)).map { case (x0) => DTuple(Atom(x0)) }
 	val scalesTuples = Set((1)).map { case (x0) => DTuple(Atom(x0)) }
