@@ -225,5 +225,5 @@ class TestCallSite1 extends Problem {
   )
 
   override val expected: Set[Any] = Set(1, 8, 61, 93)
-  override val maxVarCount: Int = 20
+  override val maxVarCount: Int = 6
 }
