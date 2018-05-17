@@ -128,6 +128,6 @@ inflamation -> (Instance(inflamation) ++ inflamationTuples.map(t => t -> One).to
 		Rule(80, Value(0.5, Token(80)), inflamation(x0P),nausea(x0P),not_urine_pushing(x0P)),
 	)
 
-	override val expected = Set()
+	override val expected = Set(30,75)
 	override val maxVarCount: Int = 20
 }

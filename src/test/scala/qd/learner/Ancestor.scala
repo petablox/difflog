@@ -9,9 +9,9 @@ class Ancestor extends Problem {
 	val mother = Relation("mother", P,P)
 	val parent = Relation("parent", P,P)
 	val ancestor = Relation("ancestor", P,P)
-	val ancestorTuples = Set((1, 0),(4, 3),(2, 1),(3, 2)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
+	val parentTuples = Set((1, 0),(4, 3),(2, 1),(3, 2)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
 	val fatherTuples = Set((1, 0),(4, 3)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
-	val parentTuples = Set((1, 0),(4, 3),(2, 1),(3, 2),(2, 0),(3, 1),(3, 0),(4, 2),(4, 1),(4, 0)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
+	val ancestorTuples = Set((1, 0),(4, 3),(2, 1),(3, 2),(2, 0),(3, 1),(3, 0),(4, 2),(4, 1),(4, 0)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
 	val motherTuples = Set((2, 1),(3, 2)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
 override val edb = Config(
 father -> (Instance(father) ++ fatherTuples.map(t => t -> One).toMap),
