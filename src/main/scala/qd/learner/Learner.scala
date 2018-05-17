@@ -23,7 +23,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
   def learn(tgtLoss: Double, maxIters: Int): (Program, TokenVec, Config, Double) = {
     require(maxIters > 0)
     var (l2, numIters, gradAbs) = (tgtLoss + 1, 0, 1.0)
-    while (numIters < maxIters && l2 >= tgtLoss && gradAbs > 0) {
+    while (numIters < maxIters && l2 >= tgtLoss && gradAbs > 0 && step.abs > 0.0) {
       update()
       l2 = scorer.errorL2(out)
       numIters += 1
