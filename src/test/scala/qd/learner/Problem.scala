@@ -35,7 +35,7 @@ abstract class Problem extends FunSuite {
 
   test(s"Estimating goodness of initial program of $name") {
     for (cutoff <- Set(0.2, 0.3, 0.6)) {
-      val (_, l2) = scorer.cutoffL2(p0, cutoff)
+      val (_, l2, _) = scorer.cutoffL2(p0, cutoff)
       println(s"cutoff: $cutoff. l2: $l2")
     }
   }
@@ -63,17 +63,17 @@ abstract class Problem extends FunSuite {
 
     println("Final program")
     for (cutoff <- Range(0, 11).map(_ / 10.0)) {
-      val (p, l2) = learner.reinterpretL2(cutoff)
+      val (p, l2, usefulTokens) = learner.reinterpretL2(cutoff)
       val coeffs = p.rules.toSeq.sortBy(_.name.asInstanceOf[Int]).map(r => r.name)
-      println(s"cutoff: $cutoff. l2: $l2. pos: ${coeffs.mkString(", ")}")
+      println(s"cutoff: $cutoff. l2: $l2. usefulTokens: ${usefulTokens.toSeq.sortBy(_.name.asInstanceOf[Int]).mkString(", ")}")
     }
 
     println("Best program")
     val bestP = learner.getBest
     for (cutoff <- Range(0, 11).map(_ / 10.0)) {
-      val (p, l2) = scorer.cutoffL2(bestP._1, cutoff)
+      val (p, l2, usefulTokens) = scorer.cutoffL2(bestP._1, cutoff)
       val coeffs = p.rules.toSeq.sortBy(_.name.asInstanceOf[Int]).map(r => r.name)
-      println(s"cutoff: $cutoff. l2: $l2. pos: ${coeffs.mkString(", ")}")
+      println(s"cutoff: $cutoff. l2: $l2. usefulTokens: ${usefulTokens.toSeq.sortBy(_.name.asInstanceOf[Int]).mkString(", ")}")
     }
   }
 }

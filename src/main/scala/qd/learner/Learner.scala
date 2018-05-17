@@ -80,7 +80,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
     newPosLim
   }
 
-  def reinterpretL2(cutoff: Double): (Program, Double) = scorer.cutoffL2(p, cutoff)
+  def reinterpretL2(cutoff: Double): (Program, Double, Set[Token]) = scorer.cutoffL2(p, cutoff)
 
   def printWeights(): Unit = {
     for (r <- p.rules) println(s"name: ${r.name}, coeff: ${r.coeff}")

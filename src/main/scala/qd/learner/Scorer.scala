@@ -40,7 +40,7 @@ class Scorer(edb: Config, refOut: Config) {
 
   // Given a program and a cutoff value, computes the L2 loss
   // Lower is better
-  def cutoffL2(p: Program, cutoff: Double): (Program, Double) = {
+  def cutoffL2(p: Program, cutoff: Double): (Program, Double, Set[Token]) = {
     require(0.0 <= cutoff && cutoff <= 1.0)
     val highRules = p.rules.filter(_.coeff.toDouble >= cutoff).map(r =>
       Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)
@@ -48,7 +48,8 @@ class Scorer(edb: Config, refOut: Config) {
     val pHi = Program(p.name, highRules)
     val out = SeminaiveEvaluator(pHi)(edb)
     val l2 = outputRels.toSeq.map(rel => errorL2(out, rel)).sum
-    (pHi, l2)
+    val usefulTokens = for (rel <- outputRels.toSeq; t <- allTuples(rel).toSeq; token <- out(rel)(t).prov.toSeq) yield token
+    (pHi, l2, usefulTokens.toSet)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
