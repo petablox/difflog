@@ -176,6 +176,6 @@ Rule(151, Value(0.5, Token(151)), sgen(x3V,x1V),parent(x0V,x1V),parent(x3V,x2V),
 Rule(152, Value(0.5, Token(152)), sgen(x3V,x1V),parent(x0V,x1V),parent(x1V,x2V),sgen(x3V,x2V)),
 Rule(153, Value(0.5, Token(153)), sgen(x3V,x1V),parent(x0V,x1V),parent(x1V,x2V),parent(x3V,x2V)),
 )
-	override val expected = Set()
+	override val expected = Set(28, 133)
 	override val maxVarCount: Int = 20
 }
