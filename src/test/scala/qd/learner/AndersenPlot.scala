@@ -70,8 +70,7 @@ class AndersenPlot extends FunSuite {
   
 	test(s"Estimating goodness of initial program of $name") {
 		for (n <- Range(0, soup_pre.length + 1)) {
-			val soup = soup_pre.take(n).toSet.
-				map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body))
+			val soup: Set[Rule] = soup_pre.take(n).toSet.map((r: Rule) => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body))
 			val p = Program(s"AndersenPlot", soup)
 			val evaluator = SeminaiveEvaluator(p)
 			val out = evaluator(edb)
