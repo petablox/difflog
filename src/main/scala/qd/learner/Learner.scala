@@ -29,6 +29,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
       numIters += 1
       gradAbs = scorer.gradL2(pos, out).abs
     }
+    println(s"#Iterations: $numIters")
     getBest
   }
 
