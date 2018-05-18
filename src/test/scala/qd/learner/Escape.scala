@@ -27,7 +27,7 @@ class Escape extends Problem {
   val MmethRetTuples : Set[DTuple] = Set((0,1),(2,1)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
   val VHTuples : Set[DTuple] = Set((1,1),(0,0),(2,2),(3,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
   val HFHTuples : Set[DTuple] = Set((0,1),(1,2),(2,3),(0,2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val rMHTuples : Set[DTuple] = Set((0,0),(0,1),(0,2),(0,3),(1,3),(2,2),(2,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val rMHTuples : Set[DTuple] = Set((0,0),(0,2),(0,3),(1,3),(2,2),(2,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
   val rRHTuples : Set[DTuple] = Set((0,1),(0,2),(0,3),(2,1),(2,2),(2,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
   val rHHTuples : Set[DTuple] = Set((0,1),(1,2),(2,3),(0,2),(1,3),(0,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
 
