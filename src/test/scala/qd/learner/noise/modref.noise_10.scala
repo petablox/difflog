@@ -1,7 +1,7 @@
 package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
-@Ignore
+
 class Genmodref_10 extends Problem {
 	override val name = "modref"
 	val ISet = Range(0, 8).map(i => Atom(i)).toSet

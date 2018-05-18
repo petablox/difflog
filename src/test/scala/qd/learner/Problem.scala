@@ -15,7 +15,7 @@ abstract class Problem extends FunSuite {
 
   def p0: Program = Program(s"Soup-$name", soup.filter(_.freeVariables.size <= maxVarCount))
   lazy val scorer = new Scorer(edb, refOut)
-
+/*
   test("Counting number of free variables in each rule") {
     var idx = 0
     for (rule <- soup.toSeq.sortBy(-_.freeVariables.size)) {
@@ -24,7 +24,7 @@ abstract class Problem extends FunSuite {
       idx += 1
     }
   }
-
+*/
   test(s"Applying seminaive evaluator to initial program of $name") {
     val startTime = System.nanoTime()
     val evaluator = SeminaiveEvaluator(p0)
@@ -34,7 +34,7 @@ abstract class Problem extends FunSuite {
     println(s"Evaluation finished in ${(endTime - startTime) / 1.0e9} seconds.")
     println(s"RMS Error : $rmse.")
   }
-
+/*
   test(s"Estimating goodness of initial program of $name") {
     for (cutoff <- Range(0, 11).map(_ / 10.0)) {
       val (_, l2, usefulTokens) = scorer.cutoffL2(p0, cutoff)
@@ -52,7 +52,7 @@ abstract class Problem extends FunSuite {
     val l2 = scorer.errorL2(out)
     val endTime = System.nanoTime()
     println(s"L2: $l2. Evaluation finished in ${(endTime - startTime) / 1.0e9} seconds.")
-  }
+  }*/
 
   test(s"Learning $name") {
     val seed = Try(sys.env.getOrElse("RANDOM_SEED", "0").toInt).getOrElse(0)
@@ -64,14 +64,14 @@ abstract class Problem extends FunSuite {
     println(s"Expected: ${expected.toSeq.sortBy(_.asInstanceOf[Int])}")
 
     println("Final program")
-    for (cutoff <- Range(0, 11).map(_ / 10.0)) {
+    for (cutoff <- Range(0, 21).map(_ / 20.0)) {
       val (p, l2, usefulTokens) = learner.reinterpretL2(cutoff)
       println(s"cutoff: $cutoff. l2: $l2. usefulTokens: ${usefulTokens.toSeq.sortBy(_.name.asInstanceOf[Int]).mkString(", ")}")
     }
 
     println("Best program")
     val bestP = learner.getBest
-    for (cutoff <- Range(0, 11).map(_ / 10.0)) {
+    for (cutoff <- Range(0, 21).map(_ / 20.0)) {
       val (p, l2, usefulTokens) = scorer.cutoffL2(bestP._1, cutoff)
       println(s"cutoff: $cutoff. l2: $l2. usefulTokens: ${usefulTokens.toSeq.sortBy(_.name.asInstanceOf[Int]).mkString(", ")}")
     }

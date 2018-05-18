@@ -1,7 +1,7 @@
 package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
-@Ignore
+
 class Genpolysite_1 extends Problem {
 	override val name = "polysite"
 	val ISet = Range(0, 17).map(i => Atom(i)).toSet

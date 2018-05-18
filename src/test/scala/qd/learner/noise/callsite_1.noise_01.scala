@@ -1,7 +1,7 @@
 package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
-@Ignore
+
 class Gencallsite_1_1 extends Problem {
 	override val name = "callsite_1"
 	val CSet = Range(0, 4).map(i => Atom(i)).toSet

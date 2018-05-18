@@ -1,7 +1,7 @@
 package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
-@Ignore
+
 class Genanimals_5 extends Problem {
 	override val name = "animals"
 	val ASet = Range(0, 21).map(i => Atom(i)).toSet

@@ -71,7 +71,7 @@ class TestAncestor extends Problem {
 	override val expected = Set(1,2,19,23)
 	override val maxVarCount: Int = 20
 
-  val usefulTokens= Set(2, 3, 9, 15, 21, 22)
+  val usefulTokens= Set(2, 3, 20, 27, 34, 37)
   val soup =
     soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
     filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))

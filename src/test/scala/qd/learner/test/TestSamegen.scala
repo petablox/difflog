@@ -179,7 +179,7 @@ class TestSamegen extends Problem {
     )
   override val expected = Set(28, 133)
   override val maxVarCount: Int = 20
-  val usefulTokens= Set(29, 44, 133)
+  val usefulTokens= Set(29, 134, 154)
   val soup =
     soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
     filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))

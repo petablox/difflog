@@ -1,7 +1,7 @@
 package qd
 package learner
 import org.scalatest.{FunSuite, Ignore}
-@Ignore
+
 class Genpath_5 extends Problem {
 	override val name = "path"
 	val VSet = Range(0, 7).map(i => Atom(i)).toSet
