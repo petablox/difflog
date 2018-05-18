@@ -127,6 +127,6 @@ class Modref extends Problem {
     Rule(30	,Value(0.5, Token(30	)),modInstField(x0M,x1H,x2F), MgetInstFldInst(x0M,x3V,x4V,x2F),VH(x4V,x1H)),
   )
 
-  override val expected: Set[Any] = Set(1, 2, 9, 13, 15, 17, 25, 26, 27, 29)
+  override val expected: Set[Any] = Set(1, 2, 9, 13, 17, 22, 25, 26, 27, 29)
   override val maxVarCount: Int = 20
 }

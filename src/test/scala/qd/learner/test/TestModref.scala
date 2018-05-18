@@ -33,13 +33,13 @@ class TestModref extends Problem {
   val refInstField : Relation = Relation("refInstField", m, h, f)
   val modInstField : Relation = Relation("modInstField", m, h, f)
 
-  val MgetInstFldInstTuples : Set[DTuple] = Set((5, 2, 0, 2), (1, 6, 0, 1), (5, 3, 7, 1), (3, 0, 5, 6), (4, 6, 5, 6), (1, 2, 0, 1)).map{ case (a,b,c,d) => DTuple(Atom(a), Atom(b), Atom(c), Atom(d)) }
-  val MputInstFldInstTuples : Set[DTuple] = Set((6, 0, 2, 7), (1, 3, 6, 2), (3, 6, 3, 6), (2, 7, 5, 2), (6, 2, 5, 7), (4, 4, 0, 3), (2, 2, 6, 3), (3, 7, 4, 4)).map{ case (a,b,c,d) => DTuple(Atom(a), Atom(b), Atom(c), Atom(d)) }
-  val MgetStatFldInstTuples : Set[DTuple] = Set((0, 1, 6), (7, 6, 2), (3, 2, 6), (2, 3, 7), (1, 2, 0), (1, 7, 6)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c))}
-  val MputStatFldInstTuples : Set[DTuple] = Set((1, 5, 7), (0, 5, 4), (2, 4, 4)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c))}
-  val VHTuples : Set[DTuple] = Set((0, 6), (7, 5), (6, 0), (5, 0)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val MITuples : Set[DTuple] = Set((7, 3), (3, 2), (2, 6), (3, 3), (7, 1), (1, 3), (7, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val IMTuples : Set[DTuple] = Set((3, 2), (6, 3), (6, 2), (1, 6), (7, 2), (3, 6), (1, 7), (2, 5), (2, 4), (6, 5)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val MgetInstFldInstTuples : Set[DTuple] = Set((2, 5, 0, 0), (4, 6, 7, 0), (0, 2, 1, 0), (3, 1, 2, 4), (6, 2, 4, 2)).map{ case (a,b,c,d) => DTuple(Atom(a), Atom(b), Atom(c), Atom(d)) }
+  val MputInstFldInstTuples : Set[DTuple] = Set((7, 5, 1, 4), (2, 2, 1, 6), (5, 1, 5, 2), (4, 1, 5, 3), (7, 3, 0, 2), (2, 4, 2, 3), (0, 5, 2, 1)).map{ case (a,b,c,d) => DTuple(Atom(a), Atom(b), Atom(c), Atom(d)) }
+  val MgetStatFldInstTuples : Set[DTuple] = Set((4, 0, 1), (0, 1, 1), (1, 0, 4), (0, 1, 2), (6, 2, 3), (2, 7, 0), (7, 7, 6)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c))}
+  val MputStatFldInstTuples : Set[DTuple] = Set((2, 2, 1), (0, 2, 0), (7, 7, 7), (7, 2, 3)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c))}
+  val VHTuples : Set[DTuple] = Set((5, 2), (1, 1), (3, 6), (2, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val MITuples : Set[DTuple] = Set((5, 5), (6, 6), (6, 0), (2, 1), (5, 0), (1, 7), (3, 7), (4, 1)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val IMTuples : Set[DTuple] = Set((0, 1), (7, 1), (4, 5), (6, 3), (1, 5), (0, 5), (3, 7), (5, 1), (4, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
 
   override val edb : Config = Config(
     MgetInstFldInst -> (Instance(MgetInstFldInst) ++ MgetInstFldInstTuples.map(t => t -> One).toMap),
@@ -51,14 +51,11 @@ class TestModref extends Problem {
     MI -> (Instance(MI) ++ MITuples.map(t => t -> One).toMap),
   )
 
-  val rMMTuples : Set[DTuple] = Set((1, 2), (7, 3), (3, 2), (1, 3), (3, 3), (7, 6), (7, 7), (2, 6), (7, 4), (1, 5), (7, 5), (2, 3),
-    (1, 4), (3, 6), (2, 2), (1, 6), (2, 5), (3, 4), (2, 4), (7, 2), (3, 5)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val refStatFieldTuples : Set[DTuple] = Set((2, 7), (2, 6), (7, 6), (7, 7), (0, 6), (1, 6), (3, 6), (1, 7), (3, 7), (1, 0), (7, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val modStatFieldTuples : Set[DTuple] = Set((0, 1), (1, 2), (3, 2), (1, 3), (3, 3), (7, 3), (7, 6), (2, 2), (2, 3), (1, 7), (7, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val refInstFieldTuples : Set[DTuple] = Set((5, 6, 2), (3, 5, 1), (1, 6, 2), (2, 6, 2), (7, 5, 1), (7, 6, 2), (3, 6, 2), (2, 5, 1),
-    (5, 5, 1), (4, 0, 6), (1, 5, 1), (7, 0, 6), (1, 0, 6), (2, 0, 6), (3, 0, 6), (1, 6, 1)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c)) }
-  val modInstFieldTuples : Set[DTuple] = Set((7, 5, 5), (1, 0, 3), (3, 5, 4), (2, 0, 3), (2, 6, 2), (7, 0, 3), (3, 0, 3), (2, 5, 4), (7, 6, 2),
-    (2, 5, 5), (3, 6, 2), (6, 6, 2), (1, 6, 2), (1, 5, 5), (7, 5, 4), (3, 5, 5), (1, 5, 4)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c))}
+  val rMMTuples : Set[DTuple] = Set((5, 5), (4, 5), (6, 1), (3, 1), (2, 1), (6, 3), (5, 1), (2, 5), (4, 1), (1, 1), (6, 5)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val refStatFieldTuples : Set[DTuple] = Set((0, 1), (6, 4), (5, 4), (3, 4), (7, 6), (4, 4), (1, 4), (2, 4), (6, 3), (2, 0), (4, 1), (0, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val modStatFieldTuples : Set[DTuple] = Set((2, 2), (7, 7), (7, 2), (0, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val refInstFieldTuples : Set[DTuple] = Set((0, 1, 0), (3, 2, 4), (6, 2, 4)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c)) }
+  val modInstFieldTuples : Set[DTuple] = Set((6, 1, 5), (2, 2, 1), (2, 1, 5), (0, 2, 2), (5, 1, 5), (7, 6, 0), (4, 1, 5), (7, 2, 1)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c))}
 
   override val refOut : Config = Config (
     rMM -> (Instance(rMM) ++ rMMTuples.map(t => t -> One).toMap),
@@ -128,9 +125,10 @@ class TestModref extends Problem {
 		Rule(30, Value(0.010000, Token(30)), modInstField(x0M,x1H,x2F),MgetInstFldInst(x0M,x3V,x4V,x2F),VH(x4V,x1H)),
   )
 
-  override val expected: Set[Any] = Set(1, 2, 9, 13, 15, 17, 25, 26, 27, 29)
+  override val expected: Set[Any] = Set(1, 2, 9, 13, 17, 22, 25, 26, 27, 29)
   override val maxVarCount: Int = 20
   val usefulTokens= Set(1, 2, 4, 9, 13, 17, 22, 25, 26, 27, 29)
+  //val usefulTokens = Set(1, 2, 9, 13, 17, 25, 26, 27, 29)
   val soup =
     soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
     filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
