@@ -2,9 +2,9 @@ package qd
 package learner
 
 import scala.util.{Random, Try}
-import org.scalatest.Ignore
+import org.scalatest.{FunSuite, Ignore}
 
-class AndersenScalability extends Problem {
+class AndersenScalability extends FunSuite {
   val name: String = "Andersen"
 
   val heapSet: Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
@@ -20,7 +20,7 @@ class AndersenScalability extends Problem {
   val assgnTuples: Set[DTuple] = Set((4, 1)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
   val storeTuples: Set[DTuple] = Set((4, 5)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
   val loadTuples: Set[DTuple] = Set((7, 2)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
-  override val edb: Config = Config(addr -> (Instance(addr) ++ addrTuples.map(t => t -> One).toMap),
+  val edb: Config = Config(addr -> (Instance(addr) ++ addrTuples.map(t => t -> One).toMap),
                                     assgn -> (Instance(assgn) ++ assgnTuples.map(t => t -> One).toMap),
                                     store -> (Instance(store) ++ storeTuples.map(t => t -> One).toMap),
                                     load -> (Instance(load) ++ loadTuples.map(t => t -> One).toMap))
@@ -34,7 +34,7 @@ class AndersenScalability extends Problem {
   val x2: Variable = Variable("x2", heap)
   val x3: Variable = Variable("x3", heap)
 
-  override val soup: Set[Rule] = Set(
+  val soup_pre: Set[Rule] = Set(
     Rule(1, Value(0.5, Token(1)), pt(x0, x1), addr(x0, x1)),
     Rule(2, Value(0.5, Token(2)), pt(x0, x1), assgn(x0, x1)),
     Rule(3, Value(0.5, Token(3)), pt(x0, x1), load(x0, x1)),
@@ -64,8 +64,8 @@ class AndersenScalability extends Problem {
     Rule(27, Value(0.5, Token(27)), pt(x3, x1), pt(x2, x0), pt(x3, x2), store(x0, x1))
   )
 
-  override val expected: Set[Any] = Set(1, 7, 17, 23)
-  override val maxVarCount: Int = 20
+  val expected: Set[Any] = Set(1, 7, 17, 23)
+  val maxVarCount: Int = 20
   
   test(s"Scalability") {
     for (nrules <- Range(10, 31)) {
