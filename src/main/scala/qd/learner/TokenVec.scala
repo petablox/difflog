@@ -25,7 +25,7 @@ case class TokenVec(m: Map[Token, Double]) extends Map[Token, Double] {
     token -> (if (!vd.isNaN) vd else 0)
   })
 
-  def abs: Double = m.values.map(v => v * v).sum
+  def abs: Double = Math.sqrt(m.values.map(v => v * v).sum)
   def unit: TokenVec = this / abs
 
   def reorient(p: Program): Program = {
