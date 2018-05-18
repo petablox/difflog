@@ -223,7 +223,7 @@ class TestCallSite1 extends Problem {
 
   override val expected: Set[Any] = Set(1, 8, 61, 93)
   override val maxVarCount: Int = 6
-  val usefulTokens= Set(1, 8, 13)
+  val usefulTokens= Set(1, 8, 13, 61, 93)
   val soup =
     soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
     filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))

@@ -91,7 +91,7 @@ class TestEscape extends Problem {
 
   override val expected: Set[Any] = Set(1, 4, 6, 14, 18, 22)
   override val maxVarCount: Int = 20
-  val usefulTokens= Set(1, 3, 6, 12, 18, 22, 23)
+  val usefulTokens= Set(1, 3, 6, 12, 18, 25)
   val soup =
     soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
     filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
