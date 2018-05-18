@@ -64,7 +64,7 @@ class TestPolysite extends Problem {
   val x4C : Variable = Variable("x4C", C)
 
   // Expected: 2, 139, 160
-  override val soup : Set[Rule] = Set(
+  val soup_pre : Set[Rule] = Set(
 		Rule(1, Value(0.038144, Token(1)), virtI(x0I),insvIM(x0I,x1M)),
 		Rule(2, Value(0.171454, Token(2)), virtI(x0I),virtIM(x0I,x1M)),
 		Rule(3, Value(0.010000, Token(3)), virtI(x1I),CICM(x0C,x1I,x2M)),
@@ -577,4 +577,8 @@ class TestPolysite extends Problem {
 
   override val expected: Set[Any] = Set(2, 139, 160)
   override val maxVarCount: Int = 3
+  val usefulTokens= Set(2)
+  val soup =
+    soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
+    filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
 }

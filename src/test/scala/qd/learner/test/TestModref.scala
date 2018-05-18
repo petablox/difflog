@@ -95,7 +95,7 @@ class TestModref extends Problem {
   val x3F : Variable = Variable("x3F", f)
 
   // expected: 1, 2, 9, 13, 17, 22, 25, 26, 27, 29
-  override val soup: Set[Rule] = Set(
+  val soup_pre: Set[Rule] = Set(
 		Rule(1, Value(0.990000, Token(1)), rMM(x0M,x1M),rMM(x0M,x2M),rMM(x2M,x1M)),
 		Rule(2, Value(0.990000, Token(2)), rMM(x0M,x1M),IM(x2I,x1M),MI(x0M,x2I)),
 		Rule(3, Value(0.642100, Token(3)), rMM(x0M,x1M),rMM(x2M,x0M),rMM(x2M,x3M),rMM(x3M,x1M)),
@@ -130,4 +130,9 @@ class TestModref extends Problem {
 
   override val expected: Set[Any] = Set(1, 2, 9, 13, 15, 17, 25, 26, 27, 29)
   override val maxVarCount: Int = 20
+  val usefulTokens= Set(1, 2, 4, 9, 13, 17, 22, 25, 26, 27, 29)
+  val soup =
+    soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
+    filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
+
 }

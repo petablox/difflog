@@ -60,7 +60,7 @@ class TestEscape extends Problem {
   val x3M : Variable = Variable("x3M", method)
 
   // Expected: 1, 4, 6, 14, 18, 22
-  override val soup: Set[Rule] = Set(
+  val soup_pre: Set[Rule] = Set(
 		Rule(1, Value(0.990000, Token(1)), rHH(x0H,x2H),HFH(x0H,x2H)),
 		Rule(2, Value(0.243132, Token(2)), rHH(x3H,x2H),HFH(x0H,x2H),rHH(x3H,x0H)),
 		Rule(3, Value(0.990000, Token(3)), rHH(x0H,x3H),HFH(x0H,x2H),rHH(x2H,x3H)),
@@ -91,4 +91,8 @@ class TestEscape extends Problem {
 
   override val expected: Set[Any] = Set(1, 4, 6, 14, 18, 22)
   override val maxVarCount: Int = 20
+  val usefulTokens= Set(1, 3, 6, 11, 12, 14, 18, 22)
+  val soup =
+    soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
+    filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
 }

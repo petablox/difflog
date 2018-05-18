@@ -4,7 +4,7 @@ import org.scalatest.{FunSuite, Ignore}
 
 class TestAnimals extends Problem {
   override val name = "animals"
-  val ASet = Range(0, 21).map(i => Atom(i)).toSet
+  val ASet = Range(0, 64).map(i => Atom(i)).toSet
   val A = Domain("A", ASet)
   val CSet = Range(0, 4).map(i => Atom(i)).toSet
   val C = Domain("C", CSet)
@@ -58,7 +58,7 @@ class TestAnimals extends Problem {
     )
   val x0A = Variable("x0A",A)
   val x1C = Variable("x1C",C)
-  val soup = Set(
+  val soup_pre = Set(
 		Rule(1, Value(0.010000, Token(1)), bird(x0A),reptile(x0A)),
 		Rule(2, Value(0.010000, Token(2)), bird(x0A),mammal(x0A)),
 		Rule(3, Value(0.010000, Token(3)), bird(x0A),fish(x0A)),
@@ -139,4 +139,9 @@ class TestAnimals extends Problem {
 
   override val expected = Set(15,25,51,73)
   override val maxVarCount: Int = 20
+  val usefulTokens= Set(16, 26, 52, 74)
+  val soup =
+    soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
+    filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
+
 }

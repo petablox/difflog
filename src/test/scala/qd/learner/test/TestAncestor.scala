@@ -27,7 +27,7 @@ class TestAncestor extends Problem {
 	val x2P = Variable("x2P",P)
 	val x0P = Variable("x0P",P)
 	val x1P = Variable("x1P",P)
-	val soup = Set(
+	val soup_pre = Set(
 		Rule(1, Value(0.619612, Token(1)), parent(x0P,x1P),ancestor(x0P,x1P)),
 		Rule(2, Value(0.990000, Token(2)), parent(x0P,x1P),father(x0P,x1P)),
 		Rule(3, Value(0.990000, Token(3)), parent(x0P,x1P),mother(x0P,x1P)),
@@ -70,4 +70,9 @@ class TestAncestor extends Problem {
 
 	override val expected = Set(1,2,19,23)
 	override val maxVarCount: Int = 20
+
+  val usefulTokens= Set(2, 3, 9, 15, 21, 22)
+  val soup =
+    soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
+    filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
 }

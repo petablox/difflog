@@ -19,24 +19,30 @@ class TestPath extends Problem {
 	val x1V = Variable("x1V",V)
 	val x0V = Variable("x0V",V)
 	val x2V = Variable("x2V",V)
-	val soup = Set(
-		Rule(0, Value(0.990000, Token(0)), path(x0V,x1V),edge(x0V,x1V)),
-		Rule(1, Value(0.368783, Token(1)), path(x0V,x1V),edge(x0V,x1V),path(x0V,x2V)),
-		Rule(2, Value(0.010000, Token(2)), path(x1V,x0V),edge(x0V,x2V),path(x0V,x1V)),
-		Rule(3, Value(0.010000, Token(3)), path(x1V,x0V),edge(x0V,x1V),path(x0V,x2V)),
-		Rule(4, Value(0.142155, Token(4)), path(x1V,x2V),path(x0V,x1V),path(x0V,x2V)),
-		Rule(5, Value(0.010000, Token(5)), path(x1V,x2V),edge(x0V,x2V),path(x0V,x1V)),
-		Rule(6, Value(0.010000, Token(6)), path(x1V,x2V),edge(x0V,x1V),path(x0V,x2V)),
-		Rule(7, Value(0.010000, Token(7)), path(x1V,x2V),edge(x0V,x1V),edge(x0V,x2V)),
-		Rule(8, Value(0.386567, Token(8)), path(x0V,x1V),edge(x0V,x1V),path(x2V,x0V)),
-		Rule(9, Value(0.177378, Token(9)), path(x0V,x1V),edge(x0V,x1V),edge(x2V,x0V)),
-		Rule(10, Value(0.833846, Token(10)), path(x2V,x0V),edge(x2V,x0V),path(x0V,x1V)),
-		Rule(11, Value(0.599779, Token(11)), path(x2V,x0V),edge(x0V,x1V),edge(x2V,x0V)),
-		Rule(12, Value(0.719907, Token(12)), path(x2V,x1V),path(x0V,x1V),path(x2V,x0V)),
-		Rule(13, Value(0.990000, Token(13)), path(x2V,x1V),edge(x2V,x0V),path(x0V,x1V)),
-		Rule(14, Value(0.975911, Token(14)), path(x2V,x1V),edge(x0V,x1V),path(x2V,x0V)),
-		Rule(15, Value(0.990000, Token(15)), path(x2V,x1V),edge(x0V,x1V),edge(x2V,x0V)),
+	val soup_pre = Set(
+		Rule(1, Value(0.990000, Token(1)), path(x0V,x1V),edge(x0V,x1V)),
+		Rule(2, Value(0.368783, Token(2)), path(x0V,x1V),edge(x0V,x1V),path(x0V,x2V)),
+		Rule(3, Value(0.010000, Token(3)), path(x1V,x0V),edge(x0V,x2V),path(x0V,x1V)),
+		Rule(4, Value(0.010000, Token(4)), path(x1V,x0V),edge(x0V,x1V),path(x0V,x2V)),
+		Rule(5, Value(0.142155, Token(5)), path(x1V,x2V),path(x0V,x1V),path(x0V,x2V)),
+		Rule(6, Value(0.010000, Token(6)), path(x1V,x2V),edge(x0V,x2V),path(x0V,x1V)),
+		Rule(7, Value(0.010000, Token(7)), path(x1V,x2V),edge(x0V,x1V),path(x0V,x2V)),
+		Rule(8, Value(0.010000, Token(8)), path(x1V,x2V),edge(x0V,x1V),edge(x0V,x2V)),
+		Rule(9, Value(0.386567, Token(9)), path(x0V,x1V),edge(x0V,x1V),path(x2V,x0V)),
+		Rule(10, Value(0.177378, Token(10)), path(x0V,x1V),edge(x0V,x1V),edge(x2V,x0V)),
+		Rule(11, Value(0.833846, Token(11)), path(x2V,x0V),edge(x2V,x0V),path(x0V,x1V)),
+		Rule(12, Value(0.599779, Token(12)), path(x2V,x0V),edge(x0V,x1V),edge(x2V,x0V)),
+		Rule(13, Value(0.719907, Token(13)), path(x2V,x1V),path(x0V,x1V),path(x2V,x0V)),
+		Rule(14, Value(0.990000, Token(14)), path(x2V,x1V),edge(x2V,x0V),path(x0V,x1V)),
+		Rule(15, Value(0.975911, Token(15)), path(x2V,x1V),edge(x0V,x1V),path(x2V,x0V)),
+		Rule(16, Value(0.990000, Token(16)), path(x2V,x1V),edge(x0V,x1V),edge(x2V,x0V)),
 		)
+
 	override val expected = Set(0,13)
 	override val maxVarCount: Int = 20
+
+  val usefulTokens= Set(1, 15, 16)
+  val soup =
+    soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
+    filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
 }

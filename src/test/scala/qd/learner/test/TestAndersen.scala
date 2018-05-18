@@ -56,7 +56,7 @@ class TestAndersen extends Problem {
   val x2: Variable = Variable("x2", heap)
   val x3: Variable = Variable("x3", heap)
 
-	override val soup: Set[Rule] = Set(
+	val soup_pre: Set[Rule] = Set(
 		Rule(1, Value(0.990000, Token(1)), pt(x0,x1),addr(x0,x1)),
 		Rule(2, Value(0.010000, Token(2)), pt(x0,x1),assgn(x0,x1)),
 		Rule(3, Value(0.010000, Token(3)), pt(x0,x1),load(x0,x1)),
@@ -88,5 +88,8 @@ class TestAndersen extends Problem {
 
   override val expected: Set[Any] = Set(1, 7, 17, 23)
   override val maxVarCount: Int = 20
-  
+  val usefulTokens= Set(1, 7, 17, 23)
+  val soup =
+    soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
+    filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
 }

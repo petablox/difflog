@@ -124,7 +124,7 @@ class TestCallSite1 extends Problem {
   val x4M: Variable = Variable("x4M", M)
 
   // expected: 1, 8, 61, 93
-  val soup : Set[Rule] = Set(
+  val soup_pre : Set[Rule] = Set(
     Rule(1,Value(0.5, Token(1)),pointsto(x2C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),
     Rule(2,Value(0.5, Token(2)),pointsto(x3C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),
     Rule(3,Value(0.5, Token(3)),pointsto(x2C,x0V,x1H), assign(x2C,x0V,x3C,x4V),points_initial(x0V,x1H)),
@@ -223,4 +223,8 @@ class TestCallSite1 extends Problem {
 
   override val expected: Set[Any] = Set(1, 8, 61, 93)
   override val maxVarCount: Int = 6
+  val usefulTokens= Set(1, 8, 13)
+  val soup =
+    soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
+    filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
 }
