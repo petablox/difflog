@@ -2,12 +2,12 @@ package qd
 
 import scala.collection.parallel.ParSeq
 
-case class SeminaiveEvaluator(override val program: Program) extends Evaluator("Seminaive", program) {
+case class SeminaiveEvaluator[T <: Value[T]](override val program: Program[T])(implicit num : OneAndZero[T]) extends Evaluator("Seminaive", program) {
 
   private var numAppliedRules = 0
   private var numIters = 0
 
-  override def apply(edb: Config): Config = {
+  override def apply(edb: Config[T]): Config[T] = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
     while (delta.nonEmptySupport) {
       // println("Starting immediate consequence epoch!")
@@ -20,7 +20,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     config
   }
 
-  def immediateConsequence(config: Config, delta: Config): (Config, Config) = {
+  def immediateConsequence(config: Config[T], delta: Config[T]): (Config[T], Config[T]) = {
     var (newConfig, deltaCurr, deltaNext) = (config, delta, Config())
     numAppliedRules = 0
     for (rule <- rules) {
@@ -47,8 +47,8 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     (newConfig, deltaNext)
   }
 
-  def immediateConsequence(rule: Rule, config: Config,
-                           deltaCurr: Config, deltaNext: Config): (Config, Config, Config) = {
+  def immediateConsequence(rule: Rule[T], config: Config[T],
+                           deltaCurr: Config[T], deltaNext: Config[T]): (Config[T], Config[T], Config[T]) = {
     var (newConfig, newDeltaCurr, newDeltaNext) = (config, deltaCurr, deltaNext)
     for (literal <- rule.body) {
       val cdd = immediateConsequence(rule, literal, newConfig, newDeltaCurr, newDeltaNext)
@@ -60,8 +60,8 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     (newConfig, newDeltaCurr, newDeltaNext)
   }
 
-  def immediateConsequence(rule: Rule, deltaLiteral: Literal,
-                           config: Config, deltaCurr: Config, deltaNext: Config): (Config, Config, Config) = {
+  def immediateConsequence(rule: Rule[T], deltaLiteral: Literal,
+                           config: Config[T], deltaCurr: Config[T], deltaNext: Config[T]): (Config[T], Config[T], Config[T]) = {
     require(rule.body.contains(deltaLiteral))
     // println(s"    deltaLiteral: $deltaLiteral")
 
@@ -77,7 +77,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
         val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
         bodyVals = bodyVals.map(_.project(relevantVars))
         bodyVals = bodyVals.groupBy(_.backingMap)
-                           .mapValues(_.map(_.score).foldLeft(Zero: Value)(_ + _))
+                           .mapValues(_.map(_.score).foldLeft(num.Zero)(_ + _))
                            .toSeq.map(mv => Valuation(mv._1, mv._2))
         // println(s"  bodyVals.size: ${bodyVals.size}. Was originally $originalSize. " +
         //         s"relevantVars: ${relevantVars.mkString(", ")}")
@@ -104,7 +104,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     (newConfig, newDeltaCurr, newDeltaNext)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: ParSeq[Valuation]): ParSeq[Valuation] = {
+  def extend(literal: Literal, config: Config[T], bodyVals: ParSeq[Valuation[T]]): ParSeq[Valuation[T]] = {
     for (valuation <- bodyVals;
          f = valuation.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
@@ -112,7 +112,7 @@ case class SeminaiveEvaluator(override val program: Program) extends Evaluator("
     yield newValuation * score
   }
 
-  def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {
+  def extend(literal: Literal, tuple: DTuple, valuation: Valuation[T]): Option[Valuation[T]] = {
     var ans = valuation
     for ((par, field) <- literal.parameters.zip(tuple)) {
       par match {

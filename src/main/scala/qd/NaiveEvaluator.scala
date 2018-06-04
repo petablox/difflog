@@ -2,9 +2,10 @@ package qd
 
 import scala.collection.parallel.ParSeq
 
-case class NaiveEvaluator(override val program: Program) extends Evaluator("Naive", program) {
+case class NaiveEvaluator[T <: Value[T]](override val program: Program[T])(implicit num: OneAndZero[T])
+  extends Evaluator("Naive", program) {
 
-  override def apply(edb: Config): Config = {
+  override def apply(edb: Config[T]): Config[T] = {
     var (config, changed) = (edb, true)
     while (changed) {
       // println("Starting immediate consequence epoch!")
@@ -15,7 +16,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     config
   }
 
-  def immediateConsequence(config: Config): (Config, Boolean) = {
+  def immediateConsequence(config: Config[T]): (Config[T], Boolean) = {
     var (c, d) = (config, false)
     for (rule <- rules) {
       val startTime = System.nanoTime()
@@ -29,7 +30,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
   }
 
   // Applies a rule to a configuration
-  def immediateConsequence(rule: Rule, config: Config): (Config, Boolean) = {
+  def immediateConsequence(rule: Rule[T], config: Config[T]): (Config[T], Boolean) = {
     var bodyVals = ParSeq(Valuation.Empty)
     var remainingLits = rule.body
     for (literal <- rule.body) {
@@ -39,7 +40,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
       val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
       bodyVals = bodyVals.map(_.project(relevantVars))
       bodyVals = bodyVals.groupBy(_.backingMap)
-                         .mapValues(_.map(_.score).foldLeft(Zero: Value)(_ + _))
+                         .mapValues(_.map(_.score).foldLeft(num.Zero: T)(_ + _))
                          .toSeq.map(mv => Valuation(mv._1, mv._2))
     }
     val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
@@ -54,7 +55,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     (newConfig, changed)
   }
 
-  def extend(literal: Literal, config: Config, bodyVals: ParSeq[Valuation]): ParSeq[Valuation] = {
+  def extend(literal: Literal, config: Config[T], bodyVals: ParSeq[Valuation[T]]): ParSeq[Valuation[T]] = {
     for (valuation <- bodyVals;
          f = valuation.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
@@ -62,7 +63,7 @@ case class NaiveEvaluator(override val program: Program) extends Evaluator("Naiv
     yield newValuation * score
   }
 
-  def extend(literal: Literal, tuple: DTuple, valuation: Valuation): Option[Valuation] = {
+  def extend(literal: Literal, tuple: DTuple, valuation: Valuation[T]): Option[Valuation[T]] = {
     var ans = valuation
     for ((par, field) <- literal.parameters.zip(tuple)) {
       par match {

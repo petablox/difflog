@@ -25,13 +25,13 @@ case class TokenVec(m: Map[Token, Double]) extends Map[Token, Double] {
     token -> (if (!vd.isNaN) vd else 0)
   })
 
-  def abs: Double = m.values.map(v => v * v).sum
-  //def abs: Double = Math.sqrt(m.values.map(v => v * v).sum)
+  //def abs: Double = m.values.map(v => v * v).sum
+  def abs: Double = Math.sqrt(m.values.map(v => v * v).sum)
   def unit: TokenVec = this / abs
 
-  def reorient(p: Program): Program = {
-    val map2 = m.map { case (token, v) => token -> Value(v, token) }
-    Program(p.name, p.rules.map(r => Rule(r.name, Value(r.coeff.prov, map2), r.head, r.body)))
+  def reorient(p: Program[FValue]): Program[FValue] = {
+    val map2 = m.map { case (token, v) => token -> FValue(v, token) }
+    Program(p.name, p.rules.map(r => Rule(r.name, FValue(r.coeff.prov, map2), r.head, r.body)))
   }
 
   def limitUpper(v: Double): TokenVec = TokenVec(m.mapValues(x => Math.min(v, x)))

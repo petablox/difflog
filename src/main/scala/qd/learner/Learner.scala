@@ -3,24 +3,24 @@ package learner
 
 import scala.util.Random
 
-class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
+class Learner(edb: Config[FValue], refOut: Config[FValue], p0: Program[FValue], random: Random) {
   val scorer = new Scorer(edb, refOut)
   val tokens: Set[Token] = p0.rules.flatMap(_.coeff.prov.toSeq.toSet)
   require(tokens.nonEmpty)
 
   private var pos: TokenVec = TokenVec(tokens, random)
-  private var p: Program = pos.reorient(p0)
-  private var evaluator: Evaluator = SeminaiveEvaluator(p)
-  private var out: Config = evaluator(edb)
-  private var best: Option[(Program, TokenVec, Config, Double)] = None
+  private var p: Program[FValue] = pos.reorient(p0)
+  private var evaluator: Evaluator[FValue] = SeminaiveEvaluator(p)
+  private var out: Config[FValue] = evaluator(edb)
+  private var best: Option[(Program[FValue], TokenVec, Config[FValue], Double)] = None
   private var step: TokenVec = TokenVec(tokens.map(token => token -> 1.0).toMap)
 
   def getPos: TokenVec = pos
-  def getProgram: Program = p
-  def getOutput: Config = out
-  def getBest: (Program, TokenVec, Config, Double) = best.get
+  def getProgram: Program[FValue] = p
+  def getOutput: Config[FValue] = out
+  def getBest: (Program[FValue], TokenVec, Config[FValue], Double) = best.get
 
-  def learn(tgtLoss: Double, maxIters: Int): (Program, TokenVec, Config, Double) = {
+  def learn(tgtLoss: Double, maxIters: Int): (Program[FValue], TokenVec, Config[FValue], Double) = {
     require(maxIters > 0)
     var (l2, numIters, gradAbs) = (tgtLoss + 1, 0, 1.0)
     while (numIters < maxIters && l2 >= tgtLoss && gradAbs > 0 && step.abs > 0.0) {
@@ -81,7 +81,7 @@ class Learner(edb: Config, refOut: Config, p0: Program, random: Random) {
     newPosLim
   }
 
-  def reinterpretL2(cutoff: Double): (Program, Double, Set[Token]) = scorer.cutoffL2(p, cutoff)
+  def reinterpretL2(cutoff: Double): (Program[FValue], Double, Set[Token]) = scorer.cutoffL2(p, cutoff)
 
   def printWeights(): Unit = {
     for (r <- p.rules) println(s"name: ${r.name}, coeff: ${r.coeff}")

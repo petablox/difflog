@@ -18,8 +18,8 @@ case class Domain(name: Any, private val set: Set[Atom]) extends Set[Atom] {
   override def -(atom: Atom): Set[Atom] = Domain(s"$name - $atom", set - atom)
   override def toString: String = s"$name[${set.mkString(", ")}]"
 
-  def equalityRelation: Instance = {
-    set.foldLeft(Instance(this, this)) { case (instance, atom) => instance + (DTuple(atom, atom) -> One )}
+  def equalityRelation[T <: Value[T]](implicit num: OneAndZero[T]): Instance[T] = {
+    set.foldLeft(Instance(this, this)) { case (instance, atom) => instance + (DTuple(atom, atom) -> num.One )}
   }
 
   override val hashCode: Int = (classOf[Domain], name, set).hashCode()

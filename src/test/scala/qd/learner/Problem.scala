@@ -41,7 +41,7 @@ abstract class Problem extends FunSuite {
       println(s"cutoff: $cutoff. l2: $l2. usefulTokens: ${usefulTokens.toSeq.sortBy(_.name.asInstanceOf[Int]).mkString(", ")}")
     }
   }
-
+*/
   test(s"Estimating goodness of expected program for $name") {
     val startTime = System.nanoTime()
     val p = Program(p0.name,
@@ -52,13 +52,13 @@ abstract class Problem extends FunSuite {
     val l2 = scorer.errorL2(out)
     val endTime = System.nanoTime()
     println(s"L2: $l2. Evaluation finished in ${(endTime - startTime) / 1.0e9} seconds.")
-  }*/
+  }
 
   test(s"Learning $name") {
     val seed = Try(sys.env.getOrElse("RANDOM_SEED", "0").toInt).getOrElse(0)
     val random: Random = new Random(seed)
     val learner = new Learner(edb, refOut, p0, random)
-    learner.learn(0.01, 500)
+    learner.learn(0.01, 200)
     println(s"Best program: ${learner.getBest._2.toSeq.sortBy(_._1.name.asInstanceOf[Int])}")
     println(s"Final program: ${learner.getPos.toSeq.sortBy(_._1.name.asInstanceOf[Int])}")
     println(s"Expected: ${expected.toSeq.sortBy(_.asInstanceOf[Int])}")

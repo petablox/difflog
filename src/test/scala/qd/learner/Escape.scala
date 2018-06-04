@@ -6,13 +6,13 @@ import org.scalatest.Ignore
 class Escape extends Problem {
   override val name: String = "Escape"
 
-  val methodSet : Set[Atom] = Range(0, 3).map(i => Atom(i)).toSet
+  val methodSet : Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
   val method : Domain = Domain("Method", methodSet)
 
-  val variableSet : Set[Atom] = Range(0, 4).map(i => Atom(i)).toSet
+  val variableSet : Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
   val variable : Domain = Domain("Variable", variableSet)
 
-  val heapSet : Set[Atom] = Range(0, 5).map(i => Atom(i)).toSet
+  val heapSet : Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
   val heap : Domain = Domain("Heap", heapSet)
 
   val MmethArg : Relation = Relation("MmethArg", method, variable)
@@ -23,13 +23,15 @@ class Escape extends Problem {
   val rRH : Relation = Relation("rRH", method, heap)
   val rHH : Relation = Relation("rHH", heap, heap)
 
-  val MmethArgTuples : Set[DTuple] = Set((0,0),(1,3),(2,2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val MmethRetTuples : Set[DTuple] = Set((0,1),(2,1)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val VHTuples : Set[DTuple] = Set((1,1),(0,0),(2,2),(3,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val HFHTuples : Set[DTuple] = Set((0,1),(1,2),(2,3),(0,2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val rMHTuples : Set[DTuple] = Set((0,0),(0,2),(0,3),(1,3),(2,2),(2,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val rRHTuples : Set[DTuple] = Set((0,1),(0,2),(0,3),(2,1),(2,2),(2,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
-  val rHHTuples : Set[DTuple] = Set((0,1),(1,2),(2,3),(0,2),(1,3),(0,3)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val MmethArgTuples : Set[DTuple] = Set((7, 4), (7, 1), (1, 6), (0, 7), (1, 7)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val MmethRetTuples : Set[DTuple] = Set((6, 4), (0, 0), (3, 3), (7, 3), (1, 4), (7, 4), (0, 6), (2, 4)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val VHTuples : Set[DTuple] = Set((5, 4), (6, 7), (6, 1), (1, 5), (2, 2), (1, 0), (3, 4)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val HFHTuples : Set[DTuple] = Set((6, 4), (5, 0), (3, 3), (7, 1), (4, 5), (5, 7), (0, 6), (0, 5), (4, 3), (2, 2), (5, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val rMHTuples : Set[DTuple] = Set((7, 3), (7, 0), (7, 1), (7, 6), (7, 7), (7, 4), (7, 5), (1, 7), (1, 1), (7, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val rRHTuples : Set[DTuple] = Set((0, 1), (7, 3), (3, 2), (7, 0), (3, 3), (7, 1), (3, 0), (7, 6), (3, 1), (7, 7), (0, 7), (7, 4), (7, 5), (3, 6), (3, 7), (3, 4), (7, 2), (3, 5)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
+  val rHHTuples : Set[DTuple] = Set((4, 7), (6, 6), (5, 6), (0, 7), (6, 2), (5, 1), (0, 3), (4, 0), (6, 7), (3, 3), (4, 4),
+    (6, 3), (5, 0), (2, 2), (5, 3), (4, 1), (6, 4), (5, 4), (0, 0), (7, 1), (4, 5), (0, 4), (6, 0), (0, 5), (4, 2), (6, 5),
+    (5, 5), (0, 1), (4, 6), (6, 1), (5, 7), (0, 6), (4, 3), (5, 2), (0, 2)).map{ case (a,b) => DTuple(Atom(a), Atom(b)) }
 
   override val edb : Config = Config(
     MmethArg -> (Instance(MmethArg) ++ MmethArgTuples.map(t => t -> One).toMap),
@@ -59,7 +61,7 @@ class Escape extends Problem {
   val x2M : Variable = Variable("x2M", method)
   val x3M : Variable = Variable("x3M", method)
 
-  // Expected: 1, 4, 6, 14, 18, 22
+  // Expected: 1, 4, 6, 15, 18, 22
   override val soup: Set[Rule] = Set(
     Rule(1,Value(0.5, Token(1)),rHH(x0H,x2H), HFH(x0H,x2H)),
     Rule(2,Value(0.5, Token(2)),rHH(x3H,x2H), HFH(x0H,x2H),rHH(x3H,x0H)),
@@ -89,6 +91,6 @@ class Escape extends Problem {
     Rule(26,Value(0.5, Token(26)),rRH(x0M,x2H), rHH(x1H,x2H),rMH(x0M,x1H))
   )
 
-  override val expected: Set[Any] = Set(1, 4, 6, 14, 18, 22)
+  override val expected: Set[Any] = Set(1, 4, 6, 15, 18, 22)
   override val maxVarCount: Int = 20
 }

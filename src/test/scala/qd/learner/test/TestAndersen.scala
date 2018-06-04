@@ -66,7 +66,7 @@ class TestAndersen extends Problem {
 
   override val expected: Set[Any] = Set(1, 7, 17, 23)
   override val maxVarCount: Int = 20
-  val usefulTokens= Set(1, 7, 17, 23)
+  val usefulTokens= Set(1, 7, 9, 10, 17, 21, 23)
   val soup =
     soup_pre.map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)).
     filter(r => usefulTokens.contains(r.name.asInstanceOf[Int]))
