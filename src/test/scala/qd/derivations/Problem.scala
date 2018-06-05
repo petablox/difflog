@@ -15,6 +15,15 @@ abstract class Problem extends FunSuite {
     val startTime = System.nanoTime()
     val evaluator = SeminaiveEvaluator(p0)
     val out = evaluator(edb)
+    var num_clauses = 1
+    for (x <- out.iterator ) {
+      println(x._1)
+      for (y <- x._2.support) {
+        num_clauses += y._2.r.size
+        println(s"Value for tuple ${(y._1)}: ${(y._2)}")
+      }
+    }
+    println(s"Total number of clauses: ${num_clauses}")
     val endTime = System.nanoTime()
     println(s"Evaluation finished in ${(endTime - startTime) / 1.0e9} seconds.")
   }

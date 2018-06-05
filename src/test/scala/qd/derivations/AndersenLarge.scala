@@ -1,10 +1,10 @@
 package qd
 package derivations
 
-class Andersen extends Problem {
-  override val name: String = "Andersen"
+class AndersenLarge extends Problem {
+  override val name: String = "AndersenLarge"
 
-  val heapSet: Set[Atom] = Range(0, 8).map(i => Atom(i)).toSet
+  val heapSet: Set[Atom] = Range(0, 20).map(i => Atom(i)).toSet
   val heap: Domain = Domain("Heap", heapSet)
 
   val pt: Relation = Relation("pt", heap, heap)
@@ -13,17 +13,15 @@ class Andersen extends Problem {
   val store: Relation = Relation("store", heap, heap)
   val load: Relation = Relation("load", heap, heap)
 
-  val addrTuples: Set[DTuple] = Set((1, 2), (2, 3), (3, 5), (5, 6)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
-  val assgnTuples: Set[DTuple] = Set((4, 1)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
-  val storeTuples: Set[DTuple] = Set((4, 5)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
-  val loadTuples: Set[DTuple] = Set((7, 2)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
+  val assgnTuples = Set((15, 13),(5, 10),(12, 18),(15, 8),(19, 13),(4, 2)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
+  val loadTuples = Set((0, 1),(4, 9),(16, 4),(10, 7),(7, 8),(11, 9),(7, 7),(6, 3),(11, 4),(0, 11),(2, 3),(0, 10),(10, 11),(12, 16),(14, 15),(7, 16),(6, 17),(6, 15),(2, 12)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
+  //val ptTuples = Set((7, 3),(14, 17),(1, 3),(10, 17),(17, 7),(18, 15),(14, 7),(11, 2),(1, 2),(1, 17),(0, 7),(1, 15),(10, 15),(17, 3),(7, 15),(16, 2),(3, 7),(0, 3),(3, 17),(10, 3),(6, 17),(7, 2),(17, 15),(16, 17),(6, 3),(6, 7),(3, 3),(0, 15),(10, 7),(16, 3),(17, 2),(12, 17),(16, 7),(16, 15),(15, 3),(15, 15),(15, 17),(3, 15),(1, 1),(12, 3),(2, 7),(3, 2),(6, 18),(19, 6),(12, 2),(5, 17),(12, 7),(2, 2),(4, 7),(7, 7),(14, 15),(14, 3),(5, 15),(2, 3),(15, 7),(8, 17),(4, 2),(14, 2),(2, 17),(5, 3),(0, 1),(11, 7),(12, 15),(11, 17),(0, 2),(15, 2),(0, 17),(6, 15),(4, 15),(5, 7),(4, 17),(11, 3),(1, 7),(6, 2),(4, 3),(7, 17),(2, 15),(11, 15),(5, 2),(17, 17),(10, 2),(0, 3),(0, 4),(1, 1),(1, 4),(1, 7),(1, 18),(1, 19),(2, 13),(2, 17),(3, 11),(3, 18),(4, 5),(4, 6),(4, 10),(4, 14),(5, 8),(5, 11),(5, 12),(5, 14),(6, 3),(7, 3),(7, 14),(7, 17),(9, 18),(10, 14),(11, 3),(11, 4),(11, 7),(11, 8),(11, 13),(15, 2),(15, 3),(16, 1),(17, 0),(17, 7),(18, 2),(18, 7),(18, 18),(19, 9),(19, 11)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
+  val addrTuples = Set((7, 3),(6, 18),(19, 6),(10, 7),(18, 15),(8, 17),(2, 15),(0, 3),(14, 2),(1, 1)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
+  val storeTuples = Set((3, 15),(7, 14),(5, 9),(4, 5),(0, 7),(19, 12),(7, 10),(2, 5)).map { case (x0,x1) => DTuple(Atom(x0),Atom(x1)) }
   override val edb: Config[DValue] = Config(addr -> (Instance[DValue](addr) ++ addrTuples.map(t => t -> DValue.One).toMap),
     assgn -> (Instance[DValue](assgn) ++ assgnTuples.map(t => t -> DValue.One).toMap),
     store -> (Instance[DValue](store) ++ storeTuples.map(t => t -> DValue.One).toMap),
     load -> (Instance[DValue](load) ++ loadTuples.map(t => t -> DValue.One).toMap))
-
-  val ptTuples: Set[DTuple] = Set((1, 2), (2, 3), (3, 5), (5, 6), (4, 2), (7, 5), (2, 6))
-    .map { case (a, b) => DTuple(Atom(a), Atom(b)) }
   
   val x0: Variable = Variable("x0", heap)
   val x1: Variable = Variable("x1", heap)

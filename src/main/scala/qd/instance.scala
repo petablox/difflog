@@ -24,7 +24,7 @@ sealed abstract class Instance[T <: Value[T]](val signature: Seq[Domain])(implic
     ans
   }
 
-  val support: Seq[(DTuple, Value[T])] = {
+  val support: Seq[(DTuple, T)] = {
     val startTime = System.nanoTime()
     val ans = this match {
       case InstanceBase(_, map) => map.toSeq.view

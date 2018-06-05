@@ -49,11 +49,15 @@ object FValue {
   val One: FValue = FValue(1.0, Empty)
 }
 
-case class DValue(r: Set[Set[Rule[DValue]]]) extends Value[DValue] {
-  def isSubsetOfOne(s : Set[Rule[DValue]]): Boolean = r.exists(s subsetOf _)
+case class DValue(r: Set[Set[Int]]) extends Value[DValue] {
+  def isSubsetOfOne(r : Set[Set[Int]], s : Set[Int]): Boolean = r.exists((x : Set[Int]) => (s != x) && (x subsetOf s))
 
   override def +(that : DValue) : DValue = {
-    DValue(r.union(that.r.filter(isSubsetOfOne(_))))
+    val union = r.union(that.r)
+    val filtered = union.filter(!isSubsetOfOne(union, _))
+    DValue(filtered)
+    //val self_filtered = r.filter(!isSubsetOfOne(that.r, _))
+    //DValue(self_filtered.union(that.r.filter(!isSubsetOfOne(r, _))))
   }
 
   override def *(that : DValue) : DValue = {
@@ -64,6 +68,16 @@ case class DValue(r: Set[Set[Rule[DValue]]]) extends Value[DValue] {
   override def compare(that : DValue) : Int = if (r == that.r) 0 else if (r subsetOf that.r) 1 else -1
 
   override def isZero : Boolean = r.isEmpty
+
+  def One = DValue(Set(Set()))
+  def Zero = DValue(Set())
+}
+
+object DValue {
+  implicit object ValueHasOneAndZero extends OneAndZero[DValue] {
+    def One = DValue(Set(Set()))
+    def Zero = DValue(Set())
+  }
 
   def One = DValue(Set(Set()))
   def Zero = DValue(Set())
