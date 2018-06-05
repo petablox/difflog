@@ -7,13 +7,13 @@ import scala.util.{Random, Try}
 
 abstract class Problem extends FunSuite {
   def name: Any
-  def edb: Config
-  def refOut: Config
-  def soup: Set[Rule]
+  def edb: Config[FValue]
+  def refOut: Config[FValue]
+  def soup: Set[Rule[FValue]]
   def expected: Set[Any]
   def maxVarCount: Int
 
-  def p0: Program = Program(s"Soup-$name", soup.filter(_.freeVariables.size <= maxVarCount))
+  def p0: Program[FValue] = Program(s"Soup-$name", soup.filter(_.freeVariables.size <= maxVarCount))
   lazy val scorer = new Scorer(edb, refOut)
 /*
   test("Counting number of free variables in each rule") {
@@ -46,7 +46,7 @@ abstract class Problem extends FunSuite {
     val startTime = System.nanoTime()
     val p = Program(p0.name,
                     p0.rules.filter(r => expected.contains(r.name))
-                            .map(r => Rule(r.name, Value(1.0, r.coeff.prov), r.head, r.body)))
+                            .map(r => Rule(r.name, FValue(1.0, r.coeff.prov), r.head, r.body)))
     val evaluator = SeminaiveEvaluator(p)
     val out = evaluator(edb)
     val l2 = scorer.errorL2(out)

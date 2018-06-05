@@ -24,10 +24,10 @@ class TestAndersenNLP extends Problem {
     (12, 10), (13, 13), (14, 9), (15, 5)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
   val storeTuples: Set[DTuple] = Set((0, 11), (1, 10), (2, 15), (5, 7), (6, 4), (6, 6), (7, 9), (8, 10), (10, 9), (12, 9), (14, 2)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
   val loadTuples: Set[DTuple] = Set((1, 7), (1, 12), (2, 3), (3, 4), (7, 4), (9, 3), (11, 11), (11, 12), (12, 8), (13, 12), (13, 15)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
-  override val edb: Config = Config(addr -> (Instance(addr) ++ addrTuples.map(t => t -> One).toMap),
-                                    assgn -> (Instance(assgn) ++ assgnTuples.map(t => t -> One).toMap),
-                                    store -> (Instance(store) ++ storeTuples.map(t => t -> One).toMap),
-                                    load -> (Instance(load) ++ loadTuples.map(t => t -> One).toMap))
+  override val edb: Config[FValue] = Config(addr -> (Instance[FValue](addr) ++ addrTuples.map(t => t -> FValue.One).toMap),
+                                    assgn -> (Instance[FValue](assgn) ++ assgnTuples.map(t => t -> FValue.One).toMap),
+                                    store -> (Instance[FValue](store) ++ storeTuples.map(t => t -> FValue.One).toMap),
+                                    load -> (Instance[FValue](load) ++ loadTuples.map(t => t -> FValue.One).toMap))
 
   val ptTuples: Set[DTuple] = Set((7, 3), (6, 9), (12, 1), (11, 11), (7, 12), (14, 4), (13, 4), (12, 12), (0, 7),
     (15, 1), (1, 6), (0, 10), (3, 7), (2, 5), (1, 11), (8, 5), (5, 8), (4, 0), (10, 8), (9, 0), (6, 7), (5, 5), (11, 5),
@@ -49,22 +49,22 @@ class TestAndersenNLP extends Problem {
     (14, 14), (12, 10), (15, 15), (13, 11), (0, 0), (3, 13), (1, 13), (8, 11), (4, 14), (2, 10), (9, 10), (5, 15),
     (10, 1), (6, 12), (11, 12), (7, 9), (14, 11), (13, 1), (12, 15), (15, 2), (13, 14), (0, 13), (3, 8), (2, 0), (1, 8),
     (8, 8), (4, 3), (2, 15), (9, 5), (5, 2), (11, 6), (10, 2)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
-  override val refOut: Config = Config(pt -> (Instance(pt) ++ ptTuples.map(t => t -> One).toMap))
+  override val refOut: Config[FValue] = Config(pt -> (Instance[FValue](pt) ++ ptTuples.map(t => t -> FValue.One).toMap))
 
   val x0: Variable = Variable("x0", heap)
   val x1: Variable = Variable("x1", heap)
   val x2: Variable = Variable("x2", heap)
   val x3: Variable = Variable("x3", heap)
 
-	val soup: Set[Rule] = Set(
-    Rule(1, Value(0.505, Token(1)), pt(x1, x0),addr(x1, x0)),
-    Rule(2, Value(0.437, Token(2)), pt(x1, x0),addr(x1, x0)),
-    Rule(3, Value(0.223, Token(3)), pt(x2, x0),addr(x1, x0), addr(x2, x1)),
-    Rule(4, Value(0.112, Token(4)), pt(x1, x0),pt(x1, x0)),
-    Rule(5, Value(0.072, Token(5)), pt(x1, x0),assgn(x1, x0)),
-    Rule(6, Value(0.053, Token(6)), pt(x1, x0),store(x1, x0)),
-    Rule(7, Value(0.049, Token(7)), pt(x2, x0),pt(x1, x0), addr(x2, x1)),
-    Rule(8, Value(0.040, Token(8)), pt(x1, x0),load(x1, x0)),
+	val soup: Set[Rule[FValue]] = Set(
+    Rule(1, FValue(0.505, Token(1)), pt(x1, x0),addr(x1, x0)),
+    Rule(2, FValue(0.437, Token(2)), pt(x1, x0),addr(x1, x0)),
+    Rule(3, FValue(0.223, Token(3)), pt(x2, x0),addr(x1, x0), addr(x2, x1)),
+    Rule(4, FValue(0.112, Token(4)), pt(x1, x0),pt(x1, x0)),
+    Rule(5, FValue(0.072, Token(5)), pt(x1, x0),assgn(x1, x0)),
+    Rule(6, FValue(0.053, Token(6)), pt(x1, x0),store(x1, x0)),
+    Rule(7, FValue(0.049, Token(7)), pt(x2, x0),pt(x1, x0), addr(x2, x1)),
+    Rule(8, FValue(0.040, Token(8)), pt(x1, x0),load(x1, x0)),
 		)
 
   override val expected: Set[Any] = Set(1, 7, 17, 23)

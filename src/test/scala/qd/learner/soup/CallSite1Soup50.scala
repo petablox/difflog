@@ -46,19 +46,19 @@ class CallSite1Soup50 extends Problem {
     (2,7,2),(1,10,1),(1,7,1),(2,7,1),(3,8,1),(2,10,1)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c)) }
   val heappointstoTuples : Set[DTuple] = Set((1,1,1),(2,2,1),(1,2,1),(9,2,1)).map{ case (a,b,c) => DTuple(Atom(a), Atom(b), Atom(c)) }
 
-  val edb : Config = Config(
-    points_initial -> (Instance(points_initial) ++ points_initialTuples.map(t => t -> One).toMap),
-    store -> (Instance(store) ++ storeTuples.map(t => t -> One).toMap),
-    load -> (Instance(load) ++ loadTuples.map(t => t -> One).toMap),
-    invocation -> (Instance(invocation) ++ invocationTuples.map(t => t -> One).toMap),
-    actual -> (Instance(actual) ++ actualTuples.map(t => t -> One).toMap),
-    formal -> (Instance(formal) ++ formalTuples.map(t => t -> One).toMap),
-    assign -> (Instance(assign) ++ assignTuples.map(t => t -> One).toMap),
+  val edb : Config[FValue] = Config(
+    points_initial -> (Instance[FValue](points_initial) ++ points_initialTuples.map(t => t -> FValue.One).toMap),
+    store -> (Instance[FValue](store) ++ storeTuples.map(t => t -> FValue.One).toMap),
+    load -> (Instance[FValue](load) ++ loadTuples.map(t => t -> FValue.One).toMap),
+    invocation -> (Instance[FValue](invocation) ++ invocationTuples.map(t => t -> FValue.One).toMap),
+    actual -> (Instance[FValue](actual) ++ actualTuples.map(t => t -> FValue.One).toMap),
+    formal -> (Instance[FValue](formal) ++ formalTuples.map(t => t -> FValue.One).toMap),
+    assign -> (Instance[FValue](assign) ++ assignTuples.map(t => t -> FValue.One).toMap),
   )
 
-  val refOut : Config = Config (
-    pointsto -> (Instance(pointsto) ++ pointstoTuples.map(t => t -> One).toMap),
-    heappointsto -> (Instance(heappointsto) ++ heappointstoTuples.map(t => t -> One).toMap)
+  val refOut : Config[FValue] = Config (
+    pointsto -> (Instance[FValue](pointsto) ++ pointstoTuples.map(t => t -> FValue.One).toMap),
+    heappointsto -> (Instance[FValue](heappointsto) ++ heappointstoTuples.map(t => t -> FValue.One).toMap)
   )
 
   val x0H: Variable = Variable("x0H", H)
@@ -107,54 +107,54 @@ class CallSite1Soup50 extends Problem {
   val x4M: Variable = Variable("x4M", M)
 
   // expected: 1, 8, 61, 93
-  val soup : Set[Rule] = Set(
-    Rule(1,Value(0.5, Token(1)),pointsto(x2C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),
-    Rule(2,Value(0.5, Token(2)),pointsto(x3C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),
-    Rule(8,Value(0.5, Token(8)),pointsto(x2C,x3V,x1H), assign(x2C,x3V,x4C,x0V),points_initial(x0V,x1H)),
-    Rule(9,Value(0.5, Token(9)),pointsto(x4C,x0V,x1H), assign(x2C,x3V,x4C,x0V),points_initial(x0V,x1H)),
-    Rule(10,Value(0.5, Token(10)),pointsto(x4C,x3V,x1H), assign(x2C,x3V,x4C,x0V),points_initial(x0V,x1H)),
-    Rule(11,Value(0.5, Token(11)),pointsto(x2C,x0V,x1H), points_initial(x0V,x1H),pointsto(x2C,x0V,x3H)),
-    Rule(12,Value(0.5, Token(12)),pointsto(x2C,x0V,x1H), points_initial(x0V,x1H),pointsto(x2C,x3V,x1H)),
-    Rule(21,Value(0.5, Token(21)),pointsto(x4C,x5V,x1H), assign(x4C,x5V,x0C,x6V),invocation(x0C,x1H,x2C,x3M)),
-    Rule(22,Value(0.5, Token(22)),pointsto(x0C,x5V,x1H), invocation(x0C,x1H,x2C,x3M),pointsto(x4C,x5V,x1H)),
-    Rule(35,Value(0.5, Token(35)),pointsto(x2C,x3V,x5H), assign(x0C,x1V,x2C,x3V),pointsto(x2C,x4V,x5H)),
-    Rule(38,Value(0.5, Token(38)),pointsto(x2C,x1V,x5H), assign(x0C,x1V,x2C,x3V),pointsto(x4C,x3V,x5H)),
-    Rule(39,Value(0.5, Token(39)),pointsto(x2C,x3V,x5H), assign(x0C,x1V,x2C,x3V),pointsto(x4C,x3V,x5H)),
-    Rule(42,Value(0.5, Token(42)),pointsto(x3C,x4V,x0H), heappointsto(x0H,x1F,x2H),pointsto(x3C,x4V,x2H)),
-    Rule(45,Value(0.5, Token(45)),pointsto(x0C,x4V,x2H), pointsto(x0C,x1V,x2H),pointsto(x3C,x4V,x2H)),
-    Rule(52,Value(0.5, Token(52)),pointsto(x0C,x4V,x5H), assign(x0C,x1V,x2C,x4V),pointsto(x2C,x4V,x5H)),
-    Rule(59,Value(0.5, Token(59)),pointsto(x2C,x1V,x5H), assign(x0C,x1V,x2C,x4V),pointsto(x2C,x4V,x5H)),
-    Rule(60,Value(0.5, Token(60)),pointsto(x0C,x1V,x2H), heappointsto(x5H,x4F,x2H),pointsto(x0C,x3V,x5H),store(x3V,x4F,x1V)),
-    Rule(61,Value(0.5, Token(61)),pointsto(x0C,x1V,x2H), heappointsto(x5H,x4F,x2H),load(x3V,x4F,x1V),pointsto(x0C,x3V,x5H)),
-    Rule(62,Value(0.5, Token(62)),heappointsto(x2H,x1F,x0H), heappointsto(x0H,x1F,x2H)),
-    Rule(63,Value(0.5, Token(63)),heappointsto(x3H,x2F,x1H), heappointsto(x1H,x2F,x3H),points_initial(x0V,x1H)),
-    Rule(64,Value(0.5, Token(64)),heappointsto(x1H,x3F,x2H), heappointsto(x2H,x3F,x1H),points_initial(x0V,x1H)),
-    Rule(65,Value(0.5, Token(65)),heappointsto(x0H,x4F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
-    Rule(66,Value(0.5, Token(66)),heappointsto(x0H,x4F,x3H), actual(x0H,x1Z,x2V),heappointsto(x3H,x4F,x0H)),
-    Rule(67,Value(0.5, Token(67)),heappointsto(x4H,x1F,x3H), heappointsto(x3H,x1F,x4H),store(x0V,x1F,x2V)),
-    Rule(68,Value(0.5, Token(68)),heappointsto(x4H,x1F,x3H), heappointsto(x3H,x1F,x4H),load(x0V,x1F,x2V)),
-    Rule(69,Value(0.5, Token(69)),heappointsto(x0H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x0H,x3F,x4H)),
-    Rule(70,Value(0.5, Token(70)),heappointsto(x2H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x0H,x3F,x4H)),
-    Rule(72,Value(0.5, Token(72)),heappointsto(x0H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
-    Rule(75,Value(0.5, Token(75)),heappointsto(x2H,x1F,x0H), heappointsto(x0H,x1F,x2H),pointsto(x3C,x4V,x0H)),
-    Rule(76,Value(0.5, Token(76)),heappointsto(x2H,x4F,x0H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
-    Rule(77,Value(0.5, Token(77)),heappointsto(x2H,x4F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
-    Rule(78,Value(0.5, Token(78)),heappointsto(x3H,x1F,x0H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
-    Rule(79,Value(0.5, Token(79)),heappointsto(x3H,x1F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
-    Rule(80,Value(0.5, Token(80)),heappointsto(x3H,x4F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
-    Rule(81,Value(0.5, Token(81)),heappointsto(x0H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x4H)),
-    Rule(83,Value(0.5, Token(83)),heappointsto(x2H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x4H)),
-    Rule(84,Value(0.5, Token(84)),heappointsto(x2H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x4H)),
-    Rule(85,Value(0.5, Token(85)),heappointsto(x0H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x2H)),
-    Rule(86,Value(0.5, Token(86)),heappointsto(x0H,x4F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x2H)),
-    Rule(87,Value(0.5, Token(87)),heappointsto(x0H,x4F,x3H), heappointsto(x0H,x4F,x2H),heappointsto(x3H,x4F,x0H)),
-    Rule(88,Value(0.5, Token(88)),heappointsto(x0H,x4F,x3H), heappointsto(x0H,x1F,x3H),heappointsto(x3H,x4F,x0H)),
-    Rule(89,Value(0.5, Token(89)),heappointsto(x4H,x1F,x3H), heappointsto(x0H,x1F,x3H),heappointsto(x3H,x1F,x4H)),
-    Rule(90,Value(0.5, Token(90)),heappointsto(x2H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x0H,x1F,x4H)),
-    Rule(91,Value(0.5, Token(91)),heappointsto(x2H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x0H)),
-    Rule(92,Value(0.5, Token(92)),heappointsto(x3H,x1F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x0H)),
-    Rule(93,Value(0.5, Token(93)),heappointsto(x0H,x1F,x2H), pointsto(x5C,x3V,x0H),pointsto(x5C,x4V,x2H),store(x3V,x1F,x4V)),
-    Rule(94,Value(0.5, Token(94)),heappointsto(x0H,x1F,x2H), load(x3V,x1F,x4V),pointsto(x5C,x3V,x0H),pointsto(x5C,x4V,x2H))
+  val soup : Set[Rule[FValue]] = Set(
+    Rule(1,FValue(0.5, Token(1)),pointsto(x2C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),
+    Rule(2,FValue(0.5, Token(2)),pointsto(x3C,x0V,x1H), invocation(x2C,x1H,x3C,x4M),points_initial(x0V,x1H)),
+    Rule(8,FValue(0.5, Token(8)),pointsto(x2C,x3V,x1H), assign(x2C,x3V,x4C,x0V),points_initial(x0V,x1H)),
+    Rule(9,FValue(0.5, Token(9)),pointsto(x4C,x0V,x1H), assign(x2C,x3V,x4C,x0V),points_initial(x0V,x1H)),
+    Rule(10,FValue(0.5, Token(10)),pointsto(x4C,x3V,x1H), assign(x2C,x3V,x4C,x0V),points_initial(x0V,x1H)),
+    Rule(11,FValue(0.5, Token(11)),pointsto(x2C,x0V,x1H), points_initial(x0V,x1H),pointsto(x2C,x0V,x3H)),
+    Rule(12,FValue(0.5, Token(12)),pointsto(x2C,x0V,x1H), points_initial(x0V,x1H),pointsto(x2C,x3V,x1H)),
+    Rule(21,FValue(0.5, Token(21)),pointsto(x4C,x5V,x1H), assign(x4C,x5V,x0C,x6V),invocation(x0C,x1H,x2C,x3M)),
+    Rule(22,FValue(0.5, Token(22)),pointsto(x0C,x5V,x1H), invocation(x0C,x1H,x2C,x3M),pointsto(x4C,x5V,x1H)),
+    Rule(35,FValue(0.5, Token(35)),pointsto(x2C,x3V,x5H), assign(x0C,x1V,x2C,x3V),pointsto(x2C,x4V,x5H)),
+    Rule(38,FValue(0.5, Token(38)),pointsto(x2C,x1V,x5H), assign(x0C,x1V,x2C,x3V),pointsto(x4C,x3V,x5H)),
+    Rule(39,FValue(0.5, Token(39)),pointsto(x2C,x3V,x5H), assign(x0C,x1V,x2C,x3V),pointsto(x4C,x3V,x5H)),
+    Rule(42,FValue(0.5, Token(42)),pointsto(x3C,x4V,x0H), heappointsto(x0H,x1F,x2H),pointsto(x3C,x4V,x2H)),
+    Rule(45,FValue(0.5, Token(45)),pointsto(x0C,x4V,x2H), pointsto(x0C,x1V,x2H),pointsto(x3C,x4V,x2H)),
+    Rule(52,FValue(0.5, Token(52)),pointsto(x0C,x4V,x5H), assign(x0C,x1V,x2C,x4V),pointsto(x2C,x4V,x5H)),
+    Rule(59,FValue(0.5, Token(59)),pointsto(x2C,x1V,x5H), assign(x0C,x1V,x2C,x4V),pointsto(x2C,x4V,x5H)),
+    Rule(60,FValue(0.5, Token(60)),pointsto(x0C,x1V,x2H), heappointsto(x5H,x4F,x2H),pointsto(x0C,x3V,x5H),store(x3V,x4F,x1V)),
+    Rule(61,FValue(0.5, Token(61)),pointsto(x0C,x1V,x2H), heappointsto(x5H,x4F,x2H),load(x3V,x4F,x1V),pointsto(x0C,x3V,x5H)),
+    Rule(62,FValue(0.5, Token(62)),heappointsto(x2H,x1F,x0H), heappointsto(x0H,x1F,x2H)),
+    Rule(63,FValue(0.5, Token(63)),heappointsto(x3H,x2F,x1H), heappointsto(x1H,x2F,x3H),points_initial(x0V,x1H)),
+    Rule(64,FValue(0.5, Token(64)),heappointsto(x1H,x3F,x2H), heappointsto(x2H,x3F,x1H),points_initial(x0V,x1H)),
+    Rule(65,FValue(0.5, Token(65)),heappointsto(x0H,x4F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
+    Rule(66,FValue(0.5, Token(66)),heappointsto(x0H,x4F,x3H), actual(x0H,x1Z,x2V),heappointsto(x3H,x4F,x0H)),
+    Rule(67,FValue(0.5, Token(67)),heappointsto(x4H,x1F,x3H), heappointsto(x3H,x1F,x4H),store(x0V,x1F,x2V)),
+    Rule(68,FValue(0.5, Token(68)),heappointsto(x4H,x1F,x3H), heappointsto(x3H,x1F,x4H),load(x0V,x1F,x2V)),
+    Rule(69,FValue(0.5, Token(69)),heappointsto(x0H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x0H,x3F,x4H)),
+    Rule(70,FValue(0.5, Token(70)),heappointsto(x2H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x0H,x3F,x4H)),
+    Rule(72,FValue(0.5, Token(72)),heappointsto(x0H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
+    Rule(75,FValue(0.5, Token(75)),heappointsto(x2H,x1F,x0H), heappointsto(x0H,x1F,x2H),pointsto(x3C,x4V,x0H)),
+    Rule(76,FValue(0.5, Token(76)),heappointsto(x2H,x4F,x0H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
+    Rule(77,FValue(0.5, Token(77)),heappointsto(x2H,x4F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
+    Rule(78,FValue(0.5, Token(78)),heappointsto(x3H,x1F,x0H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
+    Rule(79,FValue(0.5, Token(79)),heappointsto(x3H,x1F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
+    Rule(80,FValue(0.5, Token(80)),heappointsto(x3H,x4F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
+    Rule(81,FValue(0.5, Token(81)),heappointsto(x0H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x4H)),
+    Rule(83,FValue(0.5, Token(83)),heappointsto(x2H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x4H)),
+    Rule(84,FValue(0.5, Token(84)),heappointsto(x2H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x4H)),
+    Rule(85,FValue(0.5, Token(85)),heappointsto(x0H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x2H)),
+    Rule(86,FValue(0.5, Token(86)),heappointsto(x0H,x4F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x2H)),
+    Rule(87,FValue(0.5, Token(87)),heappointsto(x0H,x4F,x3H), heappointsto(x0H,x4F,x2H),heappointsto(x3H,x4F,x0H)),
+    Rule(88,FValue(0.5, Token(88)),heappointsto(x0H,x4F,x3H), heappointsto(x0H,x1F,x3H),heappointsto(x3H,x4F,x0H)),
+    Rule(89,FValue(0.5, Token(89)),heappointsto(x4H,x1F,x3H), heappointsto(x0H,x1F,x3H),heappointsto(x3H,x1F,x4H)),
+    Rule(90,FValue(0.5, Token(90)),heappointsto(x2H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x0H,x1F,x4H)),
+    Rule(91,FValue(0.5, Token(91)),heappointsto(x2H,x1F,x3H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x0H)),
+    Rule(92,FValue(0.5, Token(92)),heappointsto(x3H,x1F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x0H)),
+    Rule(93,FValue(0.5, Token(93)),heappointsto(x0H,x1F,x2H), pointsto(x5C,x3V,x0H),pointsto(x5C,x4V,x2H),store(x3V,x1F,x4V)),
+    Rule(94,FValue(0.5, Token(94)),heappointsto(x0H,x1F,x2H), load(x3V,x1F,x4V),pointsto(x5C,x3V,x0H),pointsto(x5C,x4V,x2H))
   )
 
   override val expected: Set[Any] = Set(1, 8, 61, 93)

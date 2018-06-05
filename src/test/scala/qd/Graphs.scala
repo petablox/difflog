@@ -18,8 +18,8 @@ object Graphs {
     val edge = Relation("edge", nodes, nodes)
     val path = Relation("path", nodes, nodes)
 
-    def edb: Config = Config(edge -> edgeSet.map({ case (from, to) => DTuple(from, to) -> One})
-                                            .foldLeft(Instance(nodes, nodes))(_ + _))
+    def edb: Config[FValue] = Config(edge -> edgeSet.map({ case (from, to) => DTuple(from, to) -> FValue.One})
+                                            .foldLeft(Instance[FValue](nodes, nodes))(_ + _))
 
     val reachable: Set[(Atom, Atom)] = reachable(nodeSet.size + 1)
 

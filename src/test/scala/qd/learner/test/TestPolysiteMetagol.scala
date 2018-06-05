@@ -31,16 +31,16 @@ class TestPolysiteMetagol extends Problem {
   val virtITuples = Set(0,1,3,5,6,7).map{ case (x) => DTuple(Atom(x)) }
   val polysiteTuples = Set(2, 1).map{ case (x) => DTuple(Atom(x)) }
 
-  override val edb : Config = Config(
-    CICM -> (Instance(CICM) ++ CICMTuples.map(t => t -> One).toMap),
-    virtIM -> (Instance(virtIM) ++ virtIMTuples.map(t => t -> One).toMap),
-    Mneq -> (Instance(Mneq) ++ MneqTuples.map(t => t -> One).toMap),
+  override val edb : Config[FValue] = Config(
+    CICM -> (Instance[FValue](CICM) ++ CICMTuples.map(t => t -> FValue.One).toMap),
+    virtIM -> (Instance[FValue](virtIM) ++ virtIMTuples.map(t => t -> FValue.One).toMap),
+    Mneq -> (Instance[FValue](Mneq) ++ MneqTuples.map(t => t -> FValue.One).toMap),
   )
 
-  override val refOut : Config = Config (
-    insvIM -> (Instance(insvIM) ++ insvIMTuples.map(t => t -> One).toMap),
-    virtI -> (Instance(virtI) ++ virtITuples.map(t => t -> One).toMap),
-    polySite -> (Instance(polySite) ++ polysiteTuples.map(t => t -> One).toMap)
+  override val refOut : Config[FValue] = Config (
+    insvIM -> (Instance[FValue](insvIM) ++ insvIMTuples.map(t => t -> FValue.One).toMap),
+    virtI -> (Instance[FValue](virtI) ++ virtITuples.map(t => t -> FValue.One).toMap),
+    polySite -> (Instance[FValue](polySite) ++ polysiteTuples.map(t => t -> FValue.One).toMap)
   )
 
   val x0I : Variable = Variable("x0I", I)
@@ -63,10 +63,10 @@ class TestPolysiteMetagol extends Problem {
   val x3C : Variable = Variable("x3C", C)
   val x4C : Variable = Variable("x4C", C)
 
-  val soup : Set[Rule] = Set(
-    Rule(1, Value(1.0, Token(1)), insvIM(x0I,x1M), CICM(x0C,x0I,x1M)),
-    Rule(2, Value(1.0, Token(2)), polySite(x0I), virtIM(x0I,x2M)),
-    Rule(3, Value(1.0, Token(3)), virtI(x0I), virtIM(x0I,x2M)) 
+  val soup : Set[Rule[FValue]] = Set(
+    Rule(1, FValue(1.0, Token(1)), insvIM(x0I,x1M), CICM(x0C,x0I,x1M)),
+    Rule(2, FValue(1.0, Token(2)), polySite(x0I), virtIM(x0I,x2M)),
+    Rule(3, FValue(1.0, Token(3)), virtI(x0I), virtIM(x0I,x2M))
   )
 
   override val expected: Set[Any] = Set(2, 139, 160)

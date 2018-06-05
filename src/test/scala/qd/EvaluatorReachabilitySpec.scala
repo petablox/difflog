@@ -2,7 +2,7 @@ package qd
 
 import org.scalatest.FunSuite
 
-class EvaluatorReachabilitySpec(evalCtr: Program => Evaluator) extends FunSuite {
+class EvaluatorReachabilitySpec(evalCtr: Program[FValue] => Evaluator[FValue]) extends FunSuite {
   for (graph <- Graphs.Graphs; gp <- Reachability.Programs) {
     val program = gp(graph)
     val evaluator = evalCtr(program)

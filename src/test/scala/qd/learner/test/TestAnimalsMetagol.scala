@@ -40,29 +40,29 @@ class TestAnimalsMetagol extends Problem {
   val birdTuples = Set(15, 0, 1, 2, 8, 3, 9, 4, 10, 5, 11, 6, 12, 7, 13, 14).map { case (x0) => DTuple(Atom(x0)) }
   val has_milkTuples = Set(21, 32, 34, 61, 13, 24, 15, 53, 16, 45, 56, 58, 22, 8, 62, 39, 14, 0, 2, 40, 42, 44, 57).map { case (x0) => DTuple(Atom(x0)) }
   override val edb = Config(
-    feathers -> (Instance(feathers) ++ feathersTuples.map(t => t -> One).toMap),
-    scales -> (Instance(scales) ++ scalesTuples.map(t => t -> One).toMap),
-    hair -> (Instance(hair) ++ hairTuples.map(t => t -> One).toMap),
-    none -> (Instance(none) ++ noneTuples.map(t => t -> One).toMap),
-    has_covering -> (Instance(has_covering) ++ has_coveringTuples.map(t => t -> One).toMap),
-    has_milk -> (Instance(has_milk) ++ has_milkTuples.map(t => t -> One).toMap),
-    homeothermic -> (Instance(homeothermic) ++ homeothermicTuples.map(t => t -> One).toMap),
-    has_eggs -> (Instance(has_eggs) ++ has_eggsTuples.map(t => t -> One).toMap),
-    has_gills -> (Instance(has_gills) ++ has_gillsTuples.map(t => t -> One).toMap),
+    feathers -> (Instance[FValue](feathers) ++ feathersTuples.map(t => t -> FValue.One).toMap),
+    scales -> (Instance[FValue](scales) ++ scalesTuples.map(t => t -> FValue.One).toMap),
+    hair -> (Instance[FValue](hair) ++ hairTuples.map(t => t -> FValue.One).toMap),
+    none -> (Instance[FValue](none) ++ noneTuples.map(t => t -> FValue.One).toMap),
+    has_covering -> (Instance[FValue](has_covering) ++ has_coveringTuples.map(t => t -> FValue.One).toMap),
+    has_milk -> (Instance[FValue](has_milk) ++ has_milkTuples.map(t => t -> FValue.One).toMap),
+    homeothermic -> (Instance[FValue](homeothermic) ++ homeothermicTuples.map(t => t -> FValue.One).toMap),
+    has_eggs -> (Instance[FValue](has_eggs) ++ has_eggsTuples.map(t => t -> FValue.One).toMap),
+    has_gills -> (Instance[FValue](has_gills) ++ has_gillsTuples.map(t => t -> FValue.One).toMap),
     )
   override val refOut = Config(
-    mammal -> (Instance(mammal) ++ mammalTuples.map(t => t -> One).toMap),
-    fish -> (Instance(fish) ++ fishTuples.map(t => t -> One).toMap),
-    reptile -> (Instance(reptile) ++ reptileTuples.map(t => t -> One).toMap),
-    bird -> (Instance(bird) ++ birdTuples.map(t => t -> One).toMap),
+    mammal -> (Instance[FValue](mammal) ++ mammalTuples.map(t => t -> FValue.One).toMap),
+    fish -> (Instance[FValue](fish) ++ fishTuples.map(t => t -> FValue.One).toMap),
+    reptile -> (Instance[FValue](reptile) ++ reptileTuples.map(t => t -> FValue.One).toMap),
+    bird -> (Instance[FValue](bird) ++ birdTuples.map(t => t -> FValue.One).toMap),
     )
   val x0A = Variable("x0A",A)
   val x1C = Variable("x1C",C)
   val soup = Set(
-    Rule(1, Value(1.0, Token(1)), bird(x0A),homeothermic(x0A)),
-    Rule(2, Value(1.0, Token(2)), fish(x0A),has_gills(x0A)),
-    Rule(3, Value(1.0, Token(3)), mammal(x0A),homeothermic(x0A)),
-    Rule(4, Value(1.0, Token(4)), reptile(x0A),has_eggs(x0A))
+    Rule(1, FValue(1.0, Token(1)), bird(x0A),homeothermic(x0A)),
+    Rule(2, FValue(1.0, Token(2)), fish(x0A),has_gills(x0A)),
+    Rule(3, FValue(1.0, Token(3)), mammal(x0A),homeothermic(x0A)),
+    Rule(4, FValue(1.0, Token(4)), reptile(x0A),has_eggs(x0A))
     )
 
   override val expected = Set(15,25,51,73)

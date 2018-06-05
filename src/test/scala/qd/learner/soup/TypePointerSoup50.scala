@@ -35,24 +35,24 @@ class TypePointerSoup50 extends Problem {
   val receiverFormalTuples: Set[DTuple] = Set((1,2),(2,10),(5,3),(9,4),(11,6)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
   val enclosingTypeTuples : Set[DTuple] = Set((1,1),(2,2),(5,1),(9,3),(11,1)).map { case (a, b) => DTuple(Atom(a), Atom(b)) }
 
-  override val edb: Config = Config(
-    points_initial -> (Instance(points_initial) ++ pointsInitialTuples.map(t => t -> One).toMap),
-    load -> (Instance(load) ++ loadTuples.map(t => t -> One).toMap),
-    store -> (Instance(store) ++ storeTuples.map(t => t -> One).toMap),
-    assign -> (Instance(assign) ++ assignTuples.map(t => t -> One).toMap),
-    invocation -> (Instance(invocation) ++ invocationTuples.map(t => t -> One).toMap),
-    actual -> (Instance(actual) ++ actualTuples.map(t => t -> One).toMap),
-    formal -> (Instance(formal) ++ formalTuples.map(t => t -> One).toMap),
-    receiver_actual -> (Instance(receiver_actual) ++ receiverActualTuples.map(t => t -> One).toMap),
-    receiver_formal -> (Instance(receiver_formal) ++ receiverFormalTuples.map(t => t -> One).toMap),
-    enclosing_type -> (Instance(enclosing_type) ++ enclosingTypeTuples.map(t => t -> One).toMap),
+  override val edb: Config[FValue] = Config(
+    points_initial -> (Instance[FValue](points_initial) ++ pointsInitialTuples.map(t => t -> FValue.One).toMap),
+    load -> (Instance[FValue](load) ++ loadTuples.map(t => t -> FValue.One).toMap),
+    store -> (Instance[FValue](store) ++ storeTuples.map(t => t -> FValue.One).toMap),
+    assign -> (Instance[FValue](assign) ++ assignTuples.map(t => t -> FValue.One).toMap),
+    invocation -> (Instance[FValue](invocation) ++ invocationTuples.map(t => t -> FValue.One).toMap),
+    actual -> (Instance[FValue](actual) ++ actualTuples.map(t => t -> FValue.One).toMap),
+    formal -> (Instance[FValue](formal) ++ formalTuples.map(t => t -> FValue.One).toMap),
+    receiver_actual -> (Instance[FValue](receiver_actual) ++ receiverActualTuples.map(t => t -> FValue.One).toMap),
+    receiver_formal -> (Instance[FValue](receiver_formal) ++ receiverFormalTuples.map(t => t -> FValue.One).toMap),
+    enclosing_type -> (Instance[FValue](enclosing_type) ++ enclosingTypeTuples.map(t => t -> FValue.One).toMap),
   )
 
   val pointstoTuples: Set[DTuple] = Set((1,1,1),(2,2,2),(1,5,5),(3,9,9),(1,11,11),
     (2,2,1),(1,4,5),(1,8,11),(1,1,11),(2,2,11)).map { case (a, b, c) => DTuple(Atom(a), Atom(b), Atom(c)) }
   val heappointstoTuples: Set[DTuple] = Set((5,2,11),(5,1,1),(5,1,11),(11,2,5),(1,2,5)).map { case (a, b, c) => DTuple(Atom(a), Atom(b), Atom(c)) }
-  override val refOut: Config = Config(pointsto -> (Instance(pointsto) ++ pointstoTuples.map(t => t -> One).toMap),
-    heappointsto -> (Instance(heappointsto) ++ heappointstoTuples.map(t => t -> One).toMap))
+  override val refOut: Config[FValue] = Config(pointsto -> (Instance[FValue](pointsto) ++ pointstoTuples.map(t => t -> FValue.One).toMap),
+    heappointsto -> (Instance[FValue](heappointsto) ++ heappointstoTuples.map(t => t -> FValue.One).toMap))
 
   val x0H: Variable = Variable("x0H", h)
   val x1H: Variable = Variable("x1H", h)
@@ -100,27 +100,27 @@ class TypePointerSoup50 extends Problem {
   val x4M: Variable = Variable("x4M", m)
 
   // Expected: 1, 31, 32, 38
-  override val soup : Set[Rule] = Set(
-  Rule(1,Value(0.5, Token(1)),pointsto(x1T,x0V,x2H), enclosing_type(x0V,x1T),points_initial(x0V,x2H)),
-  Rule(3,Value(0.5, Token(3)),pointsto(x2T,x0V,x1H), assign(x2T,x0V,x3T,x4V),points_initial(x0V,x1H)),
-  Rule(5,Value(0.5, Token(5)),pointsto(x3T,x0V,x1H), assign(x2T,x0V,x3T,x4V),points_initial(x0V,x1H)),
-  Rule(7,Value(0.5, Token(7)),pointsto(x2T,x3V,x1H), assign(x2T,x3V,x4T,x0V),points_initial(x0V,x1H)),
-  Rule(13,Value(0.5, Token(13)),pointsto(x2T,x3V,x0H), assign(x2T,x3V,x4T,x1V),receiver_formal(x0H,x1V)),
-  Rule(14,Value(0.5, Token(14)),pointsto(x2T,x1V,x0H), pointsto(x2T,x3V,x0H),receiver_formal(x0H,x1V)),
-  Rule(16,Value(0.5, Token(16)),pointsto(x3T,x0V,x4H), load(x0V,x1F,x2V),pointsto(x3T,x2V,x4H)),
-  Rule(17,Value(0.5, Token(17)),pointsto(x0T,x1V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x0T,x4V,x5H)),
-  Rule(19,Value(0.5, Token(19)),pointsto(x0T,x1V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x2T,x4V,x5H)),
-  Rule(20,Value(0.5, Token(20)),pointsto(x0T,x3V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x2T,x4V,x5H)),
-  Rule(22,Value(0.5, Token(22)),pointsto(x2T,x1V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x2T,x4V,x5H)),
-  Rule(24,Value(0.5, Token(24)),pointsto(x0T,x3V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x4T,x3V,x5H)),
-  Rule(25,Value(0.5, Token(25)),pointsto(x2T,x1V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x4T,x3V,x5H)),
-  Rule(27,Value(0.5, Token(27)),pointsto(x3T,x4V,x2H), heappointsto(x0H,x1F,x2H),pointsto(x3T,x4V,x0H)),
-  Rule(31,Value(0.5, Token(31)),pointsto(x0T,x1V,x2H), heappointsto(x5H,x4F,x2H),load(x3V,x4F,x1V),pointsto(x0T,x3V,x5H)),
-  Rule(32,Value(0.5, Token(32)),pointsto(x0T,x1V,x2H), assign(x0T,x1V,x3T,x4V),pointsto(x3T,x4V,x2H)),
-  Rule(36,Value(0.5, Token(36)),heappointsto(x3H,x4F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
-  Rule(37,Value(0.5, Token(37)),heappointsto(x0H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x4H)),
-  Rule(38,Value(0.5, Token(38)),heappointsto(x0H,x1F,x2H), pointsto(x5T,x3V,x0H),pointsto(x5T,x4V,x2H),store(x3V,x1F,x4V)),
-  Rule(39,Value(0.5, Token(39)),heappointsto(x0H,x1F,x2H), load(x3V,x1F,x4V),pointsto(x5T,x3V,x0H),pointsto(x5T,x4V,x2H)),
+  override val soup : Set[Rule[FValue]] = Set(
+  Rule(1,FValue(0.5, Token(1)),pointsto(x1T,x0V,x2H), enclosing_type(x0V,x1T),points_initial(x0V,x2H)),
+  Rule(3,FValue(0.5, Token(3)),pointsto(x2T,x0V,x1H), assign(x2T,x0V,x3T,x4V),points_initial(x0V,x1H)),
+  Rule(5,FValue(0.5, Token(5)),pointsto(x3T,x0V,x1H), assign(x2T,x0V,x3T,x4V),points_initial(x0V,x1H)),
+  Rule(7,FValue(0.5, Token(7)),pointsto(x2T,x3V,x1H), assign(x2T,x3V,x4T,x0V),points_initial(x0V,x1H)),
+  Rule(13,FValue(0.5, Token(13)),pointsto(x2T,x3V,x0H), assign(x2T,x3V,x4T,x1V),receiver_formal(x0H,x1V)),
+  Rule(14,FValue(0.5, Token(14)),pointsto(x2T,x1V,x0H), pointsto(x2T,x3V,x0H),receiver_formal(x0H,x1V)),
+  Rule(16,FValue(0.5, Token(16)),pointsto(x3T,x0V,x4H), load(x0V,x1F,x2V),pointsto(x3T,x2V,x4H)),
+  Rule(17,FValue(0.5, Token(17)),pointsto(x0T,x1V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x0T,x4V,x5H)),
+  Rule(19,FValue(0.5, Token(19)),pointsto(x0T,x1V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x2T,x4V,x5H)),
+  Rule(20,FValue(0.5, Token(20)),pointsto(x0T,x3V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x2T,x4V,x5H)),
+  Rule(22,FValue(0.5, Token(22)),pointsto(x2T,x1V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x2T,x4V,x5H)),
+  Rule(24,FValue(0.5, Token(24)),pointsto(x0T,x3V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x4T,x3V,x5H)),
+  Rule(25,FValue(0.5, Token(25)),pointsto(x2T,x1V,x5H), assign(x0T,x1V,x2T,x3V),pointsto(x4T,x3V,x5H)),
+  Rule(27,FValue(0.5, Token(27)),pointsto(x3T,x4V,x2H), heappointsto(x0H,x1F,x2H),pointsto(x3T,x4V,x0H)),
+  Rule(31,FValue(0.5, Token(31)),pointsto(x0T,x1V,x2H), heappointsto(x5H,x4F,x2H),load(x3V,x4F,x1V),pointsto(x0T,x3V,x5H)),
+  Rule(32,FValue(0.5, Token(32)),pointsto(x0T,x1V,x2H), assign(x0T,x1V,x3T,x4V),pointsto(x3T,x4V,x2H)),
+  Rule(36,FValue(0.5, Token(36)),heappointsto(x3H,x4F,x2H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x4F,x0H)),
+  Rule(37,FValue(0.5, Token(37)),heappointsto(x0H,x1F,x4H), heappointsto(x0H,x1F,x2H),heappointsto(x3H,x1F,x4H)),
+  Rule(38,FValue(0.5, Token(38)),heappointsto(x0H,x1F,x2H), pointsto(x5T,x3V,x0H),pointsto(x5T,x4V,x2H),store(x3V,x1F,x4V)),
+  Rule(39,FValue(0.5, Token(39)),heappointsto(x0H,x1F,x2H), load(x3V,x1F,x4V),pointsto(x5T,x3V,x0H),pointsto(x5T,x4V,x2H)),
   )
 
   override val expected: Set[Any] = Set(1, 31, 32, 38)

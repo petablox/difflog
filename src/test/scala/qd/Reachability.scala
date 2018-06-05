@@ -4,12 +4,12 @@ import qd.Graphs.Graph
 
 object Reachability {
 
-  val Programs: Set[Graph => Program] = Set(PE, EP, PP)
+  val Programs: Set[Graph => Program[FValue]] = Set(PE, EP, PP)
 
-  val ve: Value = Value(0.8, Token("E"))
-  val vt: Value = Value(0.9, Token("T"))
+  val ve: FValue = FValue(0.8, Token("E"))
+  val vt: FValue = FValue(0.9, Token("T"))
 
-  def PE(graph: Graph): Program = {
+  def PE(graph: Graph): Program[FValue] = {
     val nodes = graph.nodes
     val edge = graph.edge
     val path = graph.path
@@ -23,7 +23,7 @@ object Reachability {
     Program("PE", ruleE, ruleT)
   }
 
-  def EP(graph: Graph): Program = {
+  def EP(graph: Graph): Program[FValue] = {
     val nodes = graph.nodes
     val edge = graph.edge
     val path = graph.path
@@ -37,7 +37,7 @@ object Reachability {
     Program("EP", ruleE, ruleT)
   }
 
-  def PP(graph: Graph): Program = {
+  def PP(graph: Graph): Program[FValue] = {
     val nodes = graph.nodes
     val edge = graph.edge
     val path = graph.path
@@ -51,6 +51,6 @@ object Reachability {
     Program("PP", ruleE, ruleT)
   }
 
-  def soup(graph: Graph): Program = ???
+  def soup(graph: Graph): Program[FValue] = ???
 
 }
