@@ -8,9 +8,10 @@ package qd
 trait Value[T <: Value[T]] extends Ordered[T] {
   def +(that: T): T
   def *(that: T): T
-  def compare(that: T): Int
+  //def compare(that: T): Int
   def isZero: Boolean
   def isNonZero: Boolean = !isZero
+  def getUnderlying : T
 }
 
 trait OneAndZero[T <: Value[T]] {
@@ -30,7 +31,7 @@ case class FValue(private val v: Double, prov: Provenance) extends Value[FValue]
   def toDouble: Double = v
   override def toString: String = s"$v"
 
-
+  override def getUnderlying: FValue = this
 }
 
 object FValue {
@@ -62,15 +63,22 @@ case class DValue(r: Set[Set[Int]]) extends Value[DValue] {
 
   override def *(that : DValue) : DValue = {
     val sets = for (s1 <- r; s2 <- that.r) yield s1.union(s2)
-    DValue(sets)
+    val filtered = sets.filter(!isSubsetOfOne(sets, _))
+    DValue(filtered)
   }
 
-  override def compare(that : DValue) : Int = if (r == that.r) 0 else if (r subsetOf that.r) 1 else -1
+  def canonize() = {
+    DValue(r.filter(!isSubsetOfOne(r, _)))
+  }
+
+  override def compare(that : DValue) : Int = if (r == that.r) 0 else if (this + that == that) -1 else 1
 
   override def isZero : Boolean = r.isEmpty
 
   def One = DValue(Set(Set()))
   def Zero = DValue(Set())
+
+  override def getUnderlying: DValue = this
 }
 
 object DValue {

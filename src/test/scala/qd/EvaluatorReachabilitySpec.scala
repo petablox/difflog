@@ -18,5 +18,5 @@ class EvaluatorReachabilitySpec(evalCtr: Program[FValue] => Evaluator[FValue]) e
   }
 }
 
-/* class NaiveEvaluatorSpec extends EvaluatorReachabilitySpec(NaiveEvaluator)
-class SeminaiveEvaluatorSpec extends EvaluatorReachabilitySpec(SeminaiveEvaluator) */
+/*class NaiveEvaluatorSpec extends EvaluatorReachabilitySpec(NaiveEvaluator) */
+class SeminaiveEvaluatorSpec extends EvaluatorReachabilitySpec(SeminaiveEvaluator[FValue])

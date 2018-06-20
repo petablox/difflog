@@ -13,13 +13,15 @@ abstract class Problem extends FunSuite {
 
   test(s"Applying seminaive evaluator to initial program of $name") {
     val startTime = System.nanoTime()
-    val evaluator = SeminaiveEvaluator(p0)
-    val out = evaluator(edb)
+    val evaluator = NaiveEvaluator(p0)
+    val out : Config[DValue] = evaluator(edb)
     var num_clauses = 1
+    println("")
+    println(s"Printing information for ${name} results")
     for (x <- out.iterator ) {
       println(x._1)
       for (y <- x._2.support) {
-        num_clauses += y._2.r.size
+        num_clauses += y._2.getUnderlying.r.size
         println(s"Value for tuple ${(y._1)}: ${(y._2)}")
       }
     }
