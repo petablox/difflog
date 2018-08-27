@@ -1,80 +1,42 @@
 package qd
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Atoms and domains
+// Domains, Parameters, Constants, and Variables
 
-sealed case class Atom(t: Any) {
-  override val hashCode: Int = t.##
-  override def toString: String = s"<$t>"
+case class Domain(name: Any) {
+  override def toString: String = s"$name"
 }
 
-case class Domain(name: Any, private val set: Set[Atom]) extends Set[Atom] {
-  override def contains(atom: Atom): Boolean = set.contains(atom)
-  override def empty: Domain = Domain("Empty")
-  override def foreach[U](f: Atom => U): Unit = set.foreach(f)
-  override def iterator: Iterator[Atom] = set.iterator
-  override val size: Int = set.size
-  override def +(atom: Atom): Set[Atom] = Domain(s"$name + $atom", set + atom)
-  override def -(atom: Atom): Set[Atom] = Domain(s"$name - $atom", set - atom)
-  override def toString: String = s"$name[${set.mkString(", ")}]"
-
-  def equalityRelation[T <: Value[T]](implicit num: OneAndZero[T]): Instance[T] = {
-    set.foldLeft(Instance(this, this)) { case (instance, atom) => instance + (DTuple(atom, atom) -> num.One )}
-  }
-
-  override val hashCode: Int = (classOf[Domain], name, set).hashCode()
+sealed abstract class Parameter {
+  def name: Any
+  def domain: Domain
+  override def toString: String = s"$name"
 }
-
-object Domain {
-  def apply(name: Any, firstAtom: Atom, remainingAtoms: Atom*): Domain = {
-    Domain(name, (firstAtom +: remainingAtoms).toSet)
-  }
-  def apply(name: Any): Domain = {
-    Domain(name, Set[Atom]())
-  }
-}
+case class Constant(name: Any, domain: Domain) extends Parameter
+case class Variable(name: Any, domain: Domain) extends Parameter
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Tuples and relations (aka predicates)
-
-case class DTuple(private val fields: Atom*) extends Seq[Atom] {
-  require(fields.nonEmpty)
-  override def apply(index: Int): Atom = fields(index)
-  override def iterator: Iterator[Atom] = fields.iterator
-  override val length: Int = fields.length
-  override def hashCode(): Int = fields.hashCode()
-  override def head: Atom = fields.head
-  override def tail: DTuple = DTuple(fields.tail:_*)
-  def +:(field: Atom): DTuple = DTuple(field +: fields:_*)
-  def :+(field: Atom): DTuple = DTuple(fields :+ field:_*)
-  override def toString: String = s"(${fields.mkString(", ")})"
-}
+// Relations and Tuples
 
 case class Relation(name: Any, signature: Domain*) {
-  require(signature.nonEmpty)
+  def arity: Int = signature.length
+  def apply(fields: Parameter*): Literal = Literal(this, fields:_*)
+  override def toString: String = s"$name(${signature.mkString(", ")})"
+}
 
-  def contains(tuple: DTuple): Boolean = {
-    signature.length == tuple.length &&
-    signature.zip(tuple).forall { case (domain, field) => domain.contains(field) }
-  }
-  val arity: Int = signature.length
-  override def toString: String = s"$name(${signature.map(_.name).mkString(", ")})"
+case class DTuple(fields: Constant*) extends Seq[Constant] {
+  val signature: Seq[Domain] = fields.map(_.domain)
+  def arity: Int = fields.length
 
-  def apply(index: Int): Domain = signature(index)
-  def apply(fields: Atom*): DTuple = {
-    val ans = DTuple(fields:_*)
-    require(this.contains(ans))
-    ans
-  }
-  def apply(parameters: Parameter*): Literal = Literal(this, parameters:_*)
+  override def apply(index: Int): Constant = fields(index)
+  override def iterator: Iterator[Constant] = fields.iterator
+  override val length: Int = fields.length
+  override def hashCode(): Int = fields.hashCode()
+  override def head: Constant = fields.head
+  override def tail: DTuple = DTuple(fields.tail:_*)
 
-  def populate: Set[DTuple] = {
-    def p(sign: Seq[Domain]): Set[DTuple] = {
-      if (sign.tail.isEmpty) sign.head.map(atom => DTuple(atom))
-      else for (tail <- p(sign.tail); head <- sign.head) yield head +: tail
-    }
-    p(signature)
-  }
+  def +:(field: Constant): DTuple = DTuple(field +: fields:_*)
+  def :+(field: Constant): DTuple = DTuple(fields :+ field:_*)
 
-  override val hashCode: Int = (classOf[Relation], name, signature).hashCode()
+  override def toString: String = fields.mkString("(", ", ", ")")
 }

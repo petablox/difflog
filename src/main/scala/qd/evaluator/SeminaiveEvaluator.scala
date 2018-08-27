@@ -1,48 +1,29 @@
 package qd
+package evaluator
 
 import scala.collection.parallel.ParSeq
 
-case class SeminaiveEvaluator[T <: Value[T]](override val program: Program[T])(implicit num : OneAndZero[T]) extends Evaluator("Seminaive", program) {
-
-  private var numAppliedRules = 0
-  private var numIters = 0
+case class SeminaiveEvaluator[T <: Value[T]](program: Program[T])(implicit vs: Semiring[T])
+extends Evaluator[T]("Seminaive") {
 
   override def apply(edb: Config[T]): Config[T] = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
     while (delta.nonEmptySupport) {
-      // println("Starting immediate consequence epoch!")
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       oldConfig = config
       config = newConfig
       delta = newDelta
-      numIters += 1
     }
     config
   }
 
   def immediateConsequence(config: Config[T], delta: Config[T]): (Config[T], Config[T]) = {
     var (newConfig, deltaCurr, deltaNext) = (config, delta, Config())
-    numAppliedRules = 0
     for (rule <- rules) {
-      // println(s"  $numAppliedRules. Evaluating rule ${rule.name}")
-      val startTime = System.nanoTime()
-      // val supportSizeOrig = newConfig(rule.head.relation).support.size
-
       val cdd = immediateConsequence(rule, newConfig, deltaCurr, deltaNext)
       newConfig = cdd._1
       deltaCurr = cdd._2
       deltaNext = cdd._3
-
-      val endTime = System.nanoTime()
-      time += (rule -> (time.getOrElse(rule, 0l) + endTime - startTime))
-      // val supportSizeFinal = newConfig(rule.head.relation).support.size
-      // val numFreeVars = rule.freeVariables.size
-      // val numPossibleVals = rule.freeVariables.toSeq.map(_.domain.size).product
-      /* println(s"  Done! Rule ${rule.name}. Relation ${rule.head.relation.name}. " +
-              s"Support size original: $supportSizeOrig. Support size final: $supportSizeFinal. " +
-              s"numFreeVars: $numFreeVars. numPossibleVals: $numPossibleVals. " +
-              s"numIters: $numIters. Time: ${(endTime - startTime) / 1.0e9} s.") */
-      numAppliedRules += 1
     }
     (newConfig, deltaNext)
   }
@@ -60,12 +41,11 @@ case class SeminaiveEvaluator[T <: Value[T]](override val program: Program[T])(i
     (newConfig, newDeltaCurr, newDeltaNext)
   }
 
-  def immediateConsequence(rule: Rule[T], deltaLiteral: Literal,
-                           config: Config[T], deltaCurr: Config[T], deltaNext: Config[T]): (Config[T], Config[T], Config[T]) = {
+  def immediateConsequence(rule: Rule[T], deltaLiteral: Literal, config: Config[T],
+                           deltaCurr: Config[T], deltaNext: Config[T]): (Config[T], Config[T], Config[T]) = {
     require(rule.body.contains(deltaLiteral))
-    // println(s"    deltaLiteral: $deltaLiteral")
 
-    var bodyVals = ParSeq(Valuation.Empty)
+    var bodyVals = ParSeq(Assignment.Empty)
     var remainingLits = rule.body
     for (literal <- rule.body) {
       bodyVals = if (literal == deltaLiteral) extend(literal, deltaCurr, bodyVals)
@@ -73,18 +53,14 @@ case class SeminaiveEvaluator[T <: Value[T]](override val program: Program[T])(i
 
       remainingLits = remainingLits - literal
       if (bodyVals.size > 1000) {
-        // val originalSize = bodyVals.size
-        val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
+        val relevantVars = remainingLits.map(_.variables).foldLeft(rule.head.variables)(_ ++ _)
         bodyVals = bodyVals.map(_.project(relevantVars))
-        bodyVals = bodyVals.groupBy(_.backingMap)
-                           .mapValues(_.map(_.score).foldLeft(num.Zero)(_ + _))
-                           .toSeq.map(mv => Valuation(mv._1, mv._2))
-        // println(s"  bodyVals.size: ${bodyVals.size}. Was originally $originalSize. " +
-        //         s"relevantVars: ${relevantVars.mkString(", ")}")
+        bodyVals = bodyVals.groupBy(_.map)
+                           .mapValues(_.map(_.score).foldLeft(vs.Zero)(_ + _))
+                           .toSeq.map(mv => Assignment(mv._1, mv._2))
       }
     }
-    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
-    // println(s"  newTuples.size: ${newTuples.size}")
+    val newTuples = bodyVals.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
 
     val relation = rule.head.relation
     val oldInstance = config(relation)
@@ -104,17 +80,17 @@ case class SeminaiveEvaluator[T <: Value[T]](override val program: Program[T])(i
     (newConfig, newDeltaCurr, newDeltaNext)
   }
 
-  def extend(literal: Literal, config: Config[T], bodyVals: ParSeq[Valuation[T]]): ParSeq[Valuation[T]] = {
-    for (valuation <- bodyVals;
-         f = valuation.toFilter(literal);
+  def extend(literal: Literal, config: Config[T], bodyVals: ParSeq[Assignment[T]]): ParSeq[Assignment[T]] = {
+    for (assignment <- bodyVals;
+         f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
-         newValuation <- extend(literal, tuple, valuation))
+         newValuation <- extend(literal, tuple, assignment))
     yield newValuation * score
   }
 
-  def extend(literal: Literal, tuple: DTuple, valuation: Valuation[T]): Option[Valuation[T]] = {
-    var ans = valuation
-    for ((par, field) <- literal.parameters.zip(tuple)) {
+  def extend(literal: Literal, tuple: DTuple, assignment: Assignment[T]): Option[Assignment[T]] = {
+    var ans = assignment
+    for ((par, field) <- literal.fields.zip(tuple)) {
       par match {
         case v @ Variable(_, _) =>
           if (!ans.contains(v)) ans = ans + (v -> field)

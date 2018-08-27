@@ -1,112 +1,105 @@
 package qd
 
-import scala.collection.mutable
-import scala.util.hashing.MurmurHash3
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Parameters: Variables or Constants
+// Literals and Rules
 
-sealed abstract class Parameter(val domain: Domain)
-case class Variable(name: Any, override val domain: Domain) extends Parameter(domain) {
-  override val hashCode: Int = MurmurHash3.finalizeHash(MurmurHash3.mix(name.##, domain.hashCode), 2)
-  override def toString: String = name.toString
-}
-case class Constant(value: Atom, override val domain: Domain) extends Parameter(domain) {
-  require(domain.contains(value))
-  override def toString: String = value.toString
+case class Literal(relation: Relation, fields: Parameter*) {
+  require(relation.signature == fields.map(_.domain))
+  val variables: Set[Variable] = fields.collect({ case v: Variable => v }).toSet
+  override def toString: String = s"${relation.name}(${fields.mkString(", ")})"
 }
 
-// A valuation is a mapping from variables to atoms
-// They are intermediate objects encountered while applying rules
-class Valuation[T <: Value[T]] private (val backingMap: Map[Variable, Atom], val score: T) extends Map[Variable, Atom] {
-  override def get(variable: Variable): Option[Atom] = backingMap.get(variable)
-  override def iterator: Iterator[(Variable, Atom)] = backingMap.iterator
-
-  def +(va: (Variable, Atom)): Valuation[T] = {
-    val (variable, atom) = va
-    require(variable.domain.contains(atom))
-    new Valuation(backingMap + va, score)
-  }
-  override def +[V >: Atom](kv: (Variable, V)): Map[Variable, V] = backingMap + kv
-  override def -(variable: Variable): Valuation[T] = Valuation(backingMap - variable, score)
-  def *(coeff: T): Valuation[T] = Valuation(backingMap, score * coeff)
-
-  def toFilter(literal: Literal): Seq[Option[Atom]] = literal.parameters.map {
-    case v @ Variable(_, _) => backingMap.get(v)
-    case Constant(atom, _) => Some(atom)
-  }
-
-  def project(rvs: Set[Variable]): Valuation[T] = new Valuation(backingMap.filterKeys(v => rvs.contains(v)), score)
-}
-
-object Valuation {
-  def apply[T <: Value[T]](map: Map[Variable, Atom], score: T): Valuation[T] = {
-    require(map.forall { case (variable, atom) => variable.domain.contains(atom) })
-    new Valuation(map, score)
-  }
-  def Empty[T <: Value[T]](implicit num : OneAndZero[T]): Valuation[T] = new Valuation(Map(), num.One)
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Literal and rules
-
-case class Literal(relation: Relation, parameters: Parameter*) {
-  require(relation.signature == parameters.map(_.domain))
-  val freeVariables: Set[Variable] = parameters.collect({ case v: Variable => v }).toSet
-  override def toString: String = s"${relation.name}(${parameters.mkString(", ")})"
-
-  def concretize[T <: Value[T]](valuation: Valuation[T]): Map[DTuple, Value[T]] = {
-    var completeValuations = Set(valuation)
-    for (v <- parameters.collect { case v: Variable => v }) {
-      completeValuations = completeValuations.flatMap(valPrime => {
-        if (!valPrime.contains(v)) v.domain.map(atom => valPrime + (v -> atom))
-        else Set(valPrime)
-      })
-    }
-
-    (for (valPrime <- completeValuations) yield {
-      val fields = parameters.map {
-        case v @ Variable(_, _) => valPrime(v)
-        case Constant(c, _) => c
-      }
-      DTuple(fields:_*) -> valPrime.score
-    }).toMap
-  }
-}
-
-case class Rule[T <: Value[T]](name: Any, coeff: T, head: Literal, body: Set[Literal]) {
-  val freeVariables: Set[Variable] = (body + head).flatMap(_.freeVariables)
-  override def toString: String = s"$name: $head :- ${body.mkString(", ")}."
+case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Set[Literal]) {
+  val variables: Set[Variable] = body.flatMap(_.variables)
+  require(head.variables.subsetOf(variables))
+  val relations: Set[Relation] = body.map(_.relation) + head.relation
+  val domains: Set[Domain] = body.flatMap(_.fields.map(_.domain)) ++ head.fields.map(_.domain)
+  override def toString: String = s"$coeff: $head :- ${body.mkString(", ")}."
 }
 
 object Rule {
-  def apply[T <: Value[T]](name: Any, coeff: T, head: Literal,
-            firstBodyLiteral: Literal, remainingBodyLiteral: Literal*): Rule[T] = {
-    Rule(name, coeff, head, (firstBodyLiteral +: remainingBodyLiteral).toSet)
-  }
-  def apply[T <: Value[T]](name: Any, coeff: T, head: Literal): Rule[T] = Rule(name, coeff, head, Set[Literal]())
+  def apply[T <: Value[T]](coeff: T, head: Literal, body: Literal*): Rule[T] = Rule(coeff, head, body.toSet)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Programs and evaluators
+// Programs
 
 case class Program[T <: Value[T]](name: Any, rules: Set[Rule[T]]) {
-  val allRelations: Set[Relation] = rules.flatMap(rule => rule.body.map(_.relation) + rule.head.relation)
-  val allDomains: Set[Domain] = allRelations.flatMap(_.signature)
   override def toString: String = rules.mkString(System.lineSeparator())
+  val relations: Set[Relation] = rules.flatMap(_.relations)
+  val domains: Set[Domain] = rules.flatMap(_.domains)
 }
 
 object Program {
-  def apply[T <: Value[T]](name: Any, firstRule: Rule[T], remainingRules: Rule[T]*): Program[T] = {
-    Program(name, (firstRule +: remainingRules).toSet)
-  }
-  def apply[T <: Value[T]](name: Any): Program[T] = Program(name, Set[Rule[T]]())
-}
 
-abstract class Evaluator[T <: Value[T]](val name: Any, val program: Program[T]) extends (Config[T] => Config[T]) {
-  val rules: Set[Rule[T]] = program.rules
-  val allRelations: Set[Relation] = program.allRelations
-  val allDomains: Set[Domain] = program.allDomains
-  protected val time: mutable.Map[Rule[T], Long] = new mutable.HashMap()
-  def getTime: Map[Rule[T], Long] = time.toMap
+  def apply[T <: Value[T]](name: Any, rules: Rule[T]*): Program[T] = Program(name, rules.toSet)
+
+  def skeleton[T <: Value[T]](
+                               name: Any,
+                               inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
+                               maxLiterals: Int, maxVars: Int
+                             )(implicit vs: Semiring[T]): Program[T] = {
+
+    require(inputRels.intersect(inventedRels).isEmpty)
+    require(inputRels.intersect(outputRels).isEmpty)
+    require(inventedRels.intersect(outputRels).isEmpty)
+    require(maxLiterals >= 0 && maxVars >= 0)
+
+    val allRels = inputRels ++ inventedRels ++ outputRels
+
+    def allLiteralSets(length: Int, freeVars: Set[Variable]): Set[Set[Literal]] = {
+      require(length >= 0)
+      if (length == 0) Set(Set())
+      else {
+        def allLiterals(hypRel: Relation): Set[(Literal, Set[Variable])] = {
+          def allBindings(signature: Seq[Domain], fvp: Set[Variable]): Set[Seq[Variable]] = {
+            if (signature.isEmpty) Set(Seq())
+            else {
+              val domHead = signature.head
+              def newVar(): Variable = {
+                var index = 0
+                while (fvp.contains(Variable(s"v$index", domHead))) index = index + 1
+                Variable(s"v$index", domHead)
+              }
+              var availableVars = if (fvp.size < maxVars) fvp + newVar() else fvp
+              availableVars = availableVars.filter(_.domain == domHead)
+              for (bhead <- availableVars; brest <- allBindings(signature.tail, fvp + bhead))
+              yield bhead +: brest
+            }
+          }
+          for (binding <- allBindings(hypRel.signature, freeVars))
+          yield (Literal(hypRel, binding:_*), freeVars ++ binding)
+        }
+        for (hypRel <- allRels;
+             (lit, fvp) <- allLiterals(hypRel);
+             lits <- allLiteralSets(length - 1, fvp))
+        yield lits + lit
+      }
+    }
+
+    val allBodies = (0 to maxLiterals).flatMap(length => allLiteralSets(length, Set())).toSet
+    def allHeads(targetRel: Relation, body: Set[Literal]): Set[Literal] = {
+      val allVars = body.flatMap(_.variables)
+      def allBindings(signature: Seq[Domain]): Set[Seq[Variable]] = {
+        if (signature.isEmpty) Set(Seq())
+        else {
+          val availableVars = allVars.filter(_.domain == signature.head)
+          for (bhead <- availableVars; brest <- allBindings(signature.tail))
+          yield bhead +: brest
+        }
+      }
+      for (binding <- allBindings(targetRel.signature))
+      yield Literal(targetRel, binding:_*)
+    }
+
+    val allRules = for (targetRel <- inventedRels ++ outputRels;
+                        body <- allBodies;
+                        head <- allHeads(targetRel, body)
+                        if !body.contains(head))
+                   yield Rule(vs.One, head, body)
+
+    Program(name, allRules)
+
+  }
+
 }

@@ -1,174 +1,163 @@
 package qd
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Instances (of relations / predicates) and configurations
+// Assignments
 
-sealed abstract class Instance[T <: Value[T]](val signature: Seq[Domain])(implicit num: OneAndZero[T])extends (DTuple => T) {
-  require(signature.nonEmpty)
+case class Assignment[T <: Value[T]](map: Map[Variable, Constant], score: T) extends (Variable => Constant) {
+  require(map.forall { case (key, value) => key.domain == value.domain })
+
+  override def apply(key: Variable): Constant = map(key)
+  def get(key: Variable): Option[Constant] = map.get(key)
+  def contains(key: Variable): Boolean = map.contains(key)
+
+  def +(kv: (Variable, Constant)): Assignment[T] = {
+    val (key, _) = kv
+    require(!map.contains(key))
+    Assignment(map + kv, score)
+  }
+  def *(coeff: T): Assignment[T] = Assignment(map, score * coeff)
+
+  def project(rvs: Set[Variable]): Assignment[T] = Assignment(map.filterKeys(rvs), score)
+
+  def toTuple(lit: Literal): (DTuple, T) = {
+    val cs = lit.fields.map {
+      case c @ Constant(_, _) => c
+      case v @ Variable(_, _) => this(v)
+    }
+    (DTuple(cs:_*), score)
+  }
+
+  def toFilter(literal: Literal): Seq[Option[Constant]] = literal.fields.map {
+    case v @ Variable(_, _) => map.get(v)
+    case c @ Constant(_, _) => Some(c)
+  }
+}
+
+object Assignment {
+  def Empty[T <: Value[T]]()(implicit vs: Semiring[T]): Assignment[T] = Assignment(Map(), vs.One)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Instances
+
+sealed abstract class Instance[T <: Value[T]](val signature: Seq[Domain])(implicit vs: Semiring[T])
+extends (DTuple => T) {
+  val arity: Int = signature.length
+
+  lazy val support: Set[(DTuple, T)] = this match {
+    case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(), value)) else Set()
+    case InstanceInd(_, _, map) => for ((constant, mapA) <- map.view.toSet;
+                                        (tuple, value) <- mapA.support)
+                                   yield (constant +: tuple) -> value
+  }
+
+  lazy val nonEmpty: Boolean = support.nonEmpty
 
   override def apply(tuple: DTuple): T = {
-    val startTime = System.nanoTime()
-    val ans = this match {
-      case InstanceBase(domain, map) =>
-        require(tuple.length == 1)
-        val atom = tuple.head
-        require(domain.contains(atom))
-        map.getOrElse(atom, num.Zero)
+    require(tuple.arity == this.arity)
+    this match {
+      case InstanceBase(value) => value
       case InstanceInd(domHead, _, map) =>
-        val atomHead = tuple.head
-        require(domHead.contains(atomHead))
-        map.get(atomHead).map(_(tuple.tail)).getOrElse(num.Zero)
+        val chead = tuple.head
+        require(chead.domain == domHead)
+        map.get(chead).map(_(tuple.tail)).getOrElse(vs.Zero)
     }
-    val endTime = System.nanoTime()
-    Instance.applyTime += endTime - startTime
-    ans
   }
 
-  val support: Seq[(DTuple, Value[T])] = {
-    val startTime = System.nanoTime()
-    val ans = this match {
-      case InstanceBase(_, map) => map.toSeq.view
-        .filter({ case (_, value) => value.isNonZero })
-        .map({ case (atom, value) => DTuple(atom) -> value })
-      case InstanceInd(_, _, map) => for ((atom, mapA) <- map.toSeq.view;
-                                          (tuple, value) <- mapA.support)
-        yield (atom +: tuple) -> value
+  def filter(f: Seq[Option[Constant]]): Set[(DTuple, T)] = {
+    require(f.length == this.arity)
+    this match {
+      case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(), value)) else Set()
+      case InstanceInd(_, _, map) =>
+        f.head match {
+          case Some(fh) =>
+            val mfh = map.get(fh)
+            if (mfh.nonEmpty) mfh.get.filter(f.tail).map { case (tuple, value) => (fh +: tuple, value) }
+            else Set()
+          case None =>
+            for ((constant, ind) <- map.toSet;
+                 (tuple, value) <- ind.filter(f.tail))
+            yield (constant +: tuple, value)
+        }
     }
-    val endTime = System.nanoTime()
-    Instance.supportTime += endTime - startTime
-    ans
   }
 
-  val nonEmpty: Boolean = support.nonEmpty
+  def ++(that: Instance[T]): Instance[T] = (this, that) match {
+    case (InstanceBase(vthis), InstanceBase(vthat)) => InstanceBase(vthis + vthat)
+    case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, _, map2)) =>
+      require(domH1 == domH2)
+      val newMap = for (chead <- map1.keySet ++ map2.keySet;
+                        ov1 = map1.get(chead); ov2 = map2.get(chead);
+                        v12 = if (ov1.nonEmpty && ov2.nonEmpty) ov1.get ++ ov2.get
+                              else if (ov1.nonEmpty) ov1.get
+                              else if (ov2.nonEmpty) ov2.get
+                              else Instance(domT1:_*))
+                   yield chead -> v12
+      InstanceInd(domH1, domT1, newMap.toMap)
+    case (_, _) => throw new IllegalArgumentException
+  }
 
-  def filter(f: Seq[Option[Atom]]): Seq[(DTuple, T)] = {
-    val startTime = System.nanoTime()
-    val ans = (this, f.head) match {
-      case (InstanceBase(_, map), Some(fh)) =>
-        val mfh = map.getOrElse(fh, num.Zero)
-        if (mfh.isNonZero) Seq((DTuple(fh), mfh)) else Seq()
-      case (InstanceBase(_, map), None) =>
-        for ((atom, value) <- map.view.toSeq; if value.isNonZero) yield (DTuple(atom), value)
-      case (InstanceInd(_, _, map), Some(fh)) =>
-        val mfh = map.get(fh)
-        if (mfh.nonEmpty) mfh.get.filter(f.tail).map { case (tuple, value) => (fh +: tuple, value) }
-        else Seq()
-      case (InstanceInd(_, _, map), None) =>
-        for ((atom, s) <- map.mapValues(_.filter(f.tail)).toSeq; (tuple, value) <- s) yield (atom +: tuple, value)
+  def ++(tvs: Map[DTuple, T]): Instance[T] = tvs.foldLeft(this)(_ + _)
+  def +(tv: (DTuple, T)): Instance[T] = {
+    val (t, v) = tv
+    require(t.arity == this.arity)
+    this match {
+      case InstanceBase(value) => InstanceBase(value + v)
+      case InstanceInd(domHead, domTail, map) =>
+        val chead = t.head
+        require(chead.domain == domHead)
+        val mapA = map.getOrElse(chead, Instance(domTail:_*))
+        val newMapA = mapA + (t.tail -> v)
+        InstanceInd(domHead, domTail, map + (chead -> newMapA))
     }
-    val endTime = System.nanoTime()
-    Instance.filterTime += endTime - startTime
-    ans
   }
 
-  def ++(that: Instance[T]): Instance[T] = {
-    val startTime = System.nanoTime()
-    val ans = (this, that) match {
-      case (InstanceBase(dom1, map1), InstanceBase(dom2, map2)) =>
-        require(dom1 == dom2)
-        val newMap = for (atom <- map1.keySet ++ map2.keySet;
-                          v1 = map1.getOrElse(atom, num.Zero);
-                          v2 = map2.getOrElse(atom, num.Zero);
-                          sum = v1 + v2)
-          yield atom -> sum
-        InstanceBase(dom1, newMap.toMap)
-      case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, domT2, map2)) =>
-        require(domH1 == domH2)
-        val newMap = for (atom <- map1.keySet ++ map2.keySet;
-                          v1 = map1.getOrElse(atom, Instance(domT1:_*));
-                          v2 = map2.getOrElse(atom, Instance(domT2:_*)))
-          yield atom -> (v1 ++ v2)
-        InstanceInd(domH1, domT1, newMap.toMap)
-      case (InstanceBase(_, _), InstanceInd(_, _, _)) => throw new IllegalArgumentException
-      case (InstanceInd(_, _, _), InstanceBase(_, _)) => throw new IllegalArgumentException
-    }
-    val endTime = System.nanoTime()
-    Instance.plusPlusInstanceTime += endTime - startTime
-    ans
+  override def toString: String = {
+    val elems = support.map { case (tuple, value) => s"$tuple: $value" }
+    val elemStr = elems.mkString(", ")
+    s"Instance($signature, $elemStr)"
   }
-
-  def ++(tvs: Map[DTuple, Value[T]]): Instance[T] = {
-    val startTime = System.nanoTime()
-    val ans = tvs.foldLeft(this)(_ + _)
-    val endTime = System.nanoTime()
-    Instance.plusPlusMapTime += endTime - startTime
-    ans
-  }
-  def +(tv: (DTuple, Value[T])): Instance[T] = {
-    val startTime = System.nanoTime()
-    val ans = this.add(tv._1, tv._2)
-    val endTime = System.nanoTime()
-    Instance.plusTime += endTime - startTime
-    ans
-  }
-  def add(tuple: DTuple, value: Value[T]): Instance[T] = this match {
-    case InstanceBase(domain, map) =>
-      require(tuple.length == 1)
-      val atom = tuple.head
-      require(domain.contains(atom))
-      val m2 : Map[Atom, T] = map
-      val oldValue = m2.getOrElse(atom, num.Zero)
-      val newValue = value + oldValue
-      InstanceBase(domain, map + (atom -> newValue))
-    case InstanceInd(domHead, domTail, map) =>
-      val atom = tuple.head
-      require(domHead.contains(atom))
-      val mapA = map.getOrElse(atom, Instance(domTail:_*))
-      val newMapA = mapA + (tuple.tail -> value)
-      InstanceInd(domHead, domTail, map + (atom -> newMapA))
-  }
-
-  override def toString: String = support.toString
 }
 
 object Instance {
-  var applyTime: Long = 0
-  var supportTime: Long = 0
-  var filterTime: Long = 0
-  var plusPlusInstanceTime: Long = 0
-  var plusPlusMapTime: Long = 0
-  var plusTime: Long = 0
-
-  def apply[T <: Value[T]](signature: Domain*)(implicit num: OneAndZero[T]): Instance[T] = {
-    require(signature.nonEmpty)
-    if (signature.length == 1) InstanceBase(signature.head, Map())
+  def apply[T <: Value[T]](signature: Domain*)(implicit vs: Semiring[T]): Instance[T] = {
+    if (signature.isEmpty) InstanceBase(vs.Zero)
     else InstanceInd(signature.head, signature.tail, Map())
   }
-  def apply[T <: Value[T]](relation: Relation)(implicit num: OneAndZero[T]): Instance[T] = Instance(relation.signature:_*)
+  def apply[T <: Value[T]](relation: Relation)(implicit vs: Semiring[T]): Instance[T] = Instance(relation.signature:_*)
 }
 
-case class InstanceBase[T <: Value[T]](domain: Domain, map: Map[Atom, T])(implicit num: OneAndZero[T]) extends Instance[T](Seq(domain)) {
-  require(map.keys.forall(domain.contains))
-}
+case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) extends Instance[T](Seq())
 
-case class InstanceInd[T <: Value[T]](domHead: Domain, domTail: Seq[Domain], map: Map[Atom, Instance[T]])(implicit num : OneAndZero[T])
-  extends Instance[T](domHead +: domTail) {
-  require(map.forall { case (atom, instance) => domHead.contains(atom) && domTail == instance.signature })
+case class InstanceInd[T <: Value[T]](domHead: Domain, domTail: Seq[Domain], map: Map[Constant, Instance[T]])
+                                     (implicit vs: Semiring[T])
+extends Instance[T](domHead +: domTail) {
+  require(map.forall { case (constant, _) => constant.domain == domHead })
+  require(map.forall { case (_, instance) => instance.signature == domTail })
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Configurations
 
-case class Config[T <: Value[T]](private val map: Map[Relation, Instance[T]])(implicit num: OneAndZero[T]) extends Map[Relation, Instance[T]] {
+case class Config[T <: Value[T]](map: Map[Relation, Instance[T]])(implicit vs: Semiring[T])
+extends (Relation => Instance[T]) {
   require(map.forall { case (relation, instance) => relation.signature == instance.signature })
 
   override def apply(relation: Relation): Instance[T] = map.getOrElse(relation, Instance(relation))
-  override def get(relation: Relation): Option[Instance[T]] = Some(this(relation))
-  override def iterator: Iterator[(Relation, Instance[T])] = map.iterator
+  def get(relation: Relation): Option[Instance[T]] = Some(this(relation))
   def +(ri: (Relation, Instance[T])): Config[T] = {
     val (relation, instance) = ri
     val newInstance = this(relation) ++ instance
     Config(map + (relation -> newInstance))
   }
-  override def +[V >: Instance[T]](kv: (Relation, V)): Map[Relation, V] = map + kv
-  override def -(relation: Relation): Config[T] = Config(map - relation)
 
   def nonEmptySupport: Boolean = map.values.exists(_.nonEmpty)
 }
 
 object Config {
-  def apply[T <: Value[T]](firstPair: (Relation, Instance[T]), remainingPairs: (Relation, Instance[T])*)(implicit num: OneAndZero[T]): Config[T] = {
+  def apply[T <: Value[T]](firstPair: (Relation, Instance[T]), remainingPairs: (Relation, Instance[T])*)
+                          (implicit vs: Semiring[T]): Config[T] = {
     Config((firstPair +: remainingPairs).toMap)
   }
-  def apply[T <: Value[T]]()(implicit num: OneAndZero[T]): Config[T] = Config[T](Map[Relation, Instance[T]]())
+  def apply[T <: Value[T]]()(implicit vs: Semiring[T]): Config[T] = Config[T](Map[Relation, Instance[T]]())
 }

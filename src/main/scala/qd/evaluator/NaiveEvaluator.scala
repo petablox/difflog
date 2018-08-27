@@ -1,14 +1,14 @@
 package qd
+package evaluator
 
 import scala.collection.parallel.ParSeq
 
-case class NaiveEvaluator[T <: Value[T]](override val program: Program[T])(implicit num: OneAndZero[T])
-  extends Evaluator("Naive", program) {
+case class NaiveEvaluator[T <: Value[T]](program: Program[T])(implicit vs: Semiring[T])
+extends Evaluator[T]("Naive") {
 
   override def apply(edb: Config[T]): Config[T] = {
     var (config, changed) = (edb, true)
     while (changed) {
-      // println("Starting immediate consequence epoch!")
       val cd = immediateConsequence(config)
       config = cd._1
       changed = cd._2
@@ -19,31 +19,28 @@ case class NaiveEvaluator[T <: Value[T]](override val program: Program[T])(impli
   def immediateConsequence(config: Config[T]): (Config[T], Boolean) = {
     var (c, d) = (config, false)
     for (rule <- rules) {
-      val startTime = System.nanoTime()
       val (cPrime, id) = immediateConsequence(rule, c)
       c = cPrime
       d = d || id
-      val endTime = System.nanoTime()
-      time += (rule -> (time.getOrElse(rule, 0l) + endTime - startTime))
     }
     (c, d)
   }
 
   // Applies a rule to a configuration
   def immediateConsequence(rule: Rule[T], config: Config[T]): (Config[T], Boolean) = {
-    var bodyVals = ParSeq(Valuation.Empty)
+    var bodyVals = ParSeq(Assignment.Empty)
     var remainingLits = rule.body
     for (literal <- rule.body) {
       bodyVals = extend(literal, config, bodyVals)
 
       remainingLits = remainingLits - literal
-      val relevantVars = remainingLits.map(_.freeVariables).foldLeft(rule.head.freeVariables)(_ ++ _)
+      val relevantVars = remainingLits.map(_.variables).foldLeft(rule.head.variables)(_ ++ _)
       bodyVals = bodyVals.map(_.project(relevantVars))
-      bodyVals = bodyVals.groupBy(_.backingMap)
-                         .mapValues(_.map(_.score).foldLeft(num.Zero: T)(_ + _))
-                         .toSeq.map(mv => Valuation(mv._1, mv._2))
+      bodyVals = bodyVals.groupBy(_.map)
+                         .mapValues(_.map(_.score).foldLeft(vs.Zero: T)(_ + _))
+                         .toSeq.map(mv => Assignment(mv._1, mv._2))
     }
-    val newTuples = bodyVals.map(_ * rule.coeff).flatMap(rule.head.concretize).toMap
+    val newTuples = bodyVals.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
 
     val relation = rule.head.relation
     val oldInstance = config(relation)
@@ -55,7 +52,7 @@ case class NaiveEvaluator[T <: Value[T]](override val program: Program[T])(impli
     (newConfig, changed)
   }
 
-  def extend(literal: Literal, config: Config[T], bodyVals: ParSeq[Valuation[T]]): ParSeq[Valuation[T]] = {
+  def extend(literal: Literal, config: Config[T], bodyVals: ParSeq[Assignment[T]]): ParSeq[Assignment[T]] = {
     for (valuation <- bodyVals;
          f = valuation.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
@@ -63,9 +60,9 @@ case class NaiveEvaluator[T <: Value[T]](override val program: Program[T])(impli
     yield newValuation * score
   }
 
-  def extend(literal: Literal, tuple: DTuple, valuation: Valuation[T]): Option[Valuation[T]] = {
+  def extend(literal: Literal, tuple: DTuple, valuation: Assignment[T]): Option[Assignment[T]] = {
     var ans = valuation
-    for ((par, field) <- literal.parameters.zip(tuple)) {
+    for ((par, field) <- literal.fields.zip(tuple)) {
       par match {
         case v @ Variable(_, _) =>
           if (!ans.contains(v)) ans = ans + (v -> field)
