@@ -14,7 +14,41 @@ case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Set[Literal]) {
   require(head.variables.subsetOf(variables))
   val relations: Set[Relation] = body.map(_.relation) + head.relation
   val domains: Set[Domain] = body.flatMap(_.fields.map(_.domain)) ++ head.fields.map(_.domain)
-  override def toString: String = s"$coeff: $head :- ${body.mkString(", ")}."
+
+  def normalize: Rule[T] = {
+    val renaming = scala.collection.mutable.Map[Variable, Variable]()
+    def rename(vOld: Variable): Variable = {
+      if (!renaming.contains(vOld)) {
+        val index = Stream.from(0).find(idx => renaming.values.count(_.name == s"v$idx") == 0).get
+        renaming.put(vOld, Variable(s"v$index", vOld.domain))
+      }
+      renaming(vOld)
+    }
+
+    val oldLiterals = this.body.toSeq.sortBy(_.toString)
+    val newLiterals = for (oldLit <- oldLiterals)
+                      yield {
+                        val newFields = oldLit.fields.map {
+                          case v @ Variable(_, _) => rename(v)
+                          case p @ Constant(_, _) => p
+                        }
+                        Literal(oldLit.relation, newFields:_*)
+                      }
+
+    val oldHead = this.head
+    val newHeadFields = oldHead.fields.map {
+      case v @ Variable(_, _) => renaming(v)
+      case c @ Constant(_, _) => c
+    }
+    val newHead = Literal(oldHead.relation, newHeadFields:_*)
+
+    Rule(this.coeff, newHead, newLiterals.toSet)
+  }
+
+  override def toString: String = {
+    val sbody = body.map(_.toString).toList.sorted
+    s"$coeff: $head :- ${sbody.mkString(", ")}."
+  }
 }
 
 object Rule {
@@ -25,7 +59,7 @@ object Rule {
 // Programs
 
 case class Program[T <: Value[T]](name: Any, rules: Set[Rule[T]]) {
-  override def toString: String = rules.mkString(System.lineSeparator())
+  override def toString: String = rules.map(_.toString).toList.sorted.mkString(System.lineSeparator())
   val relations: Set[Relation] = rules.flatMap(_.relations)
   val domains: Set[Domain] = rules.flatMap(_.domains)
 }
@@ -92,11 +126,28 @@ object Program {
       yield Literal(targetRel, binding:_*)
     }
 
+    def reachableVars(rule: Rule[T]): Set[Variable] = {
+      var (ans, candidate) = (Set[Variable](), rule.head.variables)
+      while (ans != candidate) {
+        ans = candidate
+        candidate = for (lit <- rule.body if lit.variables.intersect(ans).nonEmpty; v <- lit.variables)
+                    yield v
+      }
+      ans
+    }
+
+    def isDegenerate(rule: Rule[T]): Boolean = {
+      val head = rule.head
+      val body = rule.body
+      body.contains(head) || reachableVars(rule).size < rule.variables.size
+    }
+
     val allRules = for (targetRel <- inventedRels ++ outputRels;
                         body <- allBodies;
-                        head <- allHeads(targetRel, body)
-                        if !body.contains(head))
-                   yield Rule(vs.One, head, body)
+                        head <- allHeads(targetRel, body);
+                        rule = Rule(vs.One, head, body).normalize
+                        if !isDegenerate(rule))
+                   yield rule
 
     Program(name, allRules)
 

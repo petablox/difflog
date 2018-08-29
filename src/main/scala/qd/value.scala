@@ -94,7 +94,7 @@ class DValue private (val r: Set[Set[Token]]) extends Value[DValue] {
   override def <~(that: DValue): Boolean = this.r.forall(s1 => that.r.exists(s2 => s2.subsetOf(s1)))
   override def unwrap: DValue = this
 
-  override def equals(obj: scala.Any): Boolean = obj match {
+  override def equals(obj: Any): Boolean = obj match {
     case d: DValue => r == d.r
     case _ => false
   }
