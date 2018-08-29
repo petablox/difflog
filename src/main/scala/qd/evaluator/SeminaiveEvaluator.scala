@@ -8,22 +8,37 @@ extends Evaluator[T]("Seminaive") {
 
   override def apply(edb: Config[T]): Config[T] = {
     var (oldConfig, config, delta) = (Config(), edb, edb)
+    var i = 0
     while (delta.nonEmptySupport) {
+      println(s"Seminaive evaluator epoch $i")
       val (newConfig, newDelta) = immediateConsequence(config, delta)
       oldConfig = config
       config = newConfig
       delta = newDelta
+      i = i + 1
     }
     config
   }
 
+  var totalTime = 0l
+  var numImmediateConsequence = 0
+
   def immediateConsequence(config: Config[T], delta: Config[T]): (Config[T], Config[T]) = {
     var (newConfig, deltaCurr, deltaNext) = (config, delta, Config())
+    var i = 0
     for (rule <- rules) {
+      val startTime = System.nanoTime()
       val cdd = immediateConsequence(rule, newConfig, deltaCurr, deltaNext)
+      val endTime = System.nanoTime()
+
       newConfig = cdd._1
       deltaCurr = cdd._2
       deltaNext = cdd._3
+
+      i = i + 1
+      totalTime = totalTime + endTime - startTime
+      numImmediateConsequence = numImmediateConsequence + 1
+      println(s"  $rule $i. ${(endTime - startTime) / 1.0e9}. ${totalTime / numImmediateConsequence / 1.0e9}")
     }
     (newConfig, deltaNext)
   }
@@ -32,6 +47,7 @@ extends Evaluator[T]("Seminaive") {
                            deltaCurr: Config[T], deltaNext: Config[T]): (Config[T], Config[T], Config[T]) = {
     var (newConfig, newDeltaCurr, newDeltaNext) = (config, deltaCurr, deltaNext)
     for (literal <- rule.body) {
+      // println(s"    $literal")
       val cdd = immediateConsequence(rule, literal, newConfig, newDeltaCurr, newDeltaNext)
       newConfig = cdd._1
       newDeltaCurr = cdd._2
@@ -45,22 +61,26 @@ extends Evaluator[T]("Seminaive") {
                            deltaCurr: Config[T], deltaNext: Config[T]): (Config[T], Config[T], Config[T]) = {
     require(rule.body.contains(deltaLiteral))
 
-    var bodyVals = ParSeq(Assignment.Empty)
+    var assignments = ParSeq(Assignment.Empty)
     var remainingLits = rule.body
     for (literal <- rule.body) {
-      bodyVals = if (literal == deltaLiteral) extend(literal, deltaCurr, bodyVals)
-                 else extend(literal, config, bodyVals)
+      assignments = if (literal == deltaLiteral) extend(literal, deltaCurr, assignments)
+                 else extend(literal, config, assignments)
 
       remainingLits = remainingLits - literal
-      if (bodyVals.size > 1000) {
-        val relevantVars = remainingLits.map(_.variables).foldLeft(rule.head.variables)(_ ++ _)
-        bodyVals = bodyVals.map(_.project(relevantVars))
-        bodyVals = bodyVals.groupBy(_.map)
-                           .mapValues(_.map(_.score).foldLeft(vs.Zero)(_ + _))
-                           .toSeq.map(mv => Assignment(mv._1, mv._2))
-      }
+      if (assignments.size > 100) {
+        val relevantVars = remainingLits.foldLeft(rule.head.variables)(_ ++ _.variables)
+
+        val oldSize = assignments.size
+        assignments = assignments.map(_.project(relevantVars))
+        assignments = assignments.groupBy(_.map)
+                                 .mapValues(_.map(_.score).foldLeft(vs.Zero)(_ + _))
+                                 .toSeq.map(mv => Assignment(mv._1, mv._2))
+        val newSize = assignments.size
+        println(s"  Collapsing assignments from $oldSize to $newSize.")
+      } else println(s"    No collapse ${assignments.size}.")
     }
-    val newTuples = bodyVals.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
+    val newTuples = assignments.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
 
     val relation = rule.head.relation
     val oldInstance = config(relation)
