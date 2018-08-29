@@ -31,12 +31,12 @@ extends Evaluator[T]("Trie") {
     var (newConfig, changed) = (config, false)
 
     // Step 0: Collapse assignments
-    val ax0 = assignments
+    /* val ax0 = assignments
     val ax1 = ax0.map(_.project(trie.variables))
     val ax2 = ax1.groupBy(_.map)
                  .mapValues(_.map(_.score).foldLeft(vs.Zero)(_ + _))
-                 .toSeq.map(mv => Assignment(mv._1, mv._2))
-    println(s"  Collapsed assignments from ${ax0.size} to ${ax2.size}.")
+                 .toSeq.map(mv => Assignment(mv._1, mv._2)) */
+    val ax2 = assignments
 
     // Step 1: Process sub-tries
     for ((literal, subTrie) <- trie.map) {

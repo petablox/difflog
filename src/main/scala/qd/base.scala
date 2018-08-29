@@ -5,6 +5,7 @@ package qd
 
 case class Domain(name: Any) {
   override def toString: String = s"$name"
+  override val hashCode: Int = this.##
 }
 
 sealed abstract class Parameter {
@@ -12,8 +13,12 @@ sealed abstract class Parameter {
   def domain: Domain
   override def toString: String = s"$name"
 }
-case class Constant(name: Any, domain: Domain) extends Parameter
-case class Variable(name: Any, domain: Domain) extends Parameter
+case class Constant(name: Any, domain: Domain) extends Parameter {
+  override val hashCode: Int = ("C", name, domain).##
+}
+case class Variable(name: Any, domain: Domain) extends Parameter {
+  override val hashCode: Int = ("V", name, domain).##
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Relations and Tuples
