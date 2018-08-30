@@ -15,6 +15,6 @@ class EvaluatorReachabilitySpec(evaluator: Evaluator) extends FunSuite {
   }
 }
 
-class NaiveEvaluatorShuntSpec extends EvaluatorReachabilitySpec(NaiveEvaluator)
-// class SeminaiveEvaluatorShuntSpec extends EvaluatorReachabilitySpec(SeminaiveEvaluatorShunt[FValue])
+class NaiveEvaluatorSpec extends EvaluatorReachabilitySpec(NaiveEvaluator)
+class SeminaiveEvaluatorSpec extends EvaluatorReachabilitySpec(SeminaiveEvaluator)
 // class TrieEvaluatorShuntSpec extends EvaluatorReachabilitySpec(TrieEvaluatorShunt[FValue])

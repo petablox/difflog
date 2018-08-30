@@ -2,7 +2,7 @@ package qd
 
 import org.scalatest.FunSuite
 import graphs.Graphs
-import qd.evaluator.{SeminaiveEvaluatorShunt, TrieEvaluatorShunt}
+import qd.evaluator.TrieEvaluatorShunt
 
 class ProgramSpec extends FunSuite {
 
@@ -22,7 +22,7 @@ class ProgramSpec extends FunSuite {
   // val evaluator = SeminaiveEvaluator(p)
   val evaluator = TrieEvaluatorShunt(p)
 
-  for (graph <- Graphs.Graphs.take(1)) {
+  /* for (graph <- Graphs.Graphs.take(1)) {
     test(s"Applying trie evaluator to big program and graph ${graph.name}") {
       println(s"Applying trie evaluator to big program (${p.rules.size}) and graph ${graph.name}...")
       val idb = evaluator(graph.edb)
@@ -31,6 +31,6 @@ class ProgramSpec extends FunSuite {
       assert(produced.support.forall(_._1.length == 2))
       assert(produced.support.map(tv => (tv._1(0), tv._1(1))).toSet == graph.reachable)
     }
-  }
+  } */
 
 }
