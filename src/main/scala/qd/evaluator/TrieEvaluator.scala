@@ -3,15 +3,16 @@ package evaluator
 
 import scala.collection.parallel.{ParMap, ParSeq}
 
-object NaiveEvaluator extends Evaluator {
+object TrieEvaluator extends Evaluator {
 
   override def apply[T <: Value[T]](rules: Set[Rule[T]], edb: Config[T])(implicit vs: Semiring[T]): Config[T] = {
-    var state = State(rules, edb, changed = true)
+    val trie = RuleTrie(rules.map(_.normalize))
+    var state = State(trie, edb, changed = true)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
   }
 
-  case class State[T <: Value[T]](rules: Set[Rule[T]], config: Config[T], changed: Boolean)
+  case class State[T <: Value[T]](trie: RuleTrie[T], config: Config[T], changed: Boolean)
                                  (implicit val vs: Semiring[T]) {
 
     def addTuples(relation: Relation, newTuples: ParMap[DTuple, T]): State[T] = {
@@ -19,36 +20,49 @@ object NaiveEvaluator extends Evaluator {
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
       val newChanged = changed || newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
-      State(rules, newConfig, newChanged)
+      State(trie, newConfig, newChanged)
     }
 
-    def nextEpoch: State[T] = if (!changed) this else State(rules, config, changed = false)
+    def nextEpoch: State[T] = if (!changed) this else State(trie, config, changed = false)
 
   }
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
-    state.rules.foldLeft(state)((nextState, rule) => ruleConsequence(nextState, rule))
+    implicit val vs: Semiring[T] = state.vs
+    immediateConsequence(state, state.trie, ParSeq(Assignment.Empty()))
   }
 
-  def ruleConsequence[T <: Value[T]](state: State[T], rule: Rule[T]): State[T] = {
-    implicit val vs: Semiring[T] = state.vs
+  // Applies a RuleTrie to a configuration
+  def immediateConsequence[T <: Value[T]](
+                                           state: State[T],
+                                           trie: RuleTrie[T],
+                                           assignments: ParSeq[Assignment[T]]
+                                         ): State[T] = {
+    // Step 0: Collapse assignments.
+    // Elided because early experiments showed no reductions in number of assignments, and
+    // caused a slow-down while computing immediate consequences
+    /* val ax0 = assignments
+    val ax1 = ax0.map(_.project(trie.variables))
+    val ax2 = ax1.groupBy(_.map)
+                 .mapValues(_.map(_.score).foldLeft(vs.Zero)(_ + _))
+                 .toSeq.map(mv => Assignment(mv._1, mv._2)) */
+    val ax2 = assignments
 
-    var assignments = ParSeq(Assignment.Empty)
-    var remainingLits = rule.body
-    for (literal <- rule.body) {
-      assignments = extendAssignments(literal, state.config, assignments)
+    var nextState = state
 
-      // Collapse assignments
-      remainingLits = remainingLits - literal
-      val relevantVars = remainingLits.map(_.variables).foldLeft(rule.head.variables)(_ ++ _)
-      assignments = assignments.map(_.project(relevantVars))
-      assignments = assignments.groupBy(_.map)
-                               .mapValues(_.map(_.score).foldLeft(vs.Zero: T)(_ + _))
-                               .toSeq.map(mv => Assignment(mv._1, mv._2))
+    // Step 1: Process sub-tries
+    for ((literal, subTrie) <- trie.map) {
+      val ax3 = extendAssignments(literal, nextState.config, ax2)
+      nextState = immediateConsequence(nextState, subTrie, ax3)
     }
 
-    val newTuples = assignments.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
-    state.addTuples(rule.head.relation, newTuples)
+    // Step 2: Process leaves
+    for (rule <- trie.leaves) {
+      val newTuples = ax2.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
+      nextState = nextState.addTuples(rule.head.relation, newTuples)
+    }
+
+    nextState
   }
 
   def extendAssignments[T <: Value[T]](
@@ -60,7 +74,7 @@ object NaiveEvaluator extends Evaluator {
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
          newAssignment <- extendAssignment(literal, tuple, assignment))
-    yield newAssignment * score
+      yield newAssignment * score
   }
 
   def extendAssignment[T <: Value[T]](
