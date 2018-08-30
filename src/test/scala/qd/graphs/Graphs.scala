@@ -1,12 +1,11 @@
 package qd
 package graphs
 
-import qd.Semiring.FValueSemiringObj
-import qd._
-
 import scala.util.Random
 
 object Graphs {
+
+  implicit val vs: Semiring[FValue] = Semiring.FValueSemiringObj
 
   val nodes: Domain = Domain("Node")
   val edge: Relation = Relation("edge", nodes, nodes)
@@ -24,7 +23,7 @@ object Graphs {
     require(nodeSet.nonEmpty)
     require(edgeSet.forall { case (from, to) => nodeSet(from) && nodeSet(to) })
 
-    def edb: Config[FValue] = Config(edge -> edgeSet.map({ case (a, b) => DTuple(a, b) -> FValueSemiringObj.One})
+    def edb: Config[FValue] = Config(edge -> edgeSet.map({ case (a, b) => DTuple(a, b) -> vs.One})
                                             .foldLeft(Instance[FValue](nodes, nodes))(_ + _))
 
     val reachable: Set[(Constant, Constant)] = reachable(nodeSet.size + 1)

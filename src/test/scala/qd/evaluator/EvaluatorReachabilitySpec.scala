@@ -5,8 +5,7 @@ import org.scalatest.FunSuite
 import qd.graphs.{Graphs, Reachability}
 
 class EvaluatorReachabilitySpec(evaluator: Evaluator) extends FunSuite {
-  for (graph <- Graphs.Graphs; gp <- Reachability.Programs) {
-    val program = gp(graph)
+  for (program <- Reachability.Programs; graph <- Graphs.Graphs) {
     test(s"Applying evaluator ${evaluator.getClass} to program ${program.name} and graph ${graph.name}") {
       val idb = evaluator(program, graph.edb)
       val produced = idb(Graphs.path)
