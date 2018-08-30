@@ -1,12 +1,15 @@
 package qd
 package evaluator
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Evaluators
+abstract class Evaluator {
+  def apply[T <: Value[T]](rules: Set[Rule[T]], edb: Config[T])(implicit vs: Semiring[T]): Config[T]
+  def apply[T <: Value[T]](program: Program[T], edb: Config[T])(implicit vs: Semiring[T]): Config[T] = {
+    apply(program.rules, edb)
+  }
+}
 
-abstract class Evaluator[T <: Value[T]](val name: Any) extends (Config[T] => Config[T]) {
+abstract class EvaluatorShunt[T <: Value[T]] extends (Config[T] => Config[T]) {
+  val name: Any
   val program: Program[T]
   val rules: Set[Rule[T]] = program.rules
-  val relations: Set[Relation] = program.relations
-  val domains: Set[Domain] = program.domains
 }

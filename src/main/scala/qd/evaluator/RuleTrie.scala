@@ -1,6 +1,8 @@
 package qd
 package evaluator
 
+import scala.collection.immutable.Iterable
+
 case class RuleTrie[T <: Value[T]](leaves: Set[Rule[T]], map: Map[Literal, RuleTrie[T]]) extends Iterable[Rule[T]] {
 
   // Commented because the following check is too time-consuming

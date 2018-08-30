@@ -86,14 +86,16 @@ extends (DTuple => T) {
     case (InstanceBase(vthis), InstanceBase(vthat)) => InstanceBase(vthis + vthat)
     case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, _, map2)) =>
       require(domH1 == domH2)
-      val newMap = for (chead <- map1.keySet ++ map2.keySet;
-                        ov1 = map1.get(chead); ov2 = map2.get(chead);
-                        v12 = if (ov1.nonEmpty && ov2.nonEmpty) ov1.get ++ ov2.get
-                              else if (ov1.nonEmpty) ov1.get
-                              else if (ov2.nonEmpty) ov2.get
-                              else Instance(domT1:_*))
-                   yield chead -> v12
-      InstanceInd(domH1, domT1, newMap.toMap)
+      val nm1 = for ((chead, v1) <- map1)
+                yield {
+                  val ov2 = map2.get(chead)
+                  val v12 = if (ov2.nonEmpty) v1 ++ ov2.get else v1
+                  chead -> v12
+                }
+      val nm2 = for ((chead, v2) <- map2 if !nm1.contains(chead))
+                yield chead -> v2
+      val newMap = nm1 ++ nm2
+      InstanceInd(domH1, domT1, newMap)
     case (_, _) => throw new IllegalArgumentException
   }
 

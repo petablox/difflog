@@ -3,9 +3,9 @@ package evaluator
 
 import scala.collection.parallel.ParSeq
 
-case class TrieEvaluator[T <: Value[T]](program: Program[T])(implicit vs: Semiring[T])
-extends Evaluator[T]("Trie") {
+case class TrieEvaluatorShunt[T <: Value[T]](program: Program[T])(implicit vs: Semiring[T]) extends EvaluatorShunt[T] {
 
+  override val name: String = s"TrieEvaluator(${program.name})"
   val fullTrie: RuleTrie[T] = RuleTrie(program.rules.map(_.normalize))
 
   override def apply(edb: Config[T]): Config[T] = {

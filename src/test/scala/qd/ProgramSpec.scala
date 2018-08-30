@@ -2,7 +2,7 @@ package qd
 
 import org.scalatest.FunSuite
 import graphs.Graphs
-import qd.evaluator.{SeminaiveEvaluator, TrieEvaluator}
+import qd.evaluator.{SeminaiveEvaluatorShunt, TrieEvaluatorShunt}
 
 class ProgramSpec extends FunSuite {
 
@@ -20,7 +20,7 @@ class ProgramSpec extends FunSuite {
   } */
   // p.rules.take(5).foreach(println)
   // val evaluator = SeminaiveEvaluator(p)
-  val evaluator = TrieEvaluator(p)
+  val evaluator = TrieEvaluatorShunt(p)
 
   for (graph <- Graphs.Graphs.take(1)) {
     test(s"Applying trie evaluator to big program and graph ${graph.name}") {

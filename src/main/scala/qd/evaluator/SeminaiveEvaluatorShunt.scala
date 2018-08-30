@@ -3,8 +3,9 @@ package evaluator
 
 import scala.collection.parallel.ParSeq
 
-case class SeminaiveEvaluator[T <: Value[T]](program: Program[T])(implicit vs: Semiring[T])
-extends Evaluator[T]("Seminaive") {
+case class SeminaiveEvaluatorShunt[T <: Value[T]](program: Program[T])(implicit vs: Semiring[T]) extends EvaluatorShunt[T] {
+
+  override val name: String = s"SeminaiveEvaluator(${program.name})"
 
   override def apply(edb: Config[T]): Config[T] = {
     var (oldConfig, config, delta) = (Config(), edb, edb)

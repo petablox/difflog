@@ -4,7 +4,7 @@ package evaluator
 import scala.collection.parallel.ParSeq
 
 case class TE[T <: Value[T]](program: Program[T])(implicit vs: Semiring[T])
-extends Evaluator[T]("Trie") {
+extends EvaluatorShunt[T]("Trie") {
 
   val fullTrie: RuleTrie[T] = RuleTrie(program.rules.map(_.normalize))
 
