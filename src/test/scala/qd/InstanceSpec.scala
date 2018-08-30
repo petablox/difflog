@@ -1,7 +1,7 @@
 package qd
 
 import org.scalatest.FunSuite
-import qd.Semiring.FValueSemiringObj
+import Semiring.FValueSemiringObj
 
 class InstanceSpec extends FunSuite {
 

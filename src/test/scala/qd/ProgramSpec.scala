@@ -1,8 +1,8 @@
 package qd
 
 import org.scalatest.FunSuite
-import graphs.Graphs
-import qd.evaluator.TrieEvaluatorShunt
+import data.graphs.Graphs
+import evaluator.TrieEvaluatorShunt
 
 class ProgramSpec extends FunSuite {
 

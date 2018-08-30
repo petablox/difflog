@@ -1,4 +1,5 @@
 package qd
+package data
 package graphs
 
 import scala.util.Random
