@@ -21,7 +21,7 @@ class ProgramSpec extends FunSuite {
   for (graph <- Graphs.Graphs.take(1)) {
     val evaluator = TrieEvaluator
     test(testName = s"Applying evaluator ${evaluator.getClass} to " +
-                    s"program $p of size ${p.rules.size} and " +
+                    s"program ${p.name} of size ${p.rules.size} and " +
                     s"graph ${graph.name}") {
       // val idb = SeminaiveEvaluator(p, graph.edb)
       val idb = TrieEvaluator(p, graph.edb)
