@@ -8,6 +8,9 @@ lazy val root = (project in file(".")).
       version      := "0.1.0-SNAPSHOT"
     )),
     name := "QD",
+
+    libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
+
     libraryDependencies += scalaTest % Test,
     libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
     testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oD")
