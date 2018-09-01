@@ -17,6 +17,18 @@ class ProblemParserSpec extends FunSuite {
     assert(result.successful)
   }
 
+  val commentedInput: String = """Input { edge(Node, Node), null() }
+                                 |Invented { /* path(Node, Node, Node) */ path(Node, Node) }
+                                 |Invented { }
+                                 |Output { scc(Node, Node) }
+                                 |EDB { edge(a, b), edge(b, c), edge(c, d), edge(a, c) }
+                                 |IDB { path(a, b), path(b, c) }""".stripMargin
+
+  test("Should parse the commented input") {
+    val result = parser.parseAll(parser.problem, commentedInput)
+    assert(result.successful)
+  }
+
   val badInput1: String = """Input { edge(Node, Node),
                             |Invented { path(Node, Node) }
                             |Output { scc(Node, Node) }
