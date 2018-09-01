@@ -20,6 +20,8 @@ class ProblemParserSpec extends FunSuite {
   val commentedInput: String = """Input { edge(Node, Node), null() }
                                  |Invented { /* path(Node, Node, Node) */ path(Node, Node) }
                                  |Invented { }
+                                 |Invented { // } path(Node)
+                                 |}
                                  |Output { scc(Node, Node) }
                                  |EDB { edge(a, b), edge(b, c), edge(c, d), edge(a, c) }
                                  |IDB { path(a, b), path(b, c) }""".stripMargin
