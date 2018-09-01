@@ -1,10 +1,21 @@
 package qd
 
 import org.scalatest.FunSuite
+import qd.data.graphs.Graphs
 
 class ProblemParserSpec extends FunSuite {
 
   val parser = new ProblemParser
+
+  val node: Domain = Graphs.node
+  val edge: Relation = Graphs.edge
+  val path: Relation = Graphs.path
+  val scc: Relation = Graphs.scc
+
+  val a = Constant("a", node)
+  val b = Constant("b", node)
+  val c = Constant("c", node)
+  val d = Constant("d", node)
 
   val simpleInput: String = """Input { edge(Node, Node), null() }
                               |Invented { path(Node, Node) }
@@ -15,6 +26,14 @@ class ProblemParserSpec extends FunSuite {
   test("Should parse the simple input") {
     val result = parser.parseAll(parser.problem, simpleInput)
     assert(result.successful)
+    val state = result.get
+
+    assert(state.inputRels == Set(edge, Relation("null")))
+    assert(state.inventedRels == Set(path))
+    assert(state.outputRels == Set(scc))
+
+    assert(state.edb == Set((edge, DTuple(a, b)), (edge, DTuple(b, c)), (edge, DTuple(c, d)), (edge, DTuple(a, c))))
+    assert(state.idb == Set((path, DTuple(a, b)), (path, DTuple(b, c))))
   }
 
   val commentedInput: String = """Input { edge(Node, Node), null() }

@@ -7,13 +7,13 @@ object Reachability {
   val ve: FValue = FValue(0.8, Token("E"))
   val vt: FValue = FValue(0.9, Token("T"))
 
-  val nodes: Domain = Graphs.nodes
+  val node: Domain = Graphs.node
   val edge: Relation = Graphs.edge
   val path: Relation = Graphs.path
 
-  val x = Variable("x", nodes)
-  val y = Variable("y", nodes)
-  val z = Variable("z", nodes)
+  val x = Variable("x", node)
+  val y = Variable("y", node)
+  val z = Variable("z", node)
 
   val ruleE = Rule(ve, path(x, y), edge(x, y))
   val rulePE = Rule(vt, path(x, z), path(x, y), edge(y, z))

@@ -8,12 +8,12 @@ object Graphs {
 
   implicit val vs: Semiring[FValue] = Semiring.FValueSemiringObj
 
-  val nodes: Domain = Domain("Node")
-  val edge: Relation = Relation("edge", nodes, nodes)
-  val path = Relation("path", nodes, nodes)
-  val scc = Relation("scc", nodes, nodes)
+  val node: Domain = Domain("Node")
+  val edge: Relation = Relation("edge", node, node)
+  val path = Relation("path", node, node)
+  val scc = Relation("scc", node, node)
 
-  def vertex(name: Any): Constant = Constant(name, nodes)
+  def vertex(name: Any): Constant = Constant(name, node)
 
   val Graphs: Set[Graph] = Set(smallGraph) ++
                            Range(1, 16, 2).map(line).toSet ++
@@ -25,7 +25,7 @@ object Graphs {
     require(edgeSet.forall { case (from, to) => nodeSet(from) && nodeSet(to) })
 
     def edb: Config[FValue] = Config(edge -> edgeSet.map({ case (a, b) => DTuple(a, b) -> vs.One})
-                                            .foldLeft(Instance[FValue](nodes, nodes))(_ + _))
+                                            .foldLeft(Instance[FValue](node, node))(_ + _))
 
     val reachable: Set[(Constant, Constant)] = reachable(nodeSet.size + 1)
 
