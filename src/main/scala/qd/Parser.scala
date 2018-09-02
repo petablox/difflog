@@ -6,7 +6,7 @@ import scala.util.Random
 import scala.util.matching.Regex
 import scala.util.parsing.combinator._
 
-class ProblemParser extends JavaTokenParsers {
+class Parser extends JavaTokenParsers {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Main Block

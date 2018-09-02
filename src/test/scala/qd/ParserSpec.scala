@@ -3,9 +3,9 @@ package qd
 import org.scalatest.FunSuite
 import qd.data.graphs.Graphs
 
-class ProblemParserSpec extends FunSuite {
+class ParserSpec extends FunSuite {
 
-  val parser = new ProblemParser
+  val parser = new Parser
 
   val node: Domain = Graphs.node
   val edge: Relation = Graphs.edge
