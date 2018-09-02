@@ -4,13 +4,34 @@ import org.scalatest.FunSuite
 import data.graphs.Graphs
 import evaluator.TrieEvaluator
 
+import scala.util.Random
+
 class ProgramSpec extends FunSuite {
 
   val edge: Relation = Graphs.edge
   val path: Relation = Graphs.path
   val scc: Relation = Graphs.scc
 
-  val p: Program[FValue] = Program.skeleton[FValue]("P", Set(edge), Set(path), Set(scc), 3, 4)
+  val rng: Random = new Random(0)
+  var ruleIndex = 0
+  val weight: (Literal, Set[Literal]) => FValue = { (_, _) =>
+    val ans = FValue(rng.nextDouble(), Token(s"R$ruleIndex"))
+    ruleIndex = ruleIndex + 1
+    ans
+  }
+
+  val maxLiterals = 3
+  val maxVars = 4
+
+  val p: Program[FValue] = Program.skeleton[FValue]("P", Set(edge), Set(path), Set(scc),
+                                                    weight, maxLiterals, maxVars)
+
+  if (maxLiterals == 3 && maxVars == 4) {
+    test("Since maxLiterals == 3 and maxVars == 4, the skeleton program should have 21443 rules") {
+      assert(p.rules.size == 21443)
+    }
+  }
+
   /* for ((_, rules) <- p.rules.groupBy(_.head.relation);
        rule <- rules) {
     println(rule)

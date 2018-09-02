@@ -2,6 +2,7 @@ package qd
 
 import qd.Semiring.FValueSemiringObj
 
+import scala.util.Random
 import scala.util.matching.Regex
 import scala.util.parsing.combinator._
 
@@ -66,6 +67,9 @@ class ProblemParser extends JavaTokenParsers {
 
   implicit val vs: FValueSemiring = FValueSemiringObj
   val initialState: State = State(Set(), Set(), Set(), Set(), Set(), Set())
+  val rng: Random = Random
+  var numTokens = 0
+  def nextToken(): Token = { val ans = numTokens; numTokens = numTokens + 1; Token(s"R$ans") }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Comments and identifiers
@@ -148,6 +152,7 @@ class ProblemParser extends JavaTokenParsers {
       require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
       val p = Program.skeleton[FValue]("Program", state.inputRels, state.inventedRels, state.outputRels,
+                                       (_, _) => FValue(rng.nextDouble(), nextToken()),
                                        maxLiterals, maxVars)
       p.rules.foldLeft(state)(_ addRule _)
   }
@@ -157,18 +162,26 @@ class ProblemParser extends JavaTokenParsers {
     newRules.foldLeft(state)(_ addRule _)
   }
 
-  // The syntax of rules is as usual, terminated with a period
+  // The syntax of rules is as usual, terminated with a period.
+  // The rule weight may either be left unspecified, in which case it is initialized uniformly at random, or
+  // be concretely specified with a colon-prefix. For example:
+  // path(a, c) :- edge(a, b), path(b, c).
+  // 0.7: path(a, c) :- path(c, a).
 
-  def ruleDecl: Parser[State => Rule[FValue]] = literal ~ ":-" ~ literalSeq ~ "." ^^ { f => state =>
-    val head = f._1._1._1(state)
-    val body = f._1._2.map(_(state))
+  def ruleDecl: Parser[State => Rule[FValue]] = {
+    (decimalNumber ~ ":" ^^ (f => f._1.toDouble)| "" ^^ (_ => rng.nextDouble())) ~
+    literal ~ ":-" ~ literalSeq ~ "." ^^ { f => state =>
+      val coeff = FValue(f._1._1._1._1, nextToken())
+      val head = f._1._1._1._2(state)
+      val body = f._1._2.map(_(state))
 
-    val ans = Rule(vs.One, head, body:_*)
-    val allVars = ans.variables.groupBy(_.name)
-    for ((name, instances) <- allVars) {
-      require(instances.size == 1, s"Multiple incompatible uses of variable name $name")
+      val ans = Rule(coeff, head, body.toSet)
+      val allVars = ans.variables.groupBy(_.name)
+      for ((name, instances) <- allVars) {
+        require(instances.size == 1, s"Multiple incompatible uses of variable name $name")
+      }
+      ans
     }
-    ans
   }
 
   def literalSeq: Parser[Seq[State => Literal]] = literal ~ ("," ~ literal ^^ (_._2)).* ^^ mkList |

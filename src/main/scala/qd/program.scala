@@ -52,7 +52,10 @@ case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Set[Literal]) {
 }
 
 object Rule {
-  def apply[T <: Value[T]](coeff: T, head: Literal, body: Literal*): Rule[T] = Rule(coeff, head, body.toSet)
+  def apply[T <: Value[T]](coeff: T, head: Literal): Rule[T] = Rule(coeff, head, Set[Literal]())
+  def apply[T <: Value[T]](coeff: T, head: Literal, bodyFirst: Literal, bodyRest: Literal*): Rule[T] = {
+    Rule(coeff, head, bodyRest.toSet + bodyFirst)
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,6 +74,7 @@ object Program {
   def skeleton[T <: Value[T]](
                                name: Any,
                                inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
+                               weight: (Literal, Set[Literal]) => T,
                                maxLiterals: Int, maxVars: Int
                              )(implicit vs: Semiring[T]): Program[T] = {
 
@@ -142,14 +146,15 @@ object Program {
       body.contains(head) || reachableVars(rule).size < rule.variables.size
     }
 
-    val allRules = for (targetRel <- inventedRels ++ outputRels;
-                        body <- allBodies;
-                        head <- allHeads(targetRel, body);
-                        rule = Rule(vs.One, head, body).normalize
-                        if !isDegenerate(rule))
-                   yield rule
+    val unweightedRules = for (targetRel <- inventedRels ++ outputRels;
+                               body <- allBodies;
+                               head <- allHeads(targetRel, body);
+                               rule = Rule(vs.One, head, body).normalize
+                               if !isDegenerate(rule))
+                          yield rule
+    val weightedRules = unweightedRules.map(rule => Rule(weight(rule.head, rule.body), rule.head, rule.body))
 
-    Program(name, allRules)
+    Program(name, weightedRules)
 
   }
 

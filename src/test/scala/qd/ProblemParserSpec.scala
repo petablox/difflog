@@ -9,6 +9,7 @@ class ProblemParserSpec extends FunSuite {
 
   val node: Domain = Graphs.node
   val edge: Relation = Graphs.edge
+  val nullRel: Relation = Relation("null")
   val path: Relation = Graphs.path
   val scc: Relation = Graphs.scc
 
@@ -21,19 +22,27 @@ class ProblemParserSpec extends FunSuite {
                               |Invented { path(Node, Node) }
                               |Output { scc(Node, Node) }
                               |EDB { edge(a, b), edge(b, c), edge(c, d), edge(a, c) }
-                              |IDB { path(a, b), path(b, c) }""".stripMargin
+                              |IDB { path(a, b), path(b, c) }
+                              |Rules{
+                              |  path(v1, v2) :- edge(v2, v1).
+                              |  0.2: null() :- .
+                              |}""".stripMargin
 
   test("Should parse the simple input") {
     val result = parser.parseAll(parser.problem, simpleInput)
     assert(result.successful)
     val state = result.get
 
-    assert(state.inputRels == Set(edge, Relation("null")))
+    assert(state.inputRels == Set(edge, nullRel))
     assert(state.inventedRels == Set(path))
     assert(state.outputRels == Set(scc))
 
     assert(state.edb == Set((edge, DTuple(a, b)), (edge, DTuple(b, c)), (edge, DTuple(c, d)), (edge, DTuple(a, c))))
     assert(state.idb == Set((path, DTuple(a, b)), (path, DTuple(b, c))))
+
+    assert(state.rules.size == 2)
+    val nullRule = state.rules.find(rule => rule.head.relation == nullRel && rule.body.isEmpty).get
+    assert(nullRule.coeff.v == 0.2)
   }
 
   val commentedInput: String = """Input { edge(Node, Node), null() }
@@ -48,6 +57,16 @@ class ProblemParserSpec extends FunSuite {
   test("Should parse the commented input") {
     val result = parser.parseAll(parser.problem, commentedInput)
     assert(result.successful)
+    val state = result.get
+
+    assert(state.inputRels == Set(edge, Relation("null")))
+    assert(state.inventedRels == Set(path))
+    assert(state.outputRels == Set(scc))
+
+    assert(state.edb == Set((edge, DTuple(a, b)), (edge, DTuple(b, c)), (edge, DTuple(c, d)), (edge, DTuple(a, c))))
+    assert(state.idb == Set((path, DTuple(a, b)), (path, DTuple(b, c))))
+
+    assert(state.rules.isEmpty)
   }
 
   val badInput1: String = """Input { edge(Node, Node),
