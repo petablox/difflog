@@ -144,17 +144,29 @@ class ProblemParser extends JavaTokenParsers {
 
   def ruleBlock: Parser[State => State] = augmentationRuleBlock | explicitRuleBlock
 
-  def augmentationRuleBlock: Parser[State => State] = "AllRules" ~ "(" ~ wholeNumber ~ "," ~ wholeNumber ~ ")" ^^ {
-    f => state =>
-      val maxLiterals = Integer.parseInt(f._1._1._1._2)
-      require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
-      val maxVars = Integer.parseInt(f._1._2)
-      require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
+  // One may either write:
+  // 1. AllRules(2, 3), to indicate all rules with 2 literals and 3 variables and randomly initialized coefficients, or
+  // 2. AllRules(2, 3, 0.6), to indicate all rules with 2 literals and 3 variables and coefficients set to 0.6.
 
-      val p = Program.skeleton[FValue]("Program", state.inputRels, state.inventedRels, state.outputRels,
-                                       (_, _) => FValue(rng.nextDouble(), nextToken()),
-                                       maxLiterals, maxVars)
-      p.rules.foldLeft(state)(_ addRule _)
+  def augmentationRuleBlock: Parser[State => State] = {
+    "AllRules" ~ "(" ~
+                        (wholeNumber ^^ (_.toInt)) ~ "," ~ (wholeNumber ^^ (_.toInt)) ~
+                        ("," ~ decimalNumber ^^ (f => Some(f._2.toDouble))| "" ^^ (_ => None)) ~
+                 ")" ^^ {
+      f => state =>
+        val maxLiterals = f._1._1._1._1._2
+        require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
+        val maxVars = f._1._1._2
+        require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
+
+        val weightSpec = f._1._2
+        def weight(l: Literal, ls: Set[Literal]): FValue = if (weightSpec.nonEmpty) FValue(weightSpec.get, nextToken())
+                                                           else FValue(rng.nextDouble(), nextToken())
+
+        val p = Program.skeleton[FValue]("Program", state.inputRels, state.inventedRels, state.outputRels,
+                                         weight, maxLiterals, maxVars)
+        p.rules.foldLeft(state)(_ addRule _)
+    }
   }
 
   def explicitRuleBlock: Parser[State => State] = "Rules" ~ "{" ~ rep(ruleDecl) ~ "}" ^^ { f => state =>
