@@ -12,6 +12,8 @@ class Problem private (
 
   val allRels: Set[Relation] = inputRels ++ inventedRels ++ outputRels
   val allTuples: Set[(Relation, DTuple)] = edb ++ idb
+  val allTokens: Set[Token] = pos.keySet
+  val program = Program("P", rules)
 
   def addInputRel(rel: Relation): Problem = {
     require(!allRels.contains(rel), s"Relation $rel multiply declared")

@@ -153,6 +153,11 @@ extends (Relation => Instance[T]) {
     Config(map + (relation -> newInstance))
   }
 
+  def add(relation: Relation, tuple: DTuple, value: T): Config[T] = {
+    val newInstance = this(relation) + (tuple -> value)
+    Config(map + (relation -> newInstance))
+  }
+
   def nonEmptySupport: Boolean = map.values.exists(_.nonEmpty)
 }
 
