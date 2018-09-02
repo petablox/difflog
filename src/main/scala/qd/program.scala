@@ -9,13 +9,8 @@ case class Literal(relation: Relation, fields: Parameter*) {
   override def toString: String = s"${relation.name}(${fields.mkString(", ")})"
 }
 
-case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Set[Literal]) {
-  val variables: Set[Variable] = body.flatMap(_.variables)
-  require(head.variables.subsetOf(variables))
-  val relations: Set[Relation] = body.map(_.relation) + head.relation
-  val domains: Set[Domain] = body.flatMap(_.fields.map(_.domain)) ++ head.fields.map(_.domain)
-
-  def normalize: Rule[T] = {
+object Literal {
+  def normalize(lits: Set[Literal]): (Set[Literal], Map[Variable, Variable]) = {
     val renaming = scala.collection.mutable.Map[Variable, Variable]()
     def rename(vOld: Variable): Variable = {
       if (!renaming.contains(vOld)) {
@@ -25,7 +20,7 @@ case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Set[Literal]) {
       renaming(vOld)
     }
 
-    val oldLiterals = this.body.toSeq.sortBy(_.toString)
+    val oldLiterals = lits.toSeq.sortBy(_.toString)
     val newLiterals = for (oldLit <- oldLiterals)
                       yield {
                         val newFields = oldLit.fields.map {
@@ -35,6 +30,19 @@ case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Set[Literal]) {
                         Literal(oldLit.relation, newFields:_*)
                       }
 
+    (newLiterals.toSet, renaming.toMap)
+  }
+}
+
+case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Set[Literal]) {
+  val variables: Set[Variable] = body.flatMap(_.variables)
+  require(head.variables.subsetOf(variables))
+  lazy val relations: Set[Relation] = body.map(_.relation) + head.relation
+  lazy val domains: Set[Domain] = body.flatMap(_.fields.map(_.domain)) ++ head.fields.map(_.domain)
+
+  def normalize: Rule[T] = {
+    val (newBody, renaming) = Literal.normalize(this.body)
+
     val oldHead = this.head
     val newHeadFields = oldHead.fields.map {
       case v @ Variable(_, _) => renaming(v)
@@ -42,7 +50,7 @@ case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Set[Literal]) {
     }
     val newHead = Literal(oldHead.relation, newHeadFields:_*)
 
-    Rule(this.coeff, newHead, newLiterals.toSet)
+    Rule(this.coeff, newHead, newBody)
   }
 
   override def toString: String = {
@@ -114,7 +122,10 @@ object Program {
       }
     }
 
-    val allBodies = (0 to maxLiterals).flatMap(length => allLiteralSets(length, Set())).toSet
+    val allBodies = (0 to maxLiterals).flatMap(length => allLiteralSets(length, Set()))
+                                      .map(litSet => Literal.normalize(litSet)._1)
+                                      .toSet
+
     def allHeads(targetRel: Relation, body: Set[Literal]): Set[Literal] = {
       val allVars = body.flatMap(_.variables)
       def allBindings(signature: Seq[Domain]): Set[Seq[Variable]] = {
@@ -148,7 +159,7 @@ object Program {
     val unweightedRules = for (targetRel <- inventedRels ++ outputRels;
                                body <- allBodies;
                                head <- allHeads(targetRel, body);
-                               rule = Rule(vs.One, head, body).normalize
+                               rule = Rule(vs.One, head, body)
                                if !isDegenerate(rule))
                           yield rule
 

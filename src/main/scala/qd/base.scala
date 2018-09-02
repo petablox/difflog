@@ -27,6 +27,7 @@ case class Relation(name: Any, signature: Domain*) {
   def arity: Int = signature.length
   def apply(fields: Parameter*): Literal = Literal(this, fields:_*)
   override def toString: String = s"$name(${signature.mkString(", ")})"
+  override val hashCode: Int = ("R", name, signature).##
 }
 
 case class DTuple(fields: Constant*) extends Seq[Constant] {

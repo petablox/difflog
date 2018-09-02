@@ -50,10 +50,14 @@ class Problem private (
     require(body.forall(literal => allRels.contains(literal.relation)))
 
     val coeff = pos(lineage)
-    val ans = Rule(coeff, head, body)
+    val ans = Rule(coeff, head, body).normalize
     val ansNormalized = ans.normalize
-    if (rules.contains(ansNormalized)) println(s"Warning: Redeclaring rule $ans")
+    if (rules.contains(ans)) println(s"Warning: Redeclaring rule $ansNormalized")
     new Problem(inputRels, inventedRels, outputRels, edb, idb, pos, rules + ansNormalized)
+  }
+
+  def addRules(newRules: Set[Rule[FValue]]): Problem = {
+    new Problem(inputRels, inventedRels, outputRels, edb, idb, pos, rules ++ newRules)
   }
 
 }

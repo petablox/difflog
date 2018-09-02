@@ -32,10 +32,12 @@ class LearnerSpec extends FunSuite {
 
   test("Should be able to learn PathEdge") {
     val problem = parser.parseAll(parser.problem, simpleInput).get
+    val tgtLoss = 0.01
+    val maxIters = 100
+
     val learner = new Learner(problem)
-    val result = learner.learn(0.2, 10)
-    println(result)
-    assert(true)
+    val result = learner.learn(tgtLoss, maxIters)
+    assert(result._4 < tgtLoss)
   }
 
 }
