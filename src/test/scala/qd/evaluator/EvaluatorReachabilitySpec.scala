@@ -18,3 +18,4 @@ class EvaluatorReachabilitySpec(evaluator: Evaluator) extends FunSuite {
 class NaiveEvaluatorSpec extends EvaluatorReachabilitySpec(NaiveEvaluator)
 class SeminaiveEvaluatorSpec extends EvaluatorReachabilitySpec(SeminaiveEvaluator)
 class TrieEvaluatorSpec extends EvaluatorReachabilitySpec(TrieEvaluator)
+class TrieSemiEvaluatorSpec extends EvaluatorReachabilitySpec(TrieSemiEvaluator)
