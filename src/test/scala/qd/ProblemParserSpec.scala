@@ -18,7 +18,7 @@ class ProblemParserSpec extends FunSuite {
   val c = Constant("c", node)
   val d = Constant("d", node)
 
-  val simpleInput: String = """Input { edge(Node, Node), null() }
+  val simpleInput1: String = """Input { edge(Node, Node), null() }
                               |Invented { path(Node, Node) }
                               |Output { scc(Node, Node) }
                               |EDB { edge(a, b), edge(b, c), edge(c, d), edge(a, c) }
@@ -28,8 +28,8 @@ class ProblemParserSpec extends FunSuite {
                               |  0.2: null() :- .
                               |}""".stripMargin
 
-  test("Should parse the simple input") {
-    val result = parser.parseAll(parser.problem, simpleInput)
+  test("Should parse simpleInput1") {
+    val result = parser.parseAll(parser.problem, simpleInput1)
     assert(result.successful)
     val state = result.get
 
@@ -43,6 +43,47 @@ class ProblemParserSpec extends FunSuite {
     assert(state.rules.size == 2)
     val nullRule = state.rules.find(rule => rule.head.relation == nullRel && rule.body.isEmpty).get
     assert(nullRule.coeff.v == 0.2)
+  }
+
+  val simpleInput2: String = """Input { edge(Node, Node) }
+                               |Invented { path(Node, Node) }
+                               |Output { scc(Node, Node) }
+                               |AllRules(3, 4)""".stripMargin
+
+  test("Should parse simpleInput2") {
+    val result = parser.parseAll(parser.problem, simpleInput2)
+    assert(result.successful)
+    val state = result.get
+
+    assert(state.inputRels == Set(edge))
+    assert(state.inventedRels == Set(path))
+    assert(state.outputRels == Set(scc))
+
+    assert(state.edb.isEmpty)
+    assert(state.idb.isEmpty)
+
+    assert(state.rules.size == 21443)
+  }
+
+  val simpleInput3: String = """Input { edge(Node, Node) }
+                               |Invented { path(Node, Node) }
+                               |Output { scc(Node, Node) }
+                               |AllRules(3, 4, 0.2)""".stripMargin
+
+  test("Should parse simpleInput3") {
+    val result = parser.parseAll(parser.problem, simpleInput3)
+    assert(result.successful)
+    val state = result.get
+
+    assert(state.inputRels == Set(edge))
+    assert(state.inventedRels == Set(path))
+    assert(state.outputRels == Set(scc))
+
+    assert(state.edb.isEmpty)
+    assert(state.idb.isEmpty)
+
+    assert(state.rules.size == 21443)
+    assert(state.rules.forall(_.coeff.v == 0.2))
   }
 
   val commentedInput: String = """Input { edge(Node, Node), null() }
