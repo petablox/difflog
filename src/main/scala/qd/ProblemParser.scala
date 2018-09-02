@@ -9,64 +9,20 @@ import scala.util.parsing.combinator._
 class ProblemParser extends JavaTokenParsers {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // Main Block and Parser State
+  // Main Block
 
-  def problem: Parser[State] = (// domainBlock | // Commented because domains are now implicitly declared
-                                inputDeclBlock |
-                                inventedDeclBlock |
-                                outputDeclBlock |
-                                edbBlock |
-                                idbBlock |
-                                ruleBlock).* ^^ { f =>
-    f.foldLeft(initialState) { case (state, transformer) => transformer(state) }
-  }
-
-  case class State(inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
-                   edb: Set[(Relation, DTuple)], idb: Set[(Relation, DTuple)], rules: Set[Rule[FValue]]) {
-
-    require(inputRels.intersect(inventedRels).isEmpty)
-    require(inputRels.intersect(outputRels).isEmpty)
-    require(inventedRels.intersect(outputRels).isEmpty)
-    require(edb.intersect(idb).isEmpty)
-
-    val allRels: Set[Relation] = inputRels ++ inventedRels ++ outputRels
-    val allTuples: Set[(Relation, DTuple)] = edb ++ idb
-
-    def addInputRel(rel: Relation): State = {
-      require(!allRels.contains(rel), s"Relation $rel multiply declared")
-      State(inputRels + rel, inventedRels, outputRels, edb, idb, rules)
-    }
-
-    def addInventedRel(rel: Relation): State = {
-      require(!allRels.contains(rel), s"Relation $rel multiply declared")
-      State(inputRels, inventedRels + rel, outputRels, edb, idb, rules)
-    }
-
-    def addOutputRel(rel: Relation): State = {
-      require(!allRels.contains(rel), s"Relation $rel multiply declared")
-      State(inputRels, inventedRels, outputRels + rel, edb, idb, rules)
-    }
-
-    def addEDBTuple(rt: (Relation, DTuple)): State = {
-      require(!allTuples.contains(rt), s"Redeclaring tuple $rt")
-      State(inputRels, inventedRels, outputRels, edb + rt, idb, rules)
-    }
-
-    def addIDBTuple(rt: (Relation, DTuple)): State = {
-      require(!allTuples.contains(rt), s"Redeclaring tuple $rt")
-      State(inputRels, inventedRels, outputRels, edb, idb + rt, rules)
-    }
-
-    def addRule(rule: Rule[FValue]): State = {
-      require(rule.relations.forall(allRels))
-      if (rules.contains(rule)) println(s"Warning: Redeclaring rule $rule")
-      State(inputRels, inventedRels, outputRels, edb, idb, rules + rule)
-    }
-
+  def problem: Parser[Problem] = (// domainBlock | // Commented because domains are now implicitly declared
+                                  inputDeclBlock |
+                                  inventedDeclBlock |
+                                  outputDeclBlock |
+                                  edbBlock |
+                                  idbBlock |
+                                  ruleBlock).* ^^ { f =>
+    f.foldLeft(initialProblem) { case (problem, transformer) => transformer(problem) }
   }
 
   implicit val vs: FValueSemiring = FValueSemiringObj
-  val initialState: State = State(Set(), Set(), Set(), Set(), Set(), Set())
+  val initialProblem: Problem = Problem()
   val rng: Random = Random
   var numTokens = 0
   def nextToken(): Token = { val ans = numTokens; numTokens = numTokens + 1; Token(s"R$ans") }
@@ -85,19 +41,19 @@ class ProblemParser extends JavaTokenParsers {
 
   // def domainBlock: Parser[Set[Domain]] = "Domain" ~ "{" ~ identList ~ "}" ^^ (_._1._2.map(Domain).toSet)
 
-  def inputDeclBlock: Parser[State => State] = "Input" ~ "{" ~ relationList ~ "}" ^^ { f => state =>
+  def inputDeclBlock: Parser[Problem => Problem] = "Input" ~ "{" ~ relationList ~ "}" ^^ { f => problem =>
     val newInputRelations = f._1._2
-    newInputRelations.foldLeft(state)(_ addInputRel _)
+    newInputRelations.foldLeft(problem)(_ addInputRel _)
   }
 
-  def inventedDeclBlock: Parser[State => State] = "Invented" ~ "{" ~ relationList ~ "}" ^^ { f => state =>
+  def inventedDeclBlock: Parser[Problem => Problem] = "Invented" ~ "{" ~ relationList ~ "}" ^^ { f => problem =>
     val newInventedRelations = f._1._2
-    newInventedRelations.foldLeft(state)(_ addInventedRel _)
+    newInventedRelations.foldLeft(problem)(_ addInventedRel _)
   }
 
-  def outputDeclBlock: Parser[State => State] = "Output" ~ "{" ~ relationList ~ "}" ^^ { f => state =>
+  def outputDeclBlock: Parser[Problem => Problem] = "Output" ~ "{" ~ relationList ~ "}" ^^ { f => problem =>
     val newOutputRelations = f._1._2
-    newOutputRelations.foldLeft(state)(_ addOutputRel _)
+    newOutputRelations.foldLeft(problem)(_ addOutputRel _)
   }
 
   def relationList: Parser[Seq[Relation]] = (relationDecl ~ ("," ~ relationDecl ^^ (_._2)).* ^^ mkList) |
@@ -112,25 +68,25 @@ class ProblemParser extends JavaTokenParsers {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // EDB and IDB Declarations
 
-  def edbBlock: Parser[State => State] = "EDB" ~ "{" ~ tupleList ~ "}" ^^ { f => state =>
-    val newEDBTuples = f._1._2.map(_(state))
-    newEDBTuples.foldLeft(state)(_ addEDBTuple _)
+  def edbBlock: Parser[Problem => Problem] = "EDB" ~ "{" ~ tupleList ~ "}" ^^ { f => problem =>
+    val newEDBTuples = f._1._2.map(_(problem))
+    newEDBTuples.foldLeft(problem)(_ addEDBTuple _)
   }
 
-  def idbBlock: Parser[State => State] = "IDB" ~ "{" ~ tupleList ~ "}" ^^ { f => state =>
-    val newIDBTuples = f._1._2.map(_(state))
-    newIDBTuples.foldLeft(state)(_ addIDBTuple _)
+  def idbBlock: Parser[Problem => Problem] = "IDB" ~ "{" ~ tupleList ~ "}" ^^ { f => problem =>
+    val newIDBTuples = f._1._2.map(_(problem))
+    newIDBTuples.foldLeft(problem)(_ addIDBTuple _)
   }
 
-  def tupleList: Parser[Seq[State => (Relation, DTuple)]] = (tupleDecl ~ ("," ~ tupleDecl ^^ (_._2)).* ^^ mkList) |
+  def tupleList: Parser[Seq[Problem => (Relation, DTuple)]] = (tupleDecl ~ ("," ~ tupleDecl ^^ (_._2)).* ^^ mkList) |
                                                             ("" ^^ (_ => Seq()))
 
-  def tupleDecl: Parser[State => (Relation, DTuple)] = ident ~ "(" ~ identList ~ ")" ^^ { f => state =>
+  def tupleDecl: Parser[Problem => (Relation, DTuple)] = ident ~ "(" ~ identList ~ ")" ^^ { f => problem =>
     val relName = f._1._1._1
     val fieldNames = f._1._2
     val t = s"$relName(${fieldNames.mkString(", ")})"
 
-    val relOpt = state.allRels.find(_.name == relName)
+    val relOpt = problem.allRels.find(_.name == relName)
     require(relOpt.nonEmpty, s"Unable to resolve relation named $relName")
     val relation = relOpt.get
 
@@ -142,36 +98,46 @@ class ProblemParser extends JavaTokenParsers {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Rule Declaration Block
 
-  def ruleBlock: Parser[State => State] = augmentationRuleBlock | explicitRuleBlock
+  def ruleBlock: Parser[Problem => Problem] = augmentationRuleBlock | explicitRuleBlock
 
   // One may either write:
   // 1. AllRules(2, 3), to indicate all rules with 2 literals and 3 variables and randomly initialized coefficients, or
   // 2. AllRules(2, 3, 0.6), to indicate all rules with 2 literals and 3 variables and coefficients set to 0.6.
 
-  def augmentationRuleBlock: Parser[State => State] = {
+  def augmentationRuleBlock: Parser[Problem => Problem] = {
     "AllRules" ~ "(" ~
                         (wholeNumber ^^ (_.toInt)) ~ "," ~ (wholeNumber ^^ (_.toInt)) ~
                         ("," ~ decimalNumber ^^ (f => Some(f._2.toDouble))| "" ^^ (_ => None)) ~
                  ")" ^^ {
-      f => state =>
+      f => p0 =>
         val maxLiterals = f._1._1._1._1._2
         require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
         val maxVars = f._1._1._2
         require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
         val weightSpec = f._1._2
-        def weight(l: Literal, ls: Set[Literal]): FValue = if (weightSpec.nonEmpty) FValue(weightSpec.get, nextToken())
-                                                           else FValue(rng.nextDouble(), nextToken())
+        def weight(l: Literal, ls: Set[Literal]): (Token, FValue) = {
+          val token = nextToken()
+          val value = if (weightSpec.nonEmpty) FValue(weightSpec.get, token) else FValue(rng.nextDouble(), token)
+          (token, value)
+        }
 
-        val p = Program.skeleton[FValue]("Program", state.inputRels, state.inventedRels, state.outputRels,
-                                         weight, maxLiterals, maxVars)
-        p.rules.foldLeft(state)(_ addRule _)
+        val skeleton = Program.skeleton[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
+                                                weight, maxLiterals, maxVars)
+        val pos = TokenVec(skeleton._1.mapValues(_.v))
+        val rules = skeleton._2
+
+        val p1 = pos.foldLeft(p0) { case (p, (token, value)) => p.addToken(token, value) }
+        val p2 = rules.foldLeft(p1) { case (p, rule) => p.addRule(rule.coeff.l, rule.head, rule.body) }
+        p2
     }
   }
 
-  def explicitRuleBlock: Parser[State => State] = "Rules" ~ "{" ~ rep(ruleDecl) ~ "}" ^^ { f => state =>
-    val newRules = f._1._2.map(_(state))
-    newRules.foldLeft(state)(_ addRule _)
+  def explicitRuleBlock: Parser[Problem => Problem] = "Rules" ~ "{" ~ rep(ruleDecl) ~ "}" ^^ { f =>p0 =>
+    val newRules = f._1._2.map(_(p0))
+    val p1 = newRules.foldLeft(p0){ case (p, (token, value, _, _)) => p.addToken(token, value) }
+    val p2 = newRules.foldLeft(p1){ case (p, (token, _, head, body)) => p.addRule(token, head, body) }
+    p2
   }
 
   // The syntax of rules is as usual, terminated with a period.
@@ -180,31 +146,32 @@ class ProblemParser extends JavaTokenParsers {
   // path(a, c) :- edge(a, b), path(b, c).
   // 0.7: path(a, c) :- path(c, a).
 
-  def ruleDecl: Parser[State => Rule[FValue]] = {
+  def ruleDecl: Parser[Problem => (Token, Double, Literal, Set[Literal])] = {
     (decimalNumber ~ ":" ^^ (f => f._1.toDouble)| "" ^^ (_ => rng.nextDouble())) ~
-    literal ~ ":-" ~ literalSeq ~ "." ^^ { f => state =>
-      val coeff = FValue(f._1._1._1._1, nextToken())
-      val head = f._1._1._1._2(state)
-      val body = f._1._2.map(_(state))
+    literal ~ ":-" ~ literalSeq ~ "." ^^ { f => problem =>
+      val token = nextToken()
+      val value = f._1._1._1._1
+      val head = f._1._1._1._2(problem)
+      val body = f._1._2.map(_(problem)).toSet
 
-      val ans = Rule(coeff, head, body.toSet)
-      val allVars = ans.variables.groupBy(_.name)
-      for ((name, instances) <- allVars) {
+      val allVars = body.flatMap(_.variables) ++ head.variables
+      for ((name, instances) <- allVars.groupBy(_.name)) {
         require(instances.size == 1, s"Multiple incompatible uses of variable name $name")
       }
-      ans
+
+      (token, value, head, body)
     }
   }
 
-  def literalSeq: Parser[Seq[State => Literal]] = literal ~ ("," ~ literal ^^ (_._2)).* ^^ mkList |
+  def literalSeq: Parser[Seq[Problem => Literal]] = literal ~ ("," ~ literal ^^ (_._2)).* ^^ mkList |
                                                   "" ^^ (_ => Seq())
 
-  def literal: Parser[State => Literal] = ident ~ "(" ~ identList ~ ")" ^^ { f => state =>
+  def literal: Parser[Problem => Literal] = ident ~ "(" ~ identList ~ ")" ^^ { f => problem =>
     val relName = f._1._1._1
     val fieldNames = f._1._2
     val litString = s"$relName(${fieldNames.mkString(", ")})"
 
-    val optRel = state.allRels.find(_.name == relName)
+    val optRel = problem.allRels.find(_.name == relName)
     require(optRel.nonEmpty, s"Unable to resolve relation $relName")
     val rel = optRel.get
     require(rel.arity == fieldNames.size, s"Arity mismatch between relation $rel and literal $litString")

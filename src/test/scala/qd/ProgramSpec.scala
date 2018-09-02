@@ -16,22 +16,24 @@ class ProgramSpec extends FunSuite {
 
   val rng: Random = new Random(0)
   var ruleIndex = 0
-  val weight: (Literal, Set[Literal]) => FValue = { (_, _) =>
-    val ans = FValue(rng.nextDouble(), Token(s"R$ruleIndex"))
-    // val ans = FValueSemiringObj.One
+
+  def weight(l: Literal, ls: Set[Literal]): (Token, FValue) = {
+    val token = Token(s"R$ruleIndex")
     ruleIndex = ruleIndex + 1
-    ans
+    val value = rng.nextDouble()
+    (token, FValue(value, token))
   }
 
   val maxLiterals = 3
   val maxVars = 4
 
-  val p: Program[FValue] = Program.skeleton[FValue]("P", Set(edge), Set(path), Set(scc),
-                                                    weight, maxLiterals, maxVars)
+  val posRules: (Map[Token, FValue], Set[Rule[FValue]]) = Program.skeleton(Set(edge), Set(path), Set(scc),
+                                                                           weight, maxLiterals, maxVars)
+  val program: Program[FValue] = Program("P", posRules._2)
 
   if (maxLiterals == 3 && maxVars == 4) {
     test("Since maxLiterals == 3 and maxVars == 4, the skeleton program should have 21443 rules") {
-      assert(p.rules.size == 21443)
+      assert(posRules._2.size == 21443)
     }
   }
 
@@ -44,10 +46,10 @@ class ProgramSpec extends FunSuite {
   val graph: Graph = Graphs.circle(5)
   val evaluator: Evaluator = TrieSemiEvaluator
   test(testName = s"Applying evaluator ${evaluator.getClass} to " +
-    s"program ${p.name} of size ${p.rules.size} and " +
+    s"program ${program.name} of size ${program.rules.size} and " +
     s"graph ${graph.name}") {
     // val idb = SeminaiveEvaluator(p, graph.edb)
-    val idb = evaluator(p, graph.edb)
+    val idb = evaluator(program, graph.edb)
     val produced = idb(Graphs.path)
     println(s"Applying seminaive evaluator to big program and graph ${graph.name}. Done!")
     assert(produced.support.forall(_._1.length == 2))

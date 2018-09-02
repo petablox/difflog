@@ -72,11 +72,10 @@ object Program {
   def apply[T <: Value[T]](name: Any, rules: Rule[T]*): Program[T] = Program(name, rules.toSet)
 
   def skeleton[T <: Value[T]](
-                               name: Any,
                                inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
-                               weight: (Literal, Set[Literal]) => T,
+                               weight: (Literal, Set[Literal]) => (Token, T),
                                maxLiterals: Int, maxVars: Int
-                             )(implicit vs: Semiring[T]): Program[T] = {
+                             )(implicit vs: Semiring[T]): (Map[Token, T], Set[Rule[T]]) = {
 
     require(inputRels.intersect(inventedRels).isEmpty)
     require(inputRels.intersect(outputRels).isEmpty)
@@ -152,9 +151,17 @@ object Program {
                                rule = Rule(vs.One, head, body).normalize
                                if !isDegenerate(rule))
                           yield rule
-    val weightedRules = unweightedRules.map(rule => Rule(weight(rule.head, rule.body), rule.head, rule.body))
 
-    Program(name, weightedRules)
+    val weightedTriples = for (uwrule <- unweightedRules)
+                          yield {
+                            val tv = weight(uwrule.head, uwrule.body)
+                            val rule = Rule(tv._2, uwrule.head, uwrule.body)
+                            (tv._1, tv._2, rule)
+                          }
+    val pos = weightedTriples.map(triple => triple._1 -> triple._2).toMap
+    val weightedRules = weightedTriples.map(_._3)
+
+    (pos, weightedRules)
 
   }
 
