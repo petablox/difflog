@@ -136,7 +136,7 @@ class Parser extends JavaTokenParsers {
   def explicitRuleBlock: Parser[Problem => Problem] = "Rules" ~ "{" ~ rep(ruleDecl) ~ "}" ^^ { f => p0 =>
     val newRules = f._1._2.map(_(p0))
     val p1 = newRules.foldLeft(p0){ case (p, (token, value, _, _)) => p.addToken(token, value) }
-    val p2 = newRules.foldLeft(p1){ case (p, (token, _, head, body)) => p.addRule(token, head, body) }
+    val p2 = p1.addRules(newRules.map(r4 => Rule(FValue(r4._2, r4._1), r4._3, r4._4)).toSet)
     p2
   }
 

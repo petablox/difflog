@@ -20,9 +20,25 @@ class Problem private (
     new Problem(inputRels + rel, inventedRels, outputRels, edb, idb, pos, rules)
   }
 
+  def addInputRels(rels: Relation*): Problem = {
+    val newInputRels = rels.foldLeft(inputRels) { case (rels, rel) =>
+      require(!rels.contains(rel), s"Relation $rel multiply declared")
+      rels + rel
+    }
+    new Problem(newInputRels, inventedRels, outputRels, edb, idb, pos, rules)
+  }
+
   def addInventedRel(rel: Relation): Problem = {
     require(!allRels.contains(rel), s"Relation $rel multiply declared")
     new Problem(inputRels, inventedRels + rel, outputRels, edb, idb, pos, rules)
+  }
+
+  def addInventedRels(rels: Relation*): Problem = {
+    val newInventedRels = rels.foldLeft(inventedRels) { case (rels, rel) =>
+      require(!rels.contains(rel), s"Relation $rel multiply declared")
+      rels + rel
+    }
+    new Problem(inputRels, newInventedRels, outputRels, edb, idb, pos, rules)
   }
 
   def addOutputRel(rel: Relation): Problem = {
@@ -30,14 +46,38 @@ class Problem private (
     new Problem(inputRels, inventedRels, outputRels + rel, edb, idb, pos, rules)
   }
 
+  def addOutputRels(rels: Relation*): Problem = {
+    val newOutputRels = rels.foldLeft(outputRels) { case (rels, rel) =>
+      require(!rels.contains(rel), s"Relation $rel multiply declared")
+      rels + rel
+    }
+    new Problem(inputRels, inventedRels, newOutputRels, edb, idb, pos, rules)
+  }
+
   def addEDBTuple(rt: (Relation, DTuple)): Problem = {
     require(!allTuples.contains(rt), s"Redeclaring tuple $rt")
     new Problem(inputRels, inventedRels, outputRels, edb + rt, idb, pos, rules)
   }
 
+  def addEDBTuples(rts: (Relation, DTuple)*): Problem = {
+    val newEDB = rts.foldLeft(edb) { case (db, rt) =>
+      require(!allTuples.contains(rt), s"Redeclaring tuple $rt")
+      db + rt
+    }
+    new Problem(inputRels, inventedRels, outputRels, newEDB, idb, pos, rules)
+  }
+
   def addIDBTuple(rt: (Relation, DTuple)): Problem = {
     require(!allTuples.contains(rt), s"Redeclaring tuple $rt")
     new Problem(inputRels, inventedRels, outputRels, edb, idb + rt, pos, rules)
+  }
+
+  def addIDBTuples(rts: (Relation, DTuple)*): Problem = {
+    val newIDB = rts.foldLeft(idb) { case (db, rt) =>
+      require(!allTuples.contains(rt), s"Redeclaring tuple $rt")
+      db + rt
+    }
+    new Problem(inputRels, inventedRels, outputRels, edb, newIDB, pos, rules)
   }
 
   def addToken(token: Token, value: Double): Problem = {

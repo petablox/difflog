@@ -38,6 +38,8 @@ object Graphs {
         rn1 ++ r
       }
     }
+
+    val components: Set[(Constant, Constant)] = reachable.filter(p => reachable((p._2, p._1)))
   }
 
   def smallGraph: Graph = {
