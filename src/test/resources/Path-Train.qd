@@ -39,4 +39,4 @@ Rules {
   path(x2V, x1V) :- edge(x0V, x1V), edge(x2V, x0V).
 }
 
-MinRules(500, 2, 3)
+// MinRules(500, 3, 3)

@@ -29,7 +29,7 @@ class Problem private (
   def idbConfig: Config[FValue] = {
     val idbMap: Map[Relation, Instance[FValue]] = (for (rel <- outputRels)
                                                    yield {
-                                                     val tv = edb.filter(_._1 == rel).map(rtv => (rtv._2, rtv._3))
+                                                     val tv = idb.filter(_._1 == rel).map(rtv => (rtv._2, rtv._3))
                                                      rel -> tv.foldLeft(Instance[FValue](rel)) { case (inst, (t, v)) =>
                                                        inst + (t -> FValue(v, Empty))
                                                      }

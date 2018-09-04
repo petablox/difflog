@@ -1,10 +1,13 @@
 package qd.learner
 
+import com.typesafe.scalalogging.Logger
 import qd.Semiring.FValueSemiringObj
 import qd._
 import qd.evaluator.Evaluator
 
 abstract class Scorer {
+
+  private val logger = Logger[Scorer]
 
   val edb: Config[FValue]
   val refIDB: Config[FValue]

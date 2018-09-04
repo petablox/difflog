@@ -71,6 +71,7 @@ class Learner(q0: Problem) {
     val bestPos = bestIteration.get._1
     val sortedTokens = bestPos.toSeq.sortBy(-_._2).map(_._1)
 
+    logger.debug("Keeping highest tokens")
     for (k <- Range(1, sortedTokens.size + 1))
     yield {
       val highestTokens = sortedTokens.take(k).toSet
@@ -81,26 +82,45 @@ class Learner(q0: Problem) {
       val highestIDB = evaluator(highestRules, edb)
       val highestError = scorer.loss(highestIDB)
 
+      logger.debug(s"${highestProgram.name} ${highestRules.size} $highestError")
       (highestPos, highestProgram, highestIDB, highestError)
     }
   }
 
+  def keepUseful: Seq[(TokenVec, Program[FValue], Config[FValue], Double)] = {
+    val kht = keepHighestTokens
+    logger.debug("Preserving useful tokens")
+    for ((hipos, hiprog, hiIDB, _) <- kht)
+      yield {
+        val usefulTokens = for (rel <- scorer.outputRels;
+                                (_, v) <- hiIDB(rel).support;
+                                token <- v.l.toSeq)
+                           yield token
+
+        val usefulPos = TokenVec(tokens, t => if (usefulTokens.contains(t)) hipos.map(t) else 0.0)
+        val usefulRules = usefulPos(hiprog).rules.filter(_.coeff.v > 0.0)
+        val usefulProgram = Program(s"U${hiprog.name}", usefulRules)
+        val usefulIDB = evaluator(usefulRules, edb)
+        val usefulError = scorer.loss(usefulIDB)
+
+        logger.debug(s"${usefulProgram.name} $usefulError ${usefulProgram.rules.size}")
+        (usefulPos, usefulProgram, usefulIDB, usefulError)
+      }
+  }
+
   def reinterpret: Seq[(TokenVec, Program[FValue], Config[FValue], Double)] = {
-    for ((hipos, hiprog, hiIDB, hiLoss) <- keepHighestTokens)
+    val ku = keepUseful
+    logger.debug("Reinterpreting program")
+    for ((_, uprog, _, _) <- ku)
     yield {
-      val usefulTokens = for (rel <- scorer.outputRels;
-                              (_, v) <- hiIDB(rel).support;
-                              token <- v.l.toSeq)
-                         yield token
+      val utokens = uprog.rules.flatMap(_.coeff.l.toSeq)
+      val rpos = TokenVec(tokens, t => if (utokens.contains(t)) 1.0 else 0.0)
+      val rprog = rpos(uprog)
+      val rIDB = evaluator(rprog, edb)
+      val rError = scorer.loss(rIDB)
 
-      val usefulPos = TokenVec(tokens, t => if (usefulTokens.contains(t)) 1.0 else 0.0)
-      val usefulRules = usefulPos(hiprog).rules
-      val usefulProgram = Program(s"U${hiprog.name}", usefulRules)
-      val usefulIDB = evaluator(usefulRules, edb)
-      val usefulError = scorer.loss(usefulIDB)
-
-      logger.debug(s"${usefulProgram.name} $usefulError ${usefulProgram.rules.size}")
-      (usefulPos, usefulProgram, usefulIDB, usefulError)
+      logger.debug(s"${rprog.name} $rError ${rprog.rules.size}")
+      (rpos, rprog, rIDB, rError)
     }
   }
 

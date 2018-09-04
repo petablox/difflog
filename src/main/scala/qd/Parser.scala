@@ -1,5 +1,6 @@
 package qd
 
+import com.typesafe.scalalogging.Logger
 import qd.Semiring.FValueSemiringObj
 
 import scala.util.Random
@@ -21,6 +22,7 @@ class Parser extends JavaTokenParsers {
     f.foldLeft(initialProblem) { case (problem, transformer) => transformer(problem) }
   }
 
+  private val logger = Logger[qd.Parser]
   implicit val vs: FValueSemiring = FValueSemiringObj
   val initialProblem: Problem = Problem()
   val rng: Random = Random
@@ -167,12 +169,15 @@ class Parser extends JavaTokenParsers {
         val allNewRules = skeleton._2.filter { rnew =>
           !p0.rules.exists(rold => rold.head == rnew.head && rold.body == rnew.body)
         }
+        val numNewRules = maxRules - p0.rules.size
         val newRules = Random.shuffle(allNewRules.toSeq).take(maxRules - p0.rules.size).toSet
+
+        logger.debug(s"Chose $numNewRules new rules from skeleton containing ${skeleton._2.size} rules.")
+
         val newTokens = newRules.flatMap(_.coeff.l.toSeq)
 
         val p1 = newTokens.foldLeft(p0) { case (p, token) => p.addToken(token, pos.map(token)) }
         val p2 = p1.addRules(newRules)
-        assert(p2.rules.size == maxRules)
         p2
     }
   }
