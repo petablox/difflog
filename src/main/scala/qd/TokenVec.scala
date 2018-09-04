@@ -67,5 +67,8 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
 }
 
 object TokenVec {
-  def zero(tokens: Set[Token]): TokenVec = TokenVec(tokens.map(t => t -> 0.0).toMap)
+  def apply(tokens: Set[Token], f: Token => Double): TokenVec = TokenVec(tokens.map(t => t -> f(t)).toMap)
+  def constant(tokens: Set[Token], v: Double): TokenVec = TokenVec(tokens, _ => v)
+  def one(tokens: Set[Token]): TokenVec = constant(tokens, 1.0)
+  def zero(tokens: Set[Token]): TokenVec = constant(tokens, 0.0)
 }

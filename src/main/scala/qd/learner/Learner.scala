@@ -22,13 +22,13 @@ class Learner(q0: Problem) {
   private var pos: TokenVec = q0.pos
   private var program: Program[FValue] = q0.program
   private var currentIDB: Config[FValue] = evaluator(program, edb)
-  private var bestIDB: Option[(TokenVec, Program[FValue], Config[FValue], Double)] = None
+  private var bestIteration: Option[(TokenVec, Program[FValue], Config[FValue], Double)] = None
   private var step: TokenVec = TokenVec(tokens.map(token => token -> 1.0).toMap)
 
   def getPos: TokenVec = pos
   def getProgram: Program[FValue] = program
   def getCurrentIDB: Config[FValue] = currentIDB
-  def getBestIDB: (TokenVec, Program[FValue], Config[FValue], Double) = bestIDB.get
+  def getBestIteration: (TokenVec, Program[FValue], Config[FValue], Double) = bestIteration.get
 
   def learn(tgtLoss: Double, maxIters: Int): (TokenVec, Program[FValue], Config[FValue], Double) = {
     require(maxIters > 0)
@@ -40,7 +40,7 @@ class Learner(q0: Problem) {
       gradAbs = scorer.gradientLoss(pos, currentIDB).abs
     }
     println(s"#Iterations: $numIters")
-    getBestIDB
+    getBestIteration
   }
 
   def update(): Unit = {
@@ -51,7 +51,7 @@ class Learner(q0: Problem) {
     step = pos - oldPos
 
     val l2 = scorer.loss(currentIDB)
-    if (bestIDB.isEmpty || l2 < bestIDB.get._4) bestIDB = Some((pos, program, currentIDB, l2))
+    if (bestIteration.isEmpty || l2 < bestIteration.get._4) bestIteration = Some((pos, program, currentIDB, l2))
   }
 
   def newPosL2Newton: TokenVec = {
@@ -63,29 +63,34 @@ class Learner(q0: Problem) {
     val newPos = pos - delta
     val newPosLim = newPos.limitLower(0.0).limitLower(0.01, pos).limitUpper(0.99, pos).limitUpper(1.0)
     val newStep = newPosLim - pos // (newPosLim - pos) * 0.8 + step * 0.2
-    val bestL2 = bestIDB.map(_._4).getOrElse(Double.PositiveInfinity)
+    val bestL2 = bestIteration.map(_._4).getOrElse(Double.PositiveInfinity)
     // println(s"  grad: $grad")
     println(s"  l2: $l2. best.l2: $bestL2. |grad|: ${grad.abs}. |step|: ${newStep.abs}.")
     newPosLim
   }
 
-  def reinterpret: Seq[(TokenVec, Program[FValue], Config[FValue], Double)] = {
-    val bestPos = bestIDB.get._1
+  def keepHighestTokens: Seq[(TokenVec, Program[FValue], Config[FValue], Double)] = {
+    val bestPos = bestIteration.get._1
     val sortedTokens = bestPos.toSeq.sortBy(-_._2).map(_._1)
+
     for (k <- Range(1, sortedTokens.size + 1))
     yield {
-      val highestKTokens = sortedTokens.take(k).toSet
-      val krules = bestIDB.get._2.rules.filter(_.coeff.l.toSeq.toSet.subsetOf(highestKTokens))
-      val posk = TokenVec(highestKTokens.map(token => token -> 1.0).toMap)
+      val highestTokens = sortedTokens.take(k).toSet
+      val highestRules = bestIteration.get._2.rules.filter(_.coeff.l.toSeq.toSet.subsetOf(highestTokens))
 
-      val fullkmap = tokens.map(token => token -> (if (highestKTokens.contains(token)) 1.0 else 0.0)).toMap
-      val fullkpos = TokenVec(fullkmap)
-      val kprogram = posk(Program(s"P$k", krules))
-      val kidb = evaluator(kprogram, edb)
-      val kl2 = scorer.loss(kidb)
-      val ans = (fullkpos, kprogram, kidb, kl2)
-      println(s"$k $kl2")
-      ans
+      val highestPos = TokenVec(tokens, t => if (highestTokens.contains(t)) bestPos.map(t) else 0.0)
+      val highestProgram = Program(s"P$k", highestRules)
+      val highestIDB = evaluator(highestRules, edb)
+      val highestError = scorer.loss(highestIDB)
+
+      (highestPos, highestProgram, highestIDB, highestError)
+    }
+  }
+
+  def reinterpret: Seq[(TokenVec, Program[FValue], Config[FValue], Double)] = {
+    for ((hipos, hiprog, hiIDB, hiLoss) <- keepHighestTokens)
+    yield {
+      ???
     }
   }
 

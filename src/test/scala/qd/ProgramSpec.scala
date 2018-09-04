@@ -37,12 +37,6 @@ class ProgramSpec extends FunSuite {
     }
   }
 
-  /* for ((_, rules) <- p.rules.groupBy(_.head.relation);
-       rule <- rules) {
-    println(rule)
-  } */
-  // println(p.rules.size)
-
   val graph: Graph = Graphs.circle(5)
   val evaluator: Evaluator = TrieSemiEvaluator
   test(testName = s"Applying evaluator ${evaluator.getClass} to " +
@@ -51,7 +45,6 @@ class ProgramSpec extends FunSuite {
     // val idb = SeminaiveEvaluator(p, graph.edb)
     val idb = evaluator(program, graph.edb)
     val produced = idb(Graphs.path)
-    println(s"Applying seminaive evaluator to big program and graph ${graph.name}. Done!")
     assert(produced.support.forall(_._1.length == 2))
     assert(produced.support.map(tv => (tv._1(0), tv._1(1))).toSet == graph.reachable)
   }
