@@ -1,9 +1,12 @@
 package qd
 package learner
 
+import java.nio.file.{Path, Paths}
+
 import org.scalatest.FunSuite
 import qd.data.graphs.Graphs
 
+import scala.io.Source
 import scala.util.Random
 
 class LearnerSpec extends FunSuite {
@@ -38,7 +41,6 @@ class LearnerSpec extends FunSuite {
 
     val learner = new Learner(problem)
     val result = learner.learn(tgtLoss, maxIters)
-    result._2.rules.toSeq.filter(_.coeff.v > 0.9).sortBy(-_.coeff.v).foreach(println)
     assert(result._4 < tgtLoss)
   }
 
@@ -111,6 +113,22 @@ class LearnerSpec extends FunSuite {
       // result._2.rules.toSeq.filter(_.coeff.v > 0.9).sortBy(-_.coeff.v).foreach(println)
       assert(result._4 < tgtLoss)
     }
+  } */
+
+  /* val andersenInputLoc: String = "src/test/resources/Andersen-Train.qd"
+  val andersenInput: String = Source.fromFile(andersenInputLoc).mkString
+
+  test("Should be able to learn Andersen's analysis from NIPS data") {
+    val problem = parser.parseAll(parser.problem, andersenInput).get
+    val tgtLoss = 0.1
+    val maxIters = 100
+
+    println(s"!!!!!! Andersen numRules: ${problem.rules.size}")
+    val learner = new Learner(problem)
+    val result = learner.learn(tgtLoss, maxIters)
+    result._2.rules.toSeq.filter(_.coeff.v > 0.9).sortBy(-_.coeff.v).foreach(println)
+    assert(result._4 < tgtLoss)
+    learner.reinterpret
   } */
 
 }

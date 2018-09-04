@@ -1,7 +1,6 @@
 package qd
 package evaluator
 
-import scala.collection.immutable.Iterable
 import scala.collection.parallel.{ParMap, ParSeq}
 import TrieEvaluator.RuleTrie
 

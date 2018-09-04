@@ -1,12 +1,14 @@
 package qd
 package learner
 
+import com.typesafe.scalalogging.Logger
 import qd.Semiring.FValueSemiringObj
 import qd.evaluator.{Evaluator, TrieEvaluator}
 
 class Learner(q0: Problem) {
 
   implicit val vs: FValueSemiring = FValueSemiringObj
+  private val logger = Logger[Learner]
 
   val edb: Config[FValue] = q0.edb.foldLeft(Config()) { case (config, (relation, tuple)) =>
     config.add(relation, tuple, vs.One)
@@ -39,7 +41,7 @@ class Learner(q0: Problem) {
       numIters += 1
       gradAbs = scorer.gradientLoss(pos, currentIDB).abs
     }
-    println(s"#Iterations: $numIters")
+    logger.debug(s"#Iterations: $numIters")
     getBestIteration
   }
 
@@ -64,8 +66,8 @@ class Learner(q0: Problem) {
     val newPosLim = newPos.limitLower(0.0).limitLower(0.01, pos).limitUpper(0.99, pos).limitUpper(1.0)
     val newStep = newPosLim - pos // (newPosLim - pos) * 0.8 + step * 0.2
     val bestL2 = bestIteration.map(_._4).getOrElse(Double.PositiveInfinity)
-    // println(s"  grad: $grad")
-    println(s"  l2: $l2. best.l2: $bestL2. |grad|: ${grad.abs}. |step|: ${newStep.abs}.")
+    // logger.debug(s"  grad: $grad")
+    logger.debug(s"  l2: $l2. best.l2: $bestL2. |grad|: ${grad.abs}. |step|: ${newStep.abs}.")
     newPosLim
   }
 
@@ -101,7 +103,7 @@ class Learner(q0: Problem) {
       val usefulIDB = evaluator(usefulRules, edb)
       val usefulError = scorer.loss(usefulIDB)
 
-      println(s"${usefulProgram.name} $usefulError")
+      logger.debug(s"${usefulProgram.name} $usefulError ${usefulProgram.rules.size}")
       (usefulPos, usefulProgram, usefulIDB, usefulError)
     }
   }
