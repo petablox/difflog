@@ -79,7 +79,7 @@ class Learner(q0: Problem) {
       val highestRules = bestIteration.get._2.rules.filter(_.coeff.l.toSeq.toSet.subsetOf(highestTokens))
 
       val highestPos = TokenVec(tokens, t => if (highestTokens.contains(t)) bestPos.map(t) else 0.0)
-      val highestProgram = Program(s"P$k", highestRules)
+      val highestProgram = Program(s"PH$k", highestRules)
       val highestIDB = evaluator(highestRules, edb)
       val highestError = scorer.loss(highestIDB)
 
@@ -90,7 +90,19 @@ class Learner(q0: Problem) {
   def reinterpret: Seq[(TokenVec, Program[FValue], Config[FValue], Double)] = {
     for ((hipos, hiprog, hiIDB, hiLoss) <- keepHighestTokens)
     yield {
-      ???
+      val usefulTokens = for (rel <- scorer.outputRels;
+                              (_, v) <- hiIDB(rel).support;
+                              token <- v.l.toSeq)
+                         yield token
+
+      val usefulPos = TokenVec(tokens, t => if (usefulTokens.contains(t)) 1.0 else 0.0)
+      val usefulRules = usefulPos(hiprog).rules
+      val usefulProgram = Program(s"U${hiprog.name}", usefulRules)
+      val usefulIDB = evaluator(usefulRules, edb)
+      val usefulError = scorer.loss(usefulIDB)
+
+      println(s"${usefulProgram.name} $usefulError")
+      (usefulPos, usefulProgram, usefulIDB, usefulError)
     }
   }
 
