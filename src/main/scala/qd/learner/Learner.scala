@@ -10,12 +10,8 @@ class Learner(q0: Problem) {
   implicit val vs: FValueSemiring = FValueSemiringObj
   private val logger = Logger[Learner]
 
-  val edb: Config[FValue] = q0.edb.foldLeft(Config()) { case (config, (relation, tuple)) =>
-    config.add(relation, tuple, vs.One)
-  }
-  val referenceIDB: Config[FValue] = q0.idb.foldLeft(Config()) { case (config, (relation, tuple)) =>
-    config.add(relation, tuple, vs.One)
-  }
+  val edb: Config[FValue] = q0.edbConfig
+  val referenceIDB: Config[FValue] = q0.idbConfig
 
   val tokens: Set[Token] = q0.allTokens
   val evaluator: Evaluator = TrieEvaluator

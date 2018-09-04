@@ -1,12 +1,9 @@
 package qd
 package learner
 
-import java.nio.file.{Path, Paths}
-
 import org.scalatest.FunSuite
 import qd.data.graphs.Graphs
 
-import scala.io.Source
 import scala.util.Random
 
 class LearnerSpec extends FunSuite {
@@ -52,8 +49,8 @@ class LearnerSpec extends FunSuite {
       val maxIters = 1000
 
       val p0 = Problem().addInputRel(edge).addOutputRel(path)
-                        .addEDBTuples(graph.edgeSet.map({ case (u, v) => (edge, DTuple(u, v)) }).toSeq:_*)
-                        .addIDBTuples(graph.reachable.map({ case (u, v) => (path, DTuple(u, v)) }).toSeq:_*)
+                        .addEDBTuples(graph.edgeSet.map({ case (u, v) => (edge, DTuple(u, v), 1.0) }).toSeq:_*)
+                        .addIDBTuples(graph.reachable.map({ case (u, v) => (path, DTuple(u, v), 1.0) }).toSeq:_*)
 
       var numTokens = 0
       def nextToken(): Token = { val ans = numTokens; numTokens = numTokens + 1; Token(s"R$ans") }

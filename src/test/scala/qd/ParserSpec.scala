@@ -36,8 +36,9 @@ class ParserSpec extends FunSuite {
     assert(problem.inventedRels == Set(path))
     assert(problem.outputRels == Set(scc))
 
-    assert(problem.edb == Set((edge, DTuple(a, b)), (edge, DTuple(b, c)), (edge, DTuple(c, d)), (edge, DTuple(a, c))))
-    assert(problem.idb == Set((path, DTuple(a, b)), (path, DTuple(b, c))))
+    assert(problem.edb == Set((edge, DTuple(a, b), 1.0), (edge, DTuple(b, c), 1.0), (edge, DTuple(c, d), 1.0),
+                              (edge, DTuple(a, c), 1.0)))
+    assert(problem.idb == Set((path, DTuple(a, b), 1.0), (path, DTuple(b, c), 1.0)))
 
     assert(problem.rules.size == 2)
     val nullRule = problem.rules.find(rule => rule.head.relation == nullRel && rule.body.isEmpty).get
@@ -106,8 +107,9 @@ class ParserSpec extends FunSuite {
     assert(problem.inventedRels == Set(path))
     assert(problem.outputRels == Set(scc))
 
-    assert(problem.edb == Set((edge, DTuple(a, b)), (edge, DTuple(b, c)), (edge, DTuple(c, d)), (edge, DTuple(a, c))))
-    assert(problem.idb == Set((path, DTuple(a, b)), (path, DTuple(b, c))))
+    assert(problem.edb == Set((edge, DTuple(a, b), 1.0), (edge, DTuple(b, c), 1.0), (edge, DTuple(c, d), 1.0),
+                              (edge, DTuple(a, c), 1.0)))
+    assert(problem.idb == Set((path, DTuple(a, b), 1.0), (path, DTuple(b, c), 1.0)))
 
     assert(problem.rules.isEmpty)
   }

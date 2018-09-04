@@ -75,21 +75,27 @@ class Parser extends JavaTokenParsers {
     newIDBTuples.foldLeft(problem)(_ addIDBTuple _)
   }
 
-  def tupleList: Parser[Seq[Problem => (Relation, DTuple)]] = (tupleDecl ~ ("," ~> tupleDecl).* ^^ mkList) |
-                                                              ("" ^^ (_ => Seq()))
+  def tupleList: Parser[Seq[Problem => (Relation, DTuple, Double)]] = {
+    (tupleDecl ~ ("," ~> tupleDecl).* ^^ mkList) |
+    ("" ^^ (_ => Seq()))
+  }
 
-  def tupleDecl: Parser[Problem => (Relation, DTuple)] = ident ~ ("(" ~> identList <~ ")") ^^ { f => problem =>
-    val relName = f._1
-    val fieldNames = f._2
-    val t = s"$relName(${fieldNames.mkString(", ")})"
+  def tupleDecl: Parser[Problem => (Relation, DTuple, Double)] = {
+    ((decimalNumber ^^ (_.toDouble)) <~ ":" | "" ^^ (_ => 1.0)) ~
+    ident ~ ("(" ~> identList <~ ")") ^^ { f => problem =>
+      val value = f._1._1
+      val relName = f._1._2
+      val fieldNames = f._2
+      val t = s"$relName(${fieldNames.mkString(", ")})"
 
-    val relOpt = problem.allRels.find(_.name == relName)
-    require(relOpt.nonEmpty, s"Unable to resolve relation named $relName")
-    val relation = relOpt.get
+      val relOpt = problem.allRels.find(_.name == relName)
+      require(relOpt.nonEmpty, s"Unable to resolve relation named $relName")
+      val relation = relOpt.get
 
-    require(relation.arity == fieldNames.size, s"Arity mismatch between tuple $t and relation $relation")
-    val fields = fieldNames.zip(relation.signature).map { case (c, d) => Constant(c, d) }
-    (relation, DTuple(fields:_*))
+      require(relation.arity == fieldNames.size, s"Arity mismatch between tuple $t and relation $relation")
+      val fields = fieldNames.zip(relation.signature).map { case (c, d) => Constant(c, d) }
+      (relation, DTuple(fields:_*), value)
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
