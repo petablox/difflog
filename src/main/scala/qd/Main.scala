@@ -2,6 +2,9 @@ package qd
 
 import qd.Semiring.FValueSemiringObj
 import qd.evaluator.TrieSemiEvaluator
+import qd.learner.Learner
+
+import scala.io.Source
 
 object Main extends App {
 
@@ -31,6 +34,22 @@ object Main extends App {
   }
 
   def learn(): Unit = {
+    val tgtLoss = args(1).toDouble
+    val maxIters = args(2).toInt
+    val testFile = args(3)
+
+    require(0 <= tgtLoss && tgtLoss <= 1.0, s"Expected target loss between 0.0 and 1.0: Found $tgtLoss")
+    require(maxIters > 0, s"Expected maxIters > 0: Found $maxIters")
+
+    val learner = new Learner(problem)
+    val result = learner.learn(tgtLoss, maxIters)
+    assert(result._4 < tgtLoss)
+    learner.reinterpret
+
+    val testProblemString = Source.fromFile(testFile).mkString
+    val testParser = new Parser()
+    val testProblem = testParser.parseAll(testParser.problem, testProblemString).get
+
     ???
   }
 
