@@ -47,4 +47,26 @@ abstract class Scorer {
 
   def gradientLoss(pos: TokenVec, out: Config[FValue], rel: Relation, t: DTuple): TokenVec
 
+  def f1(out: Config[FValue], cutoff: Double): Double = {
+    val p = precision(out, cutoff)
+    val r = recall(out, cutoff)
+    2 * p * r / (p + r)
+  }
+
+  def precision(out: Config[FValue], cutoff: Double): Double = {
+    val ts = for (rel <- outputRels.toSeq;
+                  (t, v) <- out(rel).support;
+                  if v.v > cutoff)
+             yield if (refIDB(rel)(t).v > cutoff) 1.0 else 0.0
+    ts.sum / ts.size
+  }
+
+  def recall(out: Config[FValue], cutoff: Double): Double = {
+    val ts = for (rel <- outputRels.toSeq;
+                  (t, v) <- refIDB(rel).support;
+                  if v.v > cutoff)
+      yield if (out(rel)(t).v > cutoff) 1.0 else 0.0
+    ts.sum / ts.size
+  }
+
 }

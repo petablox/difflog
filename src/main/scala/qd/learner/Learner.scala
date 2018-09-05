@@ -121,10 +121,11 @@ class Learner(q0: Problem) {
       val rpos = TokenVec(tokens, t => if (utokens.contains(t)) 1.0 else 0.0)
       val rprog = rpos(uprog)
       val rIDB = evaluator(rprog, edb)
-      val rError = scorer.loss(rIDB)
+      // val rError = scorer.loss(rIDB)
+      val rf1 = scorer.f1(rIDB, 0.5)
 
-      logger.debug(s"${rprog.name} $rError ${rprog.rules.size}")
-      (rpos, rprog, rIDB, rError)
+      logger.debug(s"${rprog.name} $rf1 ${rprog.rules.size}")
+      (rpos, rprog, rIDB, rf1)
     }
   }
 

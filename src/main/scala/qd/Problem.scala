@@ -1,5 +1,7 @@
 package qd
 
+import com.typesafe.scalalogging.Logger
+
 class Problem private (
                         val inputRels: Set[Relation],
                         val inventedRels: Set[Relation],
@@ -9,6 +11,8 @@ class Problem private (
                         val pos: TokenVec,
                         val rules: Set[Rule[FValue]]
                       ) {
+
+  val logger = Logger[Problem]
 
   val allRels: Set[Relation] = inputRels ++ inventedRels ++ outputRels
   val allTuples: Set[(Relation, DTuple, Double)] = edb ++ idb
@@ -104,6 +108,10 @@ class Problem private (
 
   def addToken(token: Token, value: Double): Problem = {
     require(!pos.contains(token))
+    if (pos.contains(token)) {
+      logger.info(s"Ignoring redeclaration of token $token. Already initialized to ${pos(token)}")
+      return this
+    }
     new Problem(inputRels, inventedRels, outputRels, edb, idb, pos + (token -> value), rules)
   }
 

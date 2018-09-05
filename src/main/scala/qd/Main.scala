@@ -80,10 +80,10 @@ object Main extends App {
 
     val testProblem = readProblem(testFile)
     val testScorer = new L2Scorer(testProblem.edbConfig, testProblem.idbConfig, TrieEvaluator)
-    for ((_, prog, _, trainLoss) <- reinterpretedResult) {
+    for ((_, prog, _, trainF2) <- reinterpretedResult) {
       val testIDB = TrieEvaluator(prog, testProblem.edbConfig)
-      val testLoss = testScorer.loss(testIDB)
-      println(s"${prog.name} $trainLoss $testLoss")
+      val testF2 = testScorer.f1(testIDB, 0.5)
+      println(s"${prog.name} $trainF2 $testF2")
 
       /* if (trainLoss == 0 && testLoss > 0) {
         for (rel <- testScorer.outputRels;

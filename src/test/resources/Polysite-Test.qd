@@ -9,7 +9,7 @@ EDB {
 
   virtIM(v1, v3), virtIM(v6, v7), virtIM(v6, v1), virtIM(v0, v4),
   virtIM(v0, v11), virtIM(v7, v10), virtIM(v1, v7), virtIM(v0, v9),
-  virtIM(v3, v7), virtIM(v1, v0), virtIM(v5, v7)
+  virtIM(v3, v7), virtIM(v1, v0), virtIM(v5, v7),
 
   Mneq(v0, v1), Mneq(v0, v2), Mneq(v0, v3), Mneq(v0, v4), Mneq(v0, v5), Mneq(v0, v6), Mneq(v0, v7), Mneq(v0, v8),
   Mneq(v0, v9), Mneq(v0, v10), Mneq(v0, v11), Mneq(v1, v0), Mneq(v1, v2), Mneq(v1, v3), Mneq(v1, v4), Mneq(v1, v5),
@@ -34,7 +34,7 @@ IDB {
   insvIM(v1, v2), insvIM(v2, v6), insvIM(v4, v5), insvIM(v6, v1),
   insvIM(v3, v1), insvIM(v1, v1), insvIM(v0, v11), insvIM(v1, v0), insvIM(v2, v4),
 
-  virtIM(v0), virtIM(v1), virtIM(v3), virtIM(v5), virtIM(v6), virtIM(v7),
+  virtI(v0), virtI(v1), virtI(v3), virtI(v5), virtI(v6), virtI(v7),
 
   polySite(v2), polySite(v1)
 }
