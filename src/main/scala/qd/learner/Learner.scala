@@ -31,13 +31,17 @@ class Learner(q0: Problem) {
   def learn(tgtLoss: Double, maxIters: Int): (TokenVec, Program[FValue], Config[FValue], Double) = {
     require(maxIters > 0)
     var (l2, numIters, gradAbs) = (tgtLoss + 1, 0, 1.0)
+    val startTime = System.nanoTime()
     while (numIters < maxIters && l2 >= tgtLoss && gradAbs > 0 && step.abs > 0.0) {
       update()
       l2 = scorer.loss(currentIDB)
       numIters += 1
       gradAbs = scorer.gradientLoss(pos, currentIDB).abs
     }
+    val endTime = System.nanoTime()
+    val timePerIter = (endTime - startTime) / 1.0e9 / numIters
     logger.debug(s"#Iterations: $numIters")
+    logger.debug(s"Time / iteration: $timePerIter seconds.")
     getBestIteration
   }
 
