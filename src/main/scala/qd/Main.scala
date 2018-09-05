@@ -67,6 +67,17 @@ object Main extends App {
     // learner.keepUseful
     val reinterpretedResult = learner.reinterpret
 
+    /* println("---")
+    val rr = reinterpretedResult.minBy(_._4)
+    for (rel <- trainProblem.outputRels;
+         allTuples = trainProblem.idbConfig(rel).support.map(_._1) ++ rr._3(rel).support.map(_._1);
+         t <- allTuples) {
+      val vRef = trainProblem.edbConfig(rel)(t)
+      val vProd = rr._3(rel)(t)
+      if (vRef != vProd) { println(s"$rel $t $vRef $vProd") }
+    }
+    println("---") */
+
     val testProblem = readProblem(testFile)
     val testScorer = new L2Scorer(testProblem.edbConfig, testProblem.idbConfig, TrieEvaluator)
     for ((_, prog, _, trainLoss) <- reinterpretedResult) {

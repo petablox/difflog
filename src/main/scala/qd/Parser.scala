@@ -196,7 +196,7 @@ class Parser extends JavaTokenParsers {
   // 0.7: path(a, c) :- path(c, a).
 
   def ruleDecl: Parser[Problem => (Token, Double, Literal, Set[Literal])] = {
-    (decimalNumber ~ ":" ^^ (f => f._1.toDouble)| "" ^^ (_ => rng.nextDouble())) ~
+    (decimalNumber <~ ":" ^^ (f => f.toDouble)| "" ^^ (_ => rng.nextDouble())) ~
     literal ~ ":-" ~ literalSeq ~ "." ^^ { f => problem =>
       val token = nextToken()
       val value = f._1._1._1._1

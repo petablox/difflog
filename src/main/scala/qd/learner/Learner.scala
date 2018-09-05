@@ -63,7 +63,7 @@ class Learner(q0: Problem) {
     val newStep = newPosLim - pos // (newPosLim - pos) * 0.8 + step * 0.2
     val bestL2 = bestIteration.map(_._4).getOrElse(Double.PositiveInfinity)
     // logger.debug(s"  grad: $grad")
-    logger.debug(s"  l2: $l2. best.l2: $bestL2. |grad|: ${grad.abs}. |step|: ${newStep.abs}.")
+    logger.debug(s"  l2: $l2. best.l2: $bestL2. |pos|: ${newPos.abs}. |grad|: ${grad.abs}. |step|: ${newStep.abs}.")
     newPosLim
   }
 
