@@ -1,7 +1,7 @@
 package qd
 
 import qd.Semiring.FValueSemiringObj
-import qd.evaluator.{TrieEvaluator, TrieSemiEvaluator}
+import qd.evaluator.TrieEvaluator
 import qd.learner.{L2Scorer, Learner}
 
 import scala.io.Source
@@ -18,15 +18,9 @@ object Main extends App {
 
   def eval(): Unit = {
     val problem = readProblem(args(1))
-    val edbMap: Map[Relation, Instance[FValue]] = (for (rel <- problem.inputRels)
-                                                   yield {
-                                                     val tuples = problem.edb.filter(_._1 == rel).map(_._2)
-                                                     rel -> tuples.foldLeft(Instance(rel)) { case (inst, t) =>
-                                                       inst + (t -> vs.One)
-                                                     }
-                                                   }).toMap
-    val edb: Config[FValue] = Config(edbMap)
-    val idb = TrieEvaluator(problem.rules, edb)
+    val scorer = new L2Scorer(problem.edbConfig, problem.idbConfig, TrieEvaluator)
+    val idb = TrieEvaluator(problem.rules, problem.edbConfig)
+
     val idbStr = problem.outputRels.flatMap(rel =>
       idb(rel).support.toSeq.sortBy(-_._2.v).map { case (t, v) => s"  ${v.v}: ${rel.name}$t" }
     ).mkString("," + System.lineSeparator())
@@ -34,6 +28,7 @@ object Main extends App {
     println("IDB {")
     println(idbStr)
     println("}")
+    println(s"// F1: ${scorer.f1(idb, 0.5)}")
   }
 
   def learn(): Unit = {
