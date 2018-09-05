@@ -18,8 +18,9 @@ object Main extends App {
 
   def eval(): Unit = {
     val problem = readProblem(args(1))
+    val hirules = TokenVec.one(problem.allTokens)(problem.rules)
     val scorer = new L2Scorer(problem.edbConfig, problem.idbConfig, TrieEvaluator)
-    val idb = TrieEvaluator(problem.rules, problem.edbConfig)
+    val idb = TrieEvaluator(hirules, problem.edbConfig)
 
     val idbStr = problem.outputRels.flatMap(rel =>
       idb(rel).support.toSeq.sortBy(-_._2.v).map { case (t, v) => s"  ${v.v}: ${rel.name}$t" }
