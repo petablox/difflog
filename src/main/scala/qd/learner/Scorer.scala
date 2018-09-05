@@ -55,7 +55,7 @@ abstract class Scorer {
 
   def precision(out: Config[FValue], cutoff: Double): Double = {
     val ts = for (rel <- outputRels.toSeq;
-                  (t, v) <- out(rel).support;
+                  (t, v) <- out(rel).support.toSeq;
                   if v.v > cutoff)
              yield if (refIDB(rel)(t).v > cutoff) 1.0 else 0.0
     ts.sum / ts.size
@@ -63,7 +63,7 @@ abstract class Scorer {
 
   def recall(out: Config[FValue], cutoff: Double): Double = {
     val ts = for (rel <- outputRels.toSeq;
-                  (t, v) <- refIDB(rel).support;
+                  (t, v) <- refIDB(rel).support.toSeq;
                   if v.v > cutoff)
       yield if (out(rel)(t).v > cutoff) 1.0 else 0.0
     ts.sum / ts.size
