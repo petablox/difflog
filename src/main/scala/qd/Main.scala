@@ -73,6 +73,17 @@ object Main extends App {
       val testIDB = TrieEvaluator(prog, testProblem.edbConfig)
       val testLoss = testScorer.loss(testIDB)
       println(s"${prog.name} $trainLoss $testLoss")
+
+      /* if (trainLoss == 0 && testLoss > 0) {
+        for (rel <- testScorer.outputRels;
+             allTuples = testScorer.refIDB(rel).support.map(_._1) ++ testIDB(rel).support.map(_._1);
+             t <- allTuples;
+             vRef = testScorer.refIDB(rel)(t);
+             vProd = testIDB(rel)(t)
+             if vRef.v != vProd.v) {
+          println(s"$rel $t $vRef $vProd")
+        }
+      } */
     }
   }
 
