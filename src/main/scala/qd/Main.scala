@@ -26,7 +26,7 @@ object Main extends App {
                                                      }
                                                    }).toMap
     val edb: Config[FValue] = Config(edbMap)
-    val idb = TrieSemiEvaluator(problem.rules, edb)
+    val idb = TrieEvaluator(problem.rules, edb)
     val idbStr = problem.outputRels.flatMap(rel =>
       idb(rel).support.toSeq.sortBy(-_._2.v).map { case (t, v) => s"  ${v.v}: ${rel.name}$t" }
     ).mkString("," + System.lineSeparator())
