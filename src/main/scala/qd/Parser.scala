@@ -72,6 +72,12 @@ class Parser extends JavaTokenParsers {
     newEDBTuples.foldLeft(problem)(_ addEDBTuple _)
   }
 
+  def readEDBBlock: Parser[Problem => Problem] = "ReadEDB" ~ "(" ~> stringLiteral <~")" ^^ { f => problem =>
+    val fname = f.substring(1, f.length - 1)
+    println(s"ReadEDBBlock: ${f}")
+    ???
+  }
+
   def idbBlock: Parser[Problem => Problem] = "IDB" ~ "{" ~> tupleList <~ "}" ^^ { f => problem =>
     val newIDBTuples = f.map(_(problem))
     newIDBTuples.foldLeft(problem)(_ addIDBTuple _)
@@ -195,13 +201,21 @@ class Parser extends JavaTokenParsers {
   // path(a, c) :- edge(a, b), path(b, c).
   // 0.7: path(a, c) :- path(c, a).
 
+  // Experimentally, the token associated with a rule can also be explicitly specified.
+  // This is useful, for example, while tying rule weights together
+  // BigValue @ path(a, c) :- path(c, a).
+  // SmallValue @ path(a, c) :- path(a, d).
+  // BigValue @ path(a, c) :- path(a, b), edge(b, c).
+
   def ruleDecl: Parser[Problem => (Token, Double, Literal, Set[Literal])] = {
-    (decimalNumber <~ ":" ^^ (f => f.toDouble)| "" ^^ (_ => rng.nextDouble())) ~
-    literal ~ ":-" ~ literalSeq ~ "." ^^ { f => problem =>
-      val token = nextToken()
-      val value = f._1._1._1._1
-      val head = f._1._1._1._2(problem)
-      val body = f._1._2.map(_(problem)).toSet
+    (ident <~ "@" ^^ (f => Some(f)) | "" ^^ (_ => None)) ~
+    (decimalNumber <~ ":" ^^ (f => f.toDouble) | "" ^^ (_ => rng.nextDouble())) ~
+    literal ~ (":-" ~> literalSeq <~ ".") ^^ { f => problem =>
+      val token = f._1._1._1.map(Token).getOrElse(nextToken())
+      val value = if (!problem.allTokens.contains(token)) f._1._1._2
+                  else problem.pos(token).v
+      val head = f._1._2(problem)
+      val body = f._2.map(_(problem)).toSet
 
       val allVars = body.flatMap(_.variables) ++ head.variables
       for ((name, instances) <- allVars.groupBy(_.name)) {

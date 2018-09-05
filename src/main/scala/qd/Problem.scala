@@ -107,7 +107,6 @@ class Problem private (
   }
 
   def addToken(token: Token, value: Double): Problem = {
-    require(!pos.contains(token))
     if (pos.contains(token)) {
       logger.info(s"Ignoring redeclaration of token $token. Already initialized to ${pos(token)}")
       return this

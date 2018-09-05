@@ -40,7 +40,7 @@ abstract class Scorer {
   def gradientLoss(pos: TokenVec, out: Config[FValue]): TokenVec = {
     val numeratorVecs = for (rel <- outputRels.toSeq;
                              allTuples = out(rel).support.map(_._1) ++ refIDB(rel).support.map(_._1);
-                             t <- allTuples)
+                             t <- allTuples.toSeq)
                         yield gradientLoss(pos, out, rel, t)
     numeratorVecs.foldLeft(TokenVec.zero(pos.keySet))(_ + _)
   }

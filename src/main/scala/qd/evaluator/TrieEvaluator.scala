@@ -1,6 +1,8 @@
 package qd
 package evaluator
 
+import com.typesafe.scalalogging.Logger
+
 import scala.collection.immutable.Iterable
 import scala.collection.parallel.{ParMap, ParSeq}
 
