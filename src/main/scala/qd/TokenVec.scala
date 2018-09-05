@@ -24,6 +24,10 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
     Program(p.name, newRules)
   }
 
+  def apply(rules: Set[Rule[FValue]]): Set[Rule[FValue]] = {
+    rules.map(r => Rule(this(r.coeff.l), r.head, r.body))
+  }
+
   def +(tv: (Token, Double)): TokenVec = {
     val (token, value) = tv
     require(!map.contains(token))

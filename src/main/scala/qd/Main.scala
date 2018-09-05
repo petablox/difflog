@@ -18,7 +18,8 @@ object Main extends App {
 
   def eval(): Unit = {
     val problem = readProblem(args(1))
-    val hirules = TokenVec.one(problem.allTokens)(problem.rules)
+    val hipos = TokenVec.one(problem.allTokens)
+    val hirules = hipos(problem.rules)
     val scorer = new L2Scorer(problem.edbConfig, problem.idbConfig, TrieEvaluator)
     val idb = TrieEvaluator(hirules, problem.edbConfig)
 
