@@ -3,12 +3,13 @@ package learner
 
 import org.scalatest.FunSuite
 import qd.data.graphs.Graphs
+import qd.problem.QDParser
 
 import scala.util.Random
 
 class LearnerSpec extends FunSuite {
 
-  val parser = new Parser
+  val parser = new QDParser
 
   val node: Domain = Graphs.node
   val edge: Relation = Graphs.edge

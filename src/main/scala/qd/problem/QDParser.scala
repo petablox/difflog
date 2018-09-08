@@ -1,13 +1,13 @@
-package qd
+package qd.problem
 
-import com.typesafe.scalalogging.Logger
 import qd.Semiring.FValueSemiringObj
+import qd._
 
 import scala.util.Random
 import scala.util.matching.Regex
 import scala.util.parsing.combinator._
 
-class Parser extends JavaTokenParsers {
+class QDParser extends JavaTokenParsers {
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Main Block
@@ -22,7 +22,6 @@ class Parser extends JavaTokenParsers {
     f.foldLeft(initialProblem) { case (problem, transformer) => transformer(problem) }
   }
 
-  private val logger = Logger[qd.Parser]
   implicit val vs: FValueSemiring = FValueSemiringObj
   val initialProblem: Problem = Problem()
   val rng: Random = Random
@@ -69,7 +68,7 @@ class Parser extends JavaTokenParsers {
 
   def edbBlock: Parser[Problem => Problem] = "EDB" ~ "{" ~> tupleList <~ "}" ^^ { f => problem =>
     val newEDBTuples = f.map(_(problem))
-    newEDBTuples.foldLeft(problem)(_ addEDBTuple _)
+    problem.addEDBTuples(newEDBTuples:_*)
   }
 
   def readEDBBlock: Parser[Problem => Problem] = "ReadEDB" ~ "(" ~> stringLiteral <~")" ^^ { f => problem =>
@@ -80,7 +79,7 @@ class Parser extends JavaTokenParsers {
 
   def idbBlock: Parser[Problem => Problem] = "IDB" ~ "{" ~> tupleList <~ "}" ^^ { f => problem =>
     val newIDBTuples = f.map(_(problem))
-    newIDBTuples.foldLeft(problem)(_ addIDBTuple _)
+    problem.addIDBTuples(newIDBTuples:_*)
   }
 
   def tupleList: Parser[Seq[Problem => (Relation, DTuple, Double)]] = {
@@ -96,7 +95,7 @@ class Parser extends JavaTokenParsers {
       val fieldNames = f._2
       val t = s"$relName(${fieldNames.mkString(", ")})"
 
-      val relOpt = problem.allRels.find(_.name == relName)
+      val relOpt = problem.findRel(_.name == relName)
       require(relOpt.nonEmpty, s"Unable to resolve relation named $relName")
       val relation = relOpt.get
 
@@ -178,7 +177,7 @@ class Parser extends JavaTokenParsers {
         val numNewRules = maxRules - p0.rules.size
         val newRules = Random.shuffle(allNewRules.toSeq).take(maxRules - p0.rules.size).toSet
 
-        logger.debug(s"Chose $numNewRules new rules from skeleton containing ${skeleton._2.size} rules.")
+        scribe.debug(s"Chose $numNewRules new rules from skeleton containing ${skeleton._2.size} rules.")
 
         val newTokens = newRules.flatMap(_.coeff.l.toSeq)
 
@@ -234,7 +233,7 @@ class Parser extends JavaTokenParsers {
     val fieldNames = f._1._2
     val litString = s"$relName(${fieldNames.mkString(", ")})"
 
-    val optRel = problem.allRels.find(_.name == relName)
+    val optRel = problem.findRel(_.name == relName)
     require(optRel.nonEmpty, s"Unable to resolve relation $relName")
     val rel = optRel.get
     require(rel.arity == fieldNames.size, s"Arity mismatch between relation $rel and literal $litString")

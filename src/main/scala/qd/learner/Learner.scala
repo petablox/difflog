@@ -1,34 +1,33 @@
 package qd
 package learner
 
-import com.typesafe.scalalogging.Logger
 import qd.Semiring.FValueSemiringObj
 import qd.evaluator.{Evaluator, TrieEvaluator}
+import qd.problem.Problem
 
 class Learner(q0: Problem) {
 
   implicit val vs: FValueSemiring = FValueSemiringObj
-  private val logger = Logger[Learner]
 
-  val edb: Config[FValue] = q0.edbConfig
-  val referenceIDB: Config[FValue] = q0.idbConfig
+  val edb: Config[FValue] = q0.edb
+  val referenceIDB: Config[FValue] = q0.idb
 
-  val tokens: Set[Token] = q0.allTokens
+  val tokens: Set[Token] = q0.pos.keySet
   val evaluator: Evaluator = TrieEvaluator
   val scorer = new L2Scorer(edb, referenceIDB, evaluator)
 
   private var pos: TokenVec = q0.pos
-  private var program: Program[FValue] = q0.program
-  private var currentIDB: Config[FValue] = evaluator(program, edb)
-  private var bestIteration: Option[(TokenVec, Program[FValue], Config[FValue], Double)] = None
+  private var rules: Set[Rule[FValue]] = q0.rules
+  private var currentIDB: Config[FValue] = evaluator(rules, edb)
+  private var bestIteration: Option[(TokenVec, Set[Rule[FValue]], Config[FValue], Double)] = None
   private var step: TokenVec = TokenVec(tokens.map(token => token -> 1.0).toMap)
 
   def getPos: TokenVec = pos
-  def getProgram: Program[FValue] = program
+  def getRules: Set[Rule[FValue]] = rules
   def getCurrentIDB: Config[FValue] = currentIDB
-  def getBestIteration: (TokenVec, Program[FValue], Config[FValue], Double) = bestIteration.get
+  def getBestIteration: (TokenVec, Set[Rule[FValue]], Config[FValue], Double) = bestIteration.get
 
-  def learn(tgtLoss: Double, maxIters: Int): (TokenVec, Program[FValue], Config[FValue], Double) = {
+  def learn(tgtLoss: Double, maxIters: Int): (TokenVec, Set[Rule[FValue]], Config[FValue], Double) = {
     require(maxIters > 0)
     var (l2, numIters, gradAbs) = (tgtLoss + 1, 0, 1.0)
     val startTime = System.nanoTime()
@@ -40,20 +39,20 @@ class Learner(q0: Problem) {
     }
     val endTime = System.nanoTime()
     val timePerIter = (endTime - startTime) / 1.0e9 / numIters
-    logger.debug(s"#Iterations: $numIters")
-    logger.debug(s"Time / iteration: $timePerIter seconds.")
+    scribe.debug(s"#Iterations: $numIters")
+    scribe.debug(s"Time / iteration: $timePerIter seconds.")
     getBestIteration
   }
 
   def update(): Unit = {
     val oldPos = pos
     pos = newPosL2Newton
-    program = pos(program)
-    currentIDB = evaluator(program, edb)
+    rules = pos(rules)
+    currentIDB = evaluator(rules, edb)
     step = pos - oldPos
 
     val l2 = scorer.loss(currentIDB)
-    if (bestIteration.isEmpty || l2 < bestIteration.get._4) bestIteration = Some((pos, program, currentIDB, l2))
+    if (bestIteration.isEmpty || l2 < bestIteration.get._4) bestIteration = Some((pos, rules, currentIDB, l2))
   }
 
   def newPosL2Newton: TokenVec = {
@@ -67,34 +66,33 @@ class Learner(q0: Problem) {
     val newStep = newPosLim - pos // (newPosLim - pos) * 0.8 + step * 0.2
     val bestL2 = bestIteration.map(_._4).getOrElse(Double.PositiveInfinity)
     // logger.debug(s"  grad: $grad")
-    logger.debug(s"  l2: $l2. best.l2: $bestL2. |pos|: ${newPos.abs}. |grad|: ${grad.abs}. |step|: ${newStep.abs}.")
+    scribe.debug(s"  l2: $l2. best.l2: $bestL2. |pos|: ${newPos.abs}. |grad|: ${grad.abs}. |step|: ${newStep.abs}.")
     newPosLim
   }
 
-  def keepHighestTokens: Seq[(TokenVec, Program[FValue], Config[FValue], Double)] = {
+  def keepHighestTokens: Seq[(TokenVec, Set[Rule[FValue]], Config[FValue], Double)] = {
     val bestPos = bestIteration.get._1
     val sortedTokens = bestPos.toSeq.sortBy(-_._2).map(_._1)
 
-    logger.debug("Keeping highest tokens")
+    scribe.debug("Keeping highest tokens")
     for (k <- Range(1, sortedTokens.size + 1))
     yield {
       val highestTokens = sortedTokens.take(k).toSet
-      val highestRules = bestIteration.get._2.rules.filter(_.coeff.l.toSeq.toSet.subsetOf(highestTokens))
+      val highestRules = bestIteration.get._2.filter(_.coeff.l.toSeq.toSet.subsetOf(highestTokens))
 
       val highestPos = TokenVec(tokens, t => if (highestTokens.contains(t)) bestPos.map(t) else 0.0)
-      val highestProgram = Program(s"PH$k", highestRules)
       val highestIDB = evaluator(highestRules, edb)
       val highestError = scorer.loss(highestIDB)
 
-      logger.debug(s"${highestProgram.name} ${highestRules.size} $highestError")
-      (highestPos, highestProgram, highestIDB, highestError)
+      scribe.debug(s"$k ${highestRules.size} $highestError")
+      (highestPos, highestRules, highestIDB, highestError)
     }
   }
 
-  def keepUseful: Seq[(TokenVec, Program[FValue], Config[FValue], Double)] = {
+  def keepUseful: Seq[(TokenVec, Set[Rule[FValue]], Config[FValue], Double)] = {
     val kht = keepHighestTokens
-    logger.debug("Preserving useful tokens")
-    for ((hipos, hiprog, hiIDB, _) <- kht)
+    scribe.debug("Preserving useful tokens")
+    for ((hipos, hirules, hiIDB, _) <- kht)
       yield {
         val usefulTokens = for (rel <- scorer.outputRels;
                                 (_, v) <- hiIDB(rel).support;
@@ -102,30 +100,29 @@ class Learner(q0: Problem) {
                            yield token
 
         val usefulPos = TokenVec(tokens, t => if (usefulTokens.contains(t)) hipos.map(t) else 0.0)
-        val usefulRules = usefulPos(hiprog).rules.filter(_.coeff.v > 0.0)
-        val usefulProgram = Program(s"U${hiprog.name}", usefulRules)
+        val usefulRules = usefulPos(hirules).filter(_.coeff.v > 0.0)
         val usefulIDB = evaluator(usefulRules, edb)
         val usefulError = scorer.loss(usefulIDB)
 
-        logger.debug(s"${usefulProgram.name} $usefulError ${usefulProgram.rules.size}")
-        (usefulPos, usefulProgram, usefulIDB, usefulError)
+        scribe.debug(s"$usefulError ${usefulRules.size}")
+        (usefulPos, usefulRules, usefulIDB, usefulError)
       }
   }
 
-  def reinterpret: Seq[(TokenVec, Program[FValue], Config[FValue], Double)] = {
+  def reinterpret: Seq[(TokenVec, Set[Rule[FValue]], Config[FValue], Double)] = {
     val ku = keepUseful
-    logger.debug("Reinterpreting program")
-    for ((_, uprog, _, _) <- ku)
+    scribe.debug("Reinterpreting program")
+    for ((_, urules, _, _) <- ku)
     yield {
-      val utokens = uprog.rules.flatMap(_.coeff.l.toSeq)
+      val utokens = urules.flatMap(_.coeff.l.toSeq)
       val rpos = TokenVec(tokens, t => if (utokens.contains(t)) 1.0 else 0.0)
-      val rprog = rpos(uprog)
-      val rIDB = evaluator(rprog, edb)
+      val rrules = rpos(urules)
+      val rIDB = evaluator(rrules, edb)
       // val rError = scorer.loss(rIDB)
       val rf1 = scorer.f1(rIDB, 0.5)
 
-      logger.debug(s"${rprog.name} $rf1 ${rprog.rules.size}")
-      (rpos, rprog, rIDB, rf1)
+      scribe.debug(s"$rf1 ${rrules.size}")
+      (rpos, rrules, rIDB, rf1)
     }
   }
 

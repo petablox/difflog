@@ -2,6 +2,7 @@ package qd
 
 import org.scalatest.FunSuite
 import qd.data.graphs.Graphs
+import qd.problem.QDParser
 
 class ParserSpec extends FunSuite {
 
@@ -27,7 +28,7 @@ class ParserSpec extends FunSuite {
                               |}""".stripMargin
 
   test("Should parse simpleInput1") {
-    val parser = new Parser
+    val parser = new QDParser
     val result = parser.parseAll(parser.problem, simpleInput1)
     assert(result.successful)
     val problem = result.get
@@ -51,7 +52,7 @@ class ParserSpec extends FunSuite {
                                |AllRules(3, 4)""".stripMargin
 
   test("Should parse simpleInput2") {
-    val parser = new Parser
+    val parser = new QDParser
     val result = parser.parseAll(parser.problem, simpleInput2)
     assert(result.successful)
     val problem = result.get
@@ -72,7 +73,7 @@ class ParserSpec extends FunSuite {
                                |AllRules(3, 4, 0.2)""".stripMargin
 
   test("Should parse simpleInput3") {
-    val parser = new Parser
+    val parser = new QDParser
     val result = parser.parseAll(parser.problem, simpleInput3)
     assert(result.successful)
     val problem = result.get
@@ -98,7 +99,7 @@ class ParserSpec extends FunSuite {
                                  |IDB { path(a, b), path(b, c) }""".stripMargin
 
   test("Should parse the commented input") {
-    val parser = new Parser
+    val parser = new QDParser
     val result = parser.parseAll(parser.problem, commentedInput)
     assert(result.successful)
     val problem = result.get
@@ -121,7 +122,7 @@ class ParserSpec extends FunSuite {
                             |IDB { path(a, b), path(b, c) }""".stripMargin
 
   test("Should fail to parse badInput1") {
-    val parser = new Parser
+    val parser = new QDParser
     val result = parser.parseAll(parser.problem, badInput1)
     assert(!result.successful)
   }
@@ -134,7 +135,7 @@ class ParserSpec extends FunSuite {
 
   test("Should fail to parse badInput2") {
     try {
-      val parser = new Parser
+      val parser = new QDParser
       parser.parseAll(parser.problem, badInput2)
       fail()
     } catch { case _: Throwable => () }
