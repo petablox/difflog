@@ -1,0 +1,17 @@
+<!-- Refer to https://logback.qos.ch/manual/configuration.html and
+              https://logback.qos.ch/manual/appenders.html -->
+
+<configuration>
+  <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
+
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>log-${bySecond}.txt</file>
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="debug">
+    <appender-ref ref="FILE" />
+  </root>
+</configuration>
