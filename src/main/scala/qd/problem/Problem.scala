@@ -2,6 +2,8 @@ package qd.problem
 
 import qd._
 
+import scala.collection.immutable.Seq
+
 class Problem private (
                         val inputRels: Set[Relation],
                         val inventedRels: Set[Relation],
@@ -92,7 +94,7 @@ class Problem private (
     new Problem(inputRels, inventedRels, outputRels, edb, idb, pos, rules + rule)
   }
 
-  def addRule(lineage: Lineage, head: Literal, body: Set[Literal]): Problem = {
+  def addRule(lineage: Lineage, head: Literal, body: Seq[Literal]): Problem = {
     val coeff = pos(lineage)
     val rule = Rule(coeff, head, body)
     new Problem(inputRels, inventedRels, outputRels, edb, idb, pos, rules + rule)

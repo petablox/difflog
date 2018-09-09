@@ -3,6 +3,7 @@ package qd.problem
 import qd.Semiring.FValueSemiringObj
 import qd._
 
+import scala.collection.immutable.Seq
 import scala.util.Random
 import scala.util.matching.Regex
 import scala.util.parsing.combinator._
@@ -35,7 +36,7 @@ class QDParser extends JavaTokenParsers {
   // Ignore C and C++-style comments. See: https://stackoverflow.com/a/5954831
   protected override val whiteSpace: Regex = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def identList: Parser[Seq[String]] = (ident ~ ("," ~> ident).* ^^ mkList) | ("" ^^ (_ => Seq()))
+  def identList: Parser[Seq[String]] = (ident ~ ("," ~> ident).* ^^ mkList) | ("" ^^ (_ => List()))
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Domains and Relation Declarations
@@ -55,12 +56,12 @@ class QDParser extends JavaTokenParsers {
   }
 
   def relationList: Parser[Seq[Relation]] = (relationDecl ~ ("," ~> relationDecl).* ^^ mkList) |
-                                            ("" ^^ (_ => Seq()))
+                                            ("" ^^ (_ => List()))
 
   def relationDecl: Parser[Relation] = ident ~ ("(" ~> identList <~ ")") ^^ { f =>
     val relName = f._1
     val signature = f._2.map(Domain)
-    Relation(relName, signature:_*)
+    Relation(relName, signature)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +85,7 @@ class QDParser extends JavaTokenParsers {
 
   def tupleList: Parser[Seq[Problem => (Relation, DTuple, Double)]] = {
     (tupleDecl ~ ("," ~> tupleDecl).* ^^ mkList) |
-    ("" ^^ (_ => Seq()))
+    ("" ^^ (_ => List()))
   }
 
   def tupleDecl: Parser[Problem => (Relation, DTuple, Double)] = {
@@ -101,7 +102,7 @@ class QDParser extends JavaTokenParsers {
 
       require(relation.arity == fieldNames.size, s"Arity mismatch between tuple $t and relation $relation")
       val fields = fieldNames.zip(relation.signature).map { case (c, d) => Constant(c, d) }
-      (relation, DTuple(fields:_*), value)
+      (relation, DTuple(fields), value)
     }
   }
 
@@ -128,14 +129,14 @@ class QDParser extends JavaTokenParsers {
         require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
         require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
-        def weight(l: Literal, ls: Set[Literal]): (Token, FValue) = {
+        def weight(l: Literal, ls: Seq[Literal]): (Token, FValue) = {
           val token = nextToken()
           val value = if (weightSpec.nonEmpty) FValue(weightSpec.get, token) else FValue(rng.nextDouble(), token)
           (token, value)
         }
 
-        val skeleton = Program.skeleton[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
-                                                weight, maxLiterals, maxVars)
+        val skeleton = Enumerator.skeleton[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
+                                                   weight, maxLiterals, maxVars)
         val pos = TokenVec(skeleton._1.mapValues(_.v))
         val rules = skeleton._2
 
@@ -161,14 +162,14 @@ class QDParser extends JavaTokenParsers {
         require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
         require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
-        def weight(l: Literal, ls: Set[Literal]): (Token, FValue) = {
+        def weight(l: Literal, ls: Seq[Literal]): (Token, FValue) = {
           val token = nextToken()
           val value = if (weightSpec.nonEmpty) FValue(weightSpec.get, token) else FValue(rng.nextDouble(), token)
           (token, value)
         }
 
-        val skeleton = Program.skeleton[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
-                                                weight, maxLiterals, maxVars)
+        val skeleton = Enumerator.skeleton[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
+                                                   weight, maxLiterals, maxVars)
         val pos = TokenVec(skeleton._1.mapValues(_.v))
 
         val allNewRules = skeleton._2.filter { rnew =>
@@ -189,8 +190,8 @@ class QDParser extends JavaTokenParsers {
 
   def explicitRuleBlock: Parser[Problem => Problem] = "Rules" ~ "{" ~> rep(ruleDecl) <~ "}" ^^ { f => p0 =>
     val newRules = f.map(_(p0))
-    val p1 = newRules.foldLeft(p0){ case (p, (token, value, _, _)) => p.addToken(token, value) }
-    val p2 = p1.addRules(newRules.map(r4 => Rule(FValue(r4._2, r4._1), r4._3, r4._4).normalize).toSet)
+    val p1 = newRules.foldLeft(p0){ case (p, (token, value, _)) => p.addToken(token, value) }
+    val p2 = p1.addRules(newRules.map(_._3).toSet)
     p2
   }
 
@@ -206,7 +207,7 @@ class QDParser extends JavaTokenParsers {
   // SmallValue @ path(a, c) :- path(a, d).
   // BigValue @ path(a, c) :- path(a, b), edge(b, c).
 
-  def ruleDecl: Parser[Problem => (Token, Double, Literal, Set[Literal])] = {
+  def ruleDecl: Parser[Problem => (Token, Double, Rule[FValue])] = {
     (ident <~ "@" ^^ (f => Some(f)) | "" ^^ (_ => None)) ~
     (decimalNumber <~ ":" ^^ (f => f.toDouble) | "" ^^ (_ => rng.nextDouble())) ~
     literal ~ (":-" ~> literalSeq <~ ".") ^^ { f => problem =>
@@ -214,19 +215,20 @@ class QDParser extends JavaTokenParsers {
       val value = if (!problem.allTokens.contains(token)) f._1._1._2
                   else problem.pos(token).v
       val head = f._1._2(problem)
-      val body = f._2.map(_(problem)).toSet
+      val body = f._2.map(_(problem))
 
       val allVars = body.flatMap(_.variables) ++ head.variables
       for ((name, instances) <- allVars.groupBy(_.name)) {
         require(instances.size == 1, s"Multiple incompatible uses of variable name $name")
       }
 
-      (token, value, head, body)
+      val rule = Rule(FValue(value, token), head, body)
+      (token, value, rule)
     }
   }
 
   def literalSeq: Parser[Seq[Problem => Literal]] = literal ~ ("," ~ literal ^^ (_._2)).* ^^ mkList |
-                                                  "" ^^ (_ => Seq())
+                                                  "" ^^ (_ => List())
 
   def literal: Parser[Problem => Literal] = ident ~ "(" ~ identList ~ ")" ^^ { f => problem =>
     val relName = f._1._1._1
@@ -240,7 +242,7 @@ class QDParser extends JavaTokenParsers {
 
     val fields = fieldNames.zip(rel.signature).map { case (name, domain) => Variable(name, domain) }
 
-    Literal(rel, fields:_*)
+    Literal(rel, fields)
   }
 
 }

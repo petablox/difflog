@@ -2,8 +2,6 @@ package qd
 
 import Semiring.FValueSemiringObj
 
-import scala.util.Random
-
 case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with Iterable[(Token, Double)] {
 
   implicit val vs: FValueSemiring = FValueSemiringObj
@@ -17,11 +15,6 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
     case Empty => vs.One
     case token @ Token(_) => FValue(map(token), token)
     case And(l1, l2) => this(l1) * this(l2)
-  }
-
-  def apply(p: Program[FValue]): Program[FValue] = {
-    val newRules = p.rules.map(r => Rule(this(r.coeff.l), r.head, r.body))
-    Program(p.name, newRules)
   }
 
   def apply(rules: Set[Rule[FValue]]): Set[Rule[FValue]] = {
@@ -45,8 +38,8 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
   }
 
   def *(coeff: Double): TokenVec = TokenVec(map.map { case (token, value) => token -> value * coeff })
-  def /(denom: Double): TokenVec = TokenVec(map.map { case (token, value) =>
-    val vd = value / denom
+  def /(denominator: Double): TokenVec = TokenVec(map.map { case (token, value) =>
+    val vd = value / denominator
     token -> (if (!vd.isNaN) vd else 0)
   })
 

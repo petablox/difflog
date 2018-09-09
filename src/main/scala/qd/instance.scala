@@ -1,5 +1,7 @@
 package qd
 
+import scala.collection.immutable.Seq
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Assignments
 
@@ -24,7 +26,7 @@ case class Assignment[T <: Value[T]](map: Map[Variable, Constant], score: T) ext
       case c @ Constant(_, _) => c
       case v @ Variable(_, _) => this(v)
     }
-    (DTuple(cs:_*), score)
+    (DTuple(cs), score)
   }
 
   def toFilter(literal: Literal): Seq[Option[Constant]] = literal.fields.map {
@@ -45,7 +47,7 @@ extends (DTuple => T) {
   val arity: Int = signature.length
 
   lazy val support: Set[(DTuple, T)] = this match {
-    case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(), value)) else Set()
+    case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(List()), value)) else Set()
     case InstanceInd(_, _, map) => for ((constant, mapA) <- map.view.toSet;
                                         (tuple, value) <- mapA.support)
                                    yield (constant +: tuple) -> value
@@ -67,7 +69,7 @@ extends (DTuple => T) {
   def filter(f: Seq[Option[Constant]]): Set[(DTuple, T)] = {
     require(f.length == this.arity)
     this match {
-      case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(), value)) else Set()
+      case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Seq()), value)) else Set()
       case InstanceInd(_, _, map) =>
         f.head match {
           case Some(fh) =>
@@ -108,7 +110,7 @@ extends (DTuple => T) {
       case InstanceInd(domHead, domTail, map) =>
         val chead = t.head
         require(chead.domain == domHead)
-        val mapA = map.getOrElse(chead, Instance(domTail:_*))
+        val mapA = map.getOrElse(chead, Instance(domTail))
         val newMapA = mapA + (t.tail -> v)
         InstanceInd(domHead, domTail, map + (chead -> newMapA))
     }
@@ -122,11 +124,11 @@ extends (DTuple => T) {
 }
 
 object Instance {
-  def apply[T <: Value[T]](signature: Domain*)(implicit vs: Semiring[T]): Instance[T] = {
+  def apply[T <: Value[T]](signature: Seq[Domain])(implicit vs: Semiring[T]): Instance[T] = {
     if (signature.isEmpty) InstanceBase(vs.Zero)
     else InstanceInd(signature.head, signature.tail, Map())
   }
-  def apply[T <: Value[T]](relation: Relation)(implicit vs: Semiring[T]): Instance[T] = Instance(relation.signature:_*)
+  def apply[T <: Value[T]](relation: Relation)(implicit vs: Semiring[T]): Instance[T] = Instance(relation.signature)
 }
 
 case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) extends Instance[T](Seq())

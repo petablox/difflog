@@ -7,7 +7,7 @@ import TrieEvaluator.RuleTrie
 object TrieSemiEvaluator extends Evaluator {
 
   override def apply[T <: Value[T]](rules: Set[Rule[T]], edb: Config[T])(implicit vs: Semiring[T]): Config[T] = {
-    val trie = RuleTrie(rules.map(_.normalize))
+    val trie = RuleTrie(rules.map(rule => Enumerator.normalize(rule)))
     var state = State(trie, edb, Config(), edb)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
