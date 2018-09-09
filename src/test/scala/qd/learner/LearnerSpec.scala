@@ -3,7 +3,7 @@ package learner
 
 import org.scalatest.FunSuite
 import qd.data.graphs.Graphs
-import qd.problem.QDParser
+import qd.problem.{Problem, QDParser}
 
 import scala.util.Random
 
@@ -13,7 +13,7 @@ class LearnerSpec extends FunSuite {
 
   val node: Domain = Graphs.node
   val edge: Relation = Graphs.edge
-  val nullRel: Relation = Relation("null")
+  val nullRel: Relation = Relation("null", List())
   val path: Relation = Graphs.path
   val scc: Relation = Graphs.scc
 
@@ -50,20 +50,20 @@ class LearnerSpec extends FunSuite {
       val maxIters = 1000
 
       val p0 = Problem().addInputRel(edge).addOutputRel(path)
-                        .addEDBTuples(graph.edgeSet.map({ case (u, v) => (edge, DTuple(u, v), 1.0) }).toSeq:_*)
-                        .addIDBTuples(graph.reachable.map({ case (u, v) => (path, DTuple(u, v), 1.0) }).toSeq:_*)
+                        .addEDBTuples(graph.edgeSet.map({ case (u, v) => (edge, DTuple(List(u, v)), 1.0) }).toSeq:_*)
+                        .addIDBTuples(graph.reachable.map({ case (u, v) => (path, DTuple(List(u, v)), 1.0) }).toSeq:_*)
 
       var numTokens = 0
       def nextToken(): Token = { val ans = numTokens; numTokens = numTokens + 1; Token(s"R$ans") }
       val rng = Random
-      def weight(l: Literal, ls: Set[Literal]): (Token, FValue) = {
+      def weight(l: Literal, ls: Seq[Literal]): (Token, FValue) = {
         val token = nextToken()
         val value = FValue(rng.nextDouble(), token)
         (token, value)
       }
 
-      val skeleton = Program.skeleton[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
-                                              weight, maxLiterals, maxVars)
+      val skeleton = Enumerator.skeleton[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
+                                                 weight, maxLiterals, maxVars)
       val pos = TokenVec(skeleton._1.mapValues(_.v))
       val rules = skeleton._2
 

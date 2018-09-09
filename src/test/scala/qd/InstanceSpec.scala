@@ -1,6 +1,7 @@
 package qd
 
 import org.scalatest.FunSuite
+import scala.collection.immutable.Seq
 import Semiring.FValueSemiringObj
 
 class InstanceSpec extends FunSuite {
@@ -16,19 +17,19 @@ class InstanceSpec extends FunSuite {
   val d1 = Constant(1, digit)
   val d2 = Constant(2, digit)
 
-  val ad0 = DTuple(a, d0)
-  val ad1 = DTuple(a, d1)
-  val abd0 = DTuple(a, b, d0)
-  val cbd0 = DTuple(c, b, d0)
+  val ad0 = DTuple(List(a, d0))
+  val ad1 = DTuple(List(a, d1))
+  val abd0 = DTuple(List(a, b, d0))
+  val cbd0 = DTuple(List(c, b, d0))
 
   val f1 = FValue(0.3, Empty)
   val f2 = FValue(0.25, Empty)
   val f12: FValue = f1 + f2
 
-  val instAD1: Instance[FValue] = Instance(alphabet, digit)
+  val instAD1: Instance[FValue] = Instance(List(alphabet, digit))
   val instAD2: Instance[FValue] = instAD1 + (ad0 -> f1)
 
-  val instAAD1: Instance[FValue] = Instance(alphabet, alphabet, digit)
+  val instAAD1: Instance[FValue] = Instance(List(alphabet, alphabet, digit))
   val instAAD2: Instance[FValue] = instAAD1 + (abd0 -> f2)
   val instAAD3: Instance[FValue] = instAAD2 + (abd0 -> f1)
   val instAAD4: Instance[FValue] = instAAD2 + (cbd0 -> f12)

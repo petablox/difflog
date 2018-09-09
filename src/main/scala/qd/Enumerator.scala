@@ -4,42 +4,6 @@ import scala.collection.immutable.Seq
 
 object Enumerator {
 
-  def normalize(lits: Set[Literal]): (Set[Literal], Map[Variable, Variable]) = {
-    val renaming = scala.collection.mutable.Map[Variable, Variable]()
-    def rename(vOld: Variable): Variable = {
-      if (!renaming.contains(vOld)) {
-        val index = Stream.from(0).find(idx => renaming.values.count(_.name == s"v$idx") == 0).get
-        renaming.put(vOld, Variable(s"v$index", vOld.domain))
-      }
-      renaming(vOld)
-    }
-
-    val oldLiterals = lits.toSeq.sortBy(_.toString)
-    val newLiterals = for (oldLit <- oldLiterals)
-      yield {
-        val newFields = oldLit.fields.map {
-          case v @ Variable(_, _) => rename(v)
-          case p @ Constant(_, _) => p
-        }
-        Literal(oldLit.relation, newFields)
-      }
-
-    (newLiterals.toSet, renaming.toMap)
-  }
-
-  def normalize[T <: Value[T]](rule: Rule[T]): Rule[T] = {
-    val (newBody, renaming) = normalize(rule.bodySet)
-
-    val oldHead = rule.head
-    val newHeadFields = oldHead.fields.map {
-      case v @ Variable(_, _) => renaming(v)
-      case c @ Constant(_, _) => c
-    }
-    val newHead = Literal(oldHead.relation, newHeadFields)
-
-    Rule(rule.coeff, newHead, newBody.toList.sortBy(_.toString))
-  }
-
   def skeleton[T <: Value[T]](
                                inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
                                weight: (Literal, Seq[Literal]) => (Token, T),
@@ -84,7 +48,7 @@ object Enumerator {
     }
 
     val allBodies = (0 to maxLiterals).flatMap(length => allLiteralSets(length, Set()))
-                                      .map(litSet => normalize(litSet)._1)
+                                      .map(litSet => Literal.normalize(litSet)._1)
                                       .toSet
 
     def allHeads(targetRel: Relation, body: Set[Literal]): Set[Literal] = {
