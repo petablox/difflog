@@ -6,7 +6,7 @@ import scala.util.Random
 
 object Graphs {
 
-  implicit val vs: Semiring[FValue] = Semiring.FValueSemiringObj
+  val vs: Semiring[FValue] = implicitly[Semiring[FValue]]
 
   val node: Domain = Domain("Node")
   val edge: Relation = Relation("edge", List(node, node))

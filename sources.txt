@@ -1,0 +1,100 @@
+   86 ./src/main/scala/qd/Main.scala
+
+   34 ./src/main/scala/qd/Lineage.scala
+  115 ./src/main/scala/qd/value.scala
+   71 ./src/main/scala/qd/TokenVec.scala
+  123 ./src/main/scala/qd/base.scala
+
+  172 ./src/main/scala/qd/instance.scala
+  105 ./src/main/scala/qd/Enumerator.scala
+  114 ./src/main/scala/qd/problem/Problem.scala
+  248 ./src/main/scala/qd/problem/QDParser.scala
+
+   10 ./src/main/scala/qd/evaluator/Evaluator.scala
+   83 ./src/main/scala/qd/evaluator/NaiveEvaluator.scala
+  109 ./src/main/scala/qd/evaluator/SeminaiveEvaluator.scala
+  132 ./src/main/scala/qd/evaluator/TrieEvaluator.scala
+  122 ./src/main/scala/qd/evaluator/TrieSemiEvaluator.scala
+
+   69 ./src/main/scala/qd/learner/Scorer.scala
+   39 ./src/main/scala/qd/learner/L2Scorer.scala
+  129 ./src/main/scala/qd/learner/Learner.scala
+
+-----
+
+   38 ./src/test/scala/qd/BaseSpec.scala
+  101 ./src/test/scala/qd/InstanceSpec.scala
+   51 ./src/test/scala/qd/EnumeratorSpec.scala
+  150 ./src/test/scala/qd/ParserSpec.scala
+
+   76 ./src/test/scala/qd/data/graphs/Graphs.scala
+   29 ./src/test/scala/qd/data/graphs/Reachability.scala
+   22 ./src/test/scala/qd/evaluator/EvaluatorReachabilitySpec.scala
+  132 ./src/test/scala/qd/learner/LearnerSpec.scala
+
+-----
+  108 ./src/main/scala/qd/util/bdd/BDD.scala
+   34 ./src/main/scala/qd/util/Multiset.scala
+   61 ./src/test/scala/qd/util/MultisetSpec.scala
+-----
+
+ 2563 total
+
+--------------------------------------------------------------------------------
+
+0. Experiment Scripts
+
+1. Optimization
+   a. Cross entropy
+   b. Gradient descent
+   c. Parallel runs
+
+2. Training Details
+   a. Statistical significance (t-test)
+
+3. New Benchmarks
+   a. Kinship, Nations, UMLS
+   c. FB15K, WN18
+
+4. Better join algorithms
+   a. Assignments as tries
+
+--------------------------------------------------------------------------------
+
+0. Title + Abstract
+
+1. Introduction
+
+2. Related Work
+
+3. Framework
+   a. Introduction to Datalog
+   b. Program Learning as Rule Selection
+      - NP-completeness of rule selection
+   c. Difflog
+      - Choice of semiring
+      - Datalog forms a Galois connection with Difflog
+      - PTIME-completeness of Difflog
+      - Learning by Continuous Optimization + Details of Loss Function
+   d. Optimizations for Inference
+      - Trie-based evaluator
+      - Join algorithms
+      - Valuation collapse
+
+4. Experiments
+   - Protocol, optimization parameters
+   - Statistical significance of results
+
+   - Learning Combinatorial Programs
+     Vs. ALPS, Metagol, Zaatar. Synthesis time, synthesis accuracy
+     Predicate invention
+   - Knowledge-Base Completion
+     Formalizing the KBC problem
+     Highlight possibility of relationship repurposing
+     Vs. Rocktaschel, Cohen, 2014
+     Countries S1, S2, S3, Kinship, Nations, UMLS
+     FB15 WN18
+
+5. Future Directions
+   - Better join algorithms / TensorFlow
+   - Combining CDCL and continuous optimization

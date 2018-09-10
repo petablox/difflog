@@ -1,6 +1,5 @@
 package qd.problem
 
-import qd.Semiring.FValueSemiringObj
 import qd._
 
 import scala.collection.immutable.Seq
@@ -23,7 +22,6 @@ class QDParser extends JavaTokenParsers {
     f.foldLeft(initialProblem) { case (problem, transformer) => transformer(problem) }
   }
 
-  implicit val vs: FValueSemiring = FValueSemiringObj
   val initialProblem: Problem = Problem()
   val rng: Random = Random
   var numTokens = 0

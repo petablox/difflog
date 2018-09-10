@@ -3,9 +3,7 @@ package qd
 import org.scalatest.FunSuite
 import data.graphs.Graphs
 import evaluator.{Evaluator, TrieSemiEvaluator}
-import qd.Semiring.FValueSemiringObj
 import qd.data.graphs.Graphs.Graph
-import qd.problem.Problem.DO_NORM
 
 import scala.util.Random
 
@@ -45,7 +43,7 @@ class EnumeratorSpec extends FunSuite {
     val idb = evaluator(posRules._2, graph.edb)
     val produced = idb(Graphs.path)
     assert(produced.support.forall(_._1.length == 2))
-    assert(produced.support.map(tv => (tv._1(0), tv._1(1))).toSet == graph.reachable)
+    assert(produced.support.map(tv => (tv._1.head, tv._1(1))) == graph.reachable)
   }
 
 }

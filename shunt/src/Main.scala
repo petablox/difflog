@@ -1,4 +1,4 @@
-  implicit val vs: FValueSemiring = FValueSemiringObj
+  val vs: Semiring[FValue] = implicitly[Semiring[FValue]]
 
   def eval(): Unit = {
     val problem = readProblem(args(1), ???, ???)

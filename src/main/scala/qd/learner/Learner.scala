@@ -1,13 +1,10 @@
 package qd
 package learner
 
-import qd.Semiring.FValueSemiringObj
 import qd.evaluator.{Evaluator, TrieEvaluator}
 import qd.problem.Problem
 
 class Learner(q0: Problem) {
-
-  implicit val vs: FValueSemiring = FValueSemiringObj
 
   val edb: Config[FValue] = q0.edb
   val referenceIDB: Config[FValue] = q0.idb

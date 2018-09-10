@@ -1,10 +1,6 @@
 package qd
 
-import Semiring.FValueSemiringObj
-
 case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with Iterable[(Token, Double)] {
-
-  implicit val vs: FValueSemiring = FValueSemiringObj
 
   def get(key: Token): Option[Double] = map.get(key)
   def contains(token: Token): Boolean = map.contains(token)
@@ -12,7 +8,7 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
   override def iterator: Iterator[(Token, Double)] = map.iterator
 
   override def apply(lineage: Lineage): FValue = lineage match {
-    case Empty => vs.One
+    case Empty => implicitly[Semiring[FValue]].One
     case token @ Token(_) => FValue(map(token), token)
     case And(l1, l2) => this(l1) * this(l2)
   }
@@ -42,8 +38,7 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
     val vd = value / denominator
     token -> (if (!vd.isNaN) vd else 0)
   })
-
-  //def abs: Double = m.values.map(v => v * v).sum
+  
   def abs: Double = Math.sqrt(map.values.map(v => v * v).sum)
   def unit: TokenVec = this / abs
 

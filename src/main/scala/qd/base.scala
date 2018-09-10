@@ -98,13 +98,7 @@ case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Seq[Literal]) {
     s"$coeff: $head :- ${sortedBody.mkString(", ")}."
   }
 
-  lazy val valency: Int = Range(0, bodyDistinct.size + 1).map({ i =>
-    val left = bodyDistinct.take(i)
-    val leftVars = left.flatMap(_.variables).toSet
-    val right = bodyDistinct.drop(i)
-    val rightVars = right.flatMap(_.variables).toSet ++ head.variables
-    leftVars.intersect(rightVars).size
-  }).max
+  lazy val valency: Int = Rule.valency(head, body)
 
   lazy val normalized: Rule[T] = {
     val (newBody, renaming) = Literal.normalize(this.bodySet)
@@ -119,5 +113,18 @@ case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Seq[Literal]) {
     Rule(this.coeff, newHead, newBody.toList.sortBy(_.toString))
   }
 
-  lazy val autoNormed: Rule[T] = if (this.valency < normalized.valency) this else normalized
+  lazy val minimizeValency: Rule[T] = {
+    val bestBody = body.permutations.minBy(b => Rule.valency(head, b))
+    Rule(coeff, head, bestBody)
+  }
+}
+
+object Rule {
+  def valency(head: Literal, body: Seq[Literal]): Int = Range(0, body.size + 1).map({ i =>
+    val left = body.take(i)
+    val right = body.drop(i)
+    val leftVars = left.flatMap(_.variables).toSet
+    val rightVars = right.flatMap(_.variables).toSet ++ head.variables
+    leftVars.intersect(rightVars).size
+  }).max
 }

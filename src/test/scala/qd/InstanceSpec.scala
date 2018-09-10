@@ -2,7 +2,6 @@ package qd
 
 import org.scalatest.FunSuite
 import scala.collection.immutable.Seq
-import Semiring.FValueSemiringObj
 
 class InstanceSpec extends FunSuite {
 
@@ -55,11 +54,12 @@ class InstanceSpec extends FunSuite {
   }
 
   test("Values are retrieved correctly") {
-    assert(instAD1(ad0) == FValueSemiringObj.Zero)
-    assert(instAD1(ad1) == FValueSemiringObj.Zero)
+    val vs = implicitly[Semiring[FValue]]
+    assert(instAD1(ad0) == vs.Zero)
+    assert(instAD1(ad1) == vs.Zero)
 
     assert(instAD2(ad0) == f1)
-    assert(instAD2(ad1) == FValueSemiringObj.Zero)
+    assert(instAD2(ad1) == vs.Zero)
   }
 
   test("Instances are filtered correctly") {
