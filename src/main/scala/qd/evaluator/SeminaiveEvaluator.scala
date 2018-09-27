@@ -58,13 +58,13 @@ object SeminaiveEvaluator extends Evaluator {
     implicit val vs: Semiring[T] = state.vs
 
     var assignments = ParSeq(Assignment.Empty)
-    var remainingLits = rule.bodySet
-    for (literal <- rule.bodyDistinct) {
+    var remainingLits = rule.body
+    for (literal <- rule.body) {
       assignments = if (literal == deltaLiteral) extendAssignments(literal, state.deltaCurr, assignments)
                     else extendAssignments(literal, state.config, assignments)
 
       // Collapse assignments
-      remainingLits = remainingLits - literal
+      remainingLits = remainingLits.tail
       val relevantVars = remainingLits.foldLeft(rule.head.variables)(_ ++ _.variables)
 
       assignments = assignments.map(_.project(relevantVars))

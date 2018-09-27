@@ -8,7 +8,7 @@ class ParserSpec extends FunSuite {
 
   val node: Domain = Graphs.node
   val edge: Relation = Graphs.edge
-  val nullRel: Relation = Relation("null", List())
+  val nullRel: Relation = Relation("null", Vector())
   val path: Relation = Graphs.path
   val scc: Relation = Graphs.scc
 
@@ -37,12 +37,12 @@ class ParserSpec extends FunSuite {
     assert(problem.inventedRels == Set(path))
     assert(problem.outputRels == Set(scc))
 
-    assert(problem.edb == Set((edge, DTuple(List(a, b)), 1.0),
-                              (edge, DTuple(List(b, c)), 1.0),
-                              (edge, DTuple(List(c, d)), 1.0),
-                              (edge, DTuple(List(a, c)), 1.0)))
-    assert(problem.idb == Set((path, DTuple(List(a, b)), 1.0),
-                              (path, DTuple(List(b, c)), 1.0)))
+    assert(problem.edb == Set((edge, DTuple(Vector(a, b)), 1.0),
+                              (edge, DTuple(Vector(b, c)), 1.0),
+                              (edge, DTuple(Vector(c, d)), 1.0),
+                              (edge, DTuple(Vector(a, c)), 1.0)))
+    assert(problem.idb == Set((path, DTuple(Vector(a, b)), 1.0),
+                              (path, DTuple(Vector(b, c)), 1.0)))
 
     assert(problem.rules.size == 2)
     val nullRule = problem.rules.find(rule => rule.head.relation == nullRel && rule.body.isEmpty).get
@@ -107,16 +107,16 @@ class ParserSpec extends FunSuite {
     assert(result.successful)
     val problem = result.get
 
-    assert(problem.inputRels == Set(edge, Relation("null", List())))
+    assert(problem.inputRels == Set(edge, Relation("null", Vector())))
     assert(problem.inventedRels == Set(path))
     assert(problem.outputRels == Set(scc))
 
-    assert(problem.edb == Set((edge, DTuple(List(a, b)), 1.0),
-                              (edge, DTuple(List(b, c)), 1.0),
-                              (edge, DTuple(List(c, d)), 1.0),
-                              (edge, DTuple(List(a, c)), 1.0)))
-    assert(problem.idb == Set((path, DTuple(List(a, b)), 1.0),
-                              (path, DTuple(List(b, c)), 1.0)))
+    assert(problem.edb == Set((edge, DTuple(Vector(a, b)), 1.0),
+                              (edge, DTuple(Vector(b, c)), 1.0),
+                              (edge, DTuple(Vector(c, d)), 1.0),
+                              (edge, DTuple(Vector(a, c)), 1.0)))
+    assert(problem.idb == Set((path, DTuple(Vector(a, b)), 1.0),
+                              (path, DTuple(Vector(b, c)), 1.0)))
 
     assert(problem.rules.isEmpty)
   }

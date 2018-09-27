@@ -1,15 +1,11 @@
 package qd
 
 import org.scalatest.FunSuite
-import qd.data.graphs.Graphs
+import qd.data.graphs.Graphs._
 
 class BaseSpec extends FunSuite {
 
   val vs: Semiring[FValue] = implicitly[Semiring[FValue]]
-
-  val node: Domain = Graphs.node
-  val edge: Relation = Graphs.edge
-  val path: Relation = Graphs.path
 
   val u = Variable("u", node)
   val v = Variable("v", node)
@@ -19,27 +15,27 @@ class BaseSpec extends FunSuite {
   val z = Variable("z", node)
 
   test("Valencies should be correctly computed") {
-    val rule1 = Rule(vs.Zero, Literal(path, List(u, v)),
-                              List(Literal(edge, List(u, v))))
+    val rule1 = Rule(vs.Zero, Literal(path, Vector(u, v)),
+                              Vector(Literal(edge, Vector(u, v))))
     assert(rule1.valency == 2)
 
-    val rule2 = Rule(vs.Zero, Literal(path, List(u, w)),
-                              List(Literal(edge, List(u, v)),
-                                   Literal(edge, List(v, w))))
+    val rule2 = Rule(vs.Zero, Literal(path, Vector(u, w)),
+                              Vector(Literal(edge, Vector(u, v)),
+                                     Literal(edge, Vector(v, w))))
     assert(rule2.valency == 2)
 
-    val rule3 = Rule(vs.Zero, Literal(path, List(u, w)),
-                              List(Literal(edge, List(v, w)),
-                                   Literal(edge, List(u, v))))
+    val rule3 = Rule(vs.Zero, Literal(path, Vector(u, w)),
+                              Vector(Literal(edge, Vector(v, w)),
+                                     Literal(edge, Vector(u, v))))
     assert(rule3.valency == 2)
 
-    val rule4 = Rule(vs.Zero, Literal(path, List(u, x)),
-                              List(Literal(edge, List(u, v)),
-                                   Literal(edge, List(w, x)),
-                                   Literal(edge, List(v, w))))
+    val rule4 = Rule(vs.Zero, Literal(path, Vector(u, x)),
+                              Vector(Literal(edge, Vector(u, v)),
+                                     Literal(edge, Vector(w, x)),
+                                     Literal(edge, Vector(v, w))))
     assert(rule4.valency == 4)
 
-    val rule5 = rule4.minimizeValency
+    val rule5 = rule4.normalized
     assert(rule5.valency == 2)
   }
 

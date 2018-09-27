@@ -42,18 +42,20 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
   def abs: Double = Math.sqrt(map.values.map(v => v * v).sum)
   def unit: TokenVec = this / abs
 
-  def limitUpper(v: Double): TokenVec = TokenVec(map.mapValues(x => Math.min(v, x)))
-
-  def limitUpper(maxV: Double, pos: TokenVec): TokenVec = {
-    val mp = map.map { case (token, oldV) => token -> (if (maxV >= oldV || pos.map(token) > maxV) oldV else maxV) }
-    TokenVec(mp)
+  def clip(lo: Double, hi: Double): TokenVec = {
+    require(lo <= hi)
+    TokenVec(map.map { case (t, v) =>
+      val vNew = if (v < lo) lo else if (v > hi) hi else v
+      t -> vNew
+    })
   }
 
-  def limitLower(v: Double): TokenVec = TokenVec(map.mapValues(x => Math.max(v, x)))
-
-  def limitLower(minV: Double, pos: TokenVec): TokenVec = {
-    val mp = map.map { case (token, oldV) => token -> (if (minV <= oldV || pos.map(token) < minV) oldV else minV) }
-    TokenVec(mp)
+  def clip(lo: Double, hi: Double, pos: TokenVec): TokenVec = {
+    require(lo <= hi)
+    TokenVec(map.map { case (t, v) =>
+      val vNew = if (v < lo && pos.map(t) >= lo) lo else if (v > hi && pos.map(t) <= hi) hi else v
+      t -> vNew
+    })
   }
 
 }

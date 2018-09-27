@@ -18,8 +18,10 @@ object TrieEvaluator extends Evaluator {
     // Commented because the following check is too time-consuming
     // require(map.forall { case (literal, trie) => trie.forall(_.body.contains(literal)) })
 
-    val numLiterals: Int = map.map({ case (_, subTrie) => 1 + subTrie.numLiterals }).sum
+    // Savings = totalLiterals (of soup from which this trie is constructed) / numLiterals (which remain after collapse)
     val numRules: Int = leaves.size + map.values.map(_.numRules).sum
+    val numLiterals: Int = map.map({ case (_, subTrie) => 1 + subTrie.numLiterals }).sum
+    val totalLiterals: Int = map.values.map(subTrie => subTrie.totalLiterals + subTrie.numRules).sum
     override def iterator: Iterator[Rule[T]] = map.values.foldLeft(leaves.iterator)(_ ++ _.iterator)
     val variables: Set[Variable] = {
       val vs1 = leaves.flatMap(_.head.variables)

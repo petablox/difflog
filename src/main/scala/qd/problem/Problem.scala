@@ -94,7 +94,7 @@ class Problem private (
     new Problem(inputRels, inventedRels, outputRels, edb, idb, pos, rules + rule)
   }
 
-  def addRule(lineage: Lineage, head: Literal, body: Seq[Literal]): Problem = {
+  def addRule(lineage: Lineage, head: Literal, body: Vector[Literal]): Problem = {
     val coeff = pos(lineage)
     val rule = Rule(coeff, head, body)
     new Problem(inputRels, inventedRels, outputRels, edb, idb, pos, rules + rule)

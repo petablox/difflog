@@ -1,7 +1,5 @@
 package qd
 
-import scala.collection.immutable._
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Domains, Parameters, Constants, and Variables
 
@@ -25,19 +23,18 @@ case class Variable(name: Any, domain: Domain) extends Parameter {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Relations and Tuples
 
-case class Relation(name: Any, signature: Seq[Domain]) {
+case class Relation(name: Any, signature: IndexedSeq[Domain]) {
   def arity: Int = signature.length
-  def apply(fields: Seq[Parameter]): Literal = Literal(this, fields)
+  def apply(fields: IndexedSeq[Parameter]): Literal = Literal(this, fields)
   override def toString: String = s"$name(${signature.mkString(", ")})"
   override val hashCode: Int = ("R", name, signature).hashCode()
 }
 
-case class DTuple(fields: Seq[Constant]) extends Seq[Constant] {
-  lazy val signature: Seq[Domain] = fields.map(_.domain)
+case class DTuple(fields: IndexedSeq[Constant]) extends IndexedSeq[Constant] {
+  lazy val signature: IndexedSeq[Domain] = fields.map(_.domain)
   def arity: Int = fields.length
 
   override def apply(index: Int): Constant = fields(index)
-  override def iterator: Iterator[Constant] = fields.iterator
   override val length: Int = fields.length
   override val hashCode: Int = fields.hashCode()
   override def head: Constant = fields.head
@@ -52,46 +49,20 @@ case class DTuple(fields: Seq[Constant]) extends Seq[Constant] {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Literals and Rules
 
-case class Literal(relation: Relation, fields: Seq[Parameter]) {
+case class Literal(relation: Relation, fields: IndexedSeq[Parameter]) {
   require(relation.signature == fields.map(_.domain))
   val variables: Set[Variable] = fields.collect({ case v: Variable => v }).toSet
   override def toString: String = s"${relation.name}(${fields.mkString(", ")})"
+
+  def rename(f: Variable => Variable): Literal = Literal(relation, fields.map {
+    case v @ Variable(_, _) => f(v)
+    case c @ Constant(_, _) => c
+  })
 }
 
-object Literal {
-  def normalize(lits: Set[Literal]): (Set[Literal], Map[Variable, Variable]) = {
-    val renaming = scala.collection.mutable.Map[Variable, Variable]()
-    def rename(vOld: Variable): Variable = {
-      if (!renaming.contains(vOld)) {
-        val index = Stream.from(0).find(idx => renaming.values.count(_.name == s"v$idx") == 0).get
-        renaming.put(vOld, Variable(s"v$index", vOld.domain))
-      }
-      renaming(vOld)
-    }
-
-    val oldLiterals = lits.toSeq.sortBy(_.toString)
-    val newLiterals = for (oldLit <- oldLiterals)
-                      yield {
-                        val newFields = oldLit.fields.map {
-                          case v @ Variable(_, _) => rename(v)
-                          case p @ Constant(_, _) => p
-                        }
-                        Literal(oldLit.relation, newFields)
-                      }
-
-    (newLiterals.toSet, renaming.toMap)
-  }
-}
-
-case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Seq[Literal]) {
-  val bodySet: Set[Literal] = body.toSet
-  val bodyDistinct: Seq[Literal] = body.distinct
-
-  val variables: Set[Variable] = bodySet.flatMap(_.variables)
+case class Rule[T <: Value[T]](coeff: T, head: Literal, body: IndexedSeq[Literal]) {
+  val variables: Set[Variable] = body.flatMap(_.variables).toSet
   require(head.variables.subsetOf(variables))
-
-  lazy val relations: Set[Relation] = bodySet.map(_.relation) + head.relation
-  lazy val domains: Set[Domain] = bodySet.flatMap(_.fields.map(_.domain)) ++ head.fields.map(_.domain)
 
   override def toString: String = {
     val sortedBody = body.map(_.toString).toList.sorted
@@ -101,30 +72,43 @@ case class Rule[T <: Value[T]](coeff: T, head: Literal, body: Seq[Literal]) {
   lazy val valency: Int = Rule.valency(head, body)
 
   lazy val normalized: Rule[T] = {
-    val (newBody, renaming) = Literal.normalize(this.bodySet)
-
-    val oldHead = this.head
-    val newHeadFields = oldHead.fields.map {
-      case v @ Variable(_, _) => renaming(v)
-      case c @ Constant(_, _) => c
-    }
-    val newHead = Literal(oldHead.relation, newHeadFields)
-
-    Rule(this.coeff, newHead, newBody.toList.sortBy(_.toString))
-  }
-
-  lazy val minimizeValency: Rule[T] = {
-    val bestBody = body.permutations.minBy(b => Rule.valency(head, b))
-    Rule(coeff, head, bestBody)
+    val (newHead, newBody, _) = Rule.normalize(this.head, this.body)
+    Rule(this.coeff, newHead, newBody)
   }
 }
 
 object Rule {
-  def valency(head: Literal, body: Seq[Literal]): Int = Range(0, body.size + 1).map({ i =>
+
+  def valency(head: Literal, body: IndexedSeq[Literal]): Int = Range(0, 1 + body.size).map({ i =>
     val left = body.take(i)
-    val right = body.drop(i)
+    val right = body.drop(i) :+ head
     val leftVars = left.flatMap(_.variables).toSet
-    val rightVars = right.flatMap(_.variables).toSet ++ head.variables
+    val rightVars = right.flatMap(_.variables).toSet
     leftVars.intersect(rightVars).size
   }).max
+
+  def normalize(head: Literal, body: IndexedSeq[Literal]): (Literal, IndexedSeq[Literal], Map[Variable, Variable]) = {
+    val renamingMap = scala.collection.mutable.Map[Variable, Variable]()
+    def rename(vOld: Variable): Variable = {
+      if (!renamingMap.contains(vOld)) {
+        val index = Stream.from(0).find(idx => renamingMap.values.count(_.name == s"v$idx") == 0).get
+        renamingMap.put(vOld, Variable(s"v$index", vOld.domain))
+      }
+      renamingMap(vOld)
+    }
+
+    val ansBody0 = body.distinct
+    val ansBody1 = ansBody0.permutations.minBy(vec => (Rule.valency(head, vec), vec.toString))
+    val ansBody2 = for (literal <- ansBody1)
+                   yield {
+                     val newFields = literal.fields.map {
+                       case v @ Variable(_, _) => rename(v)
+                       case p @ Constant(_, _) => p
+                     }
+                     Literal(literal.relation, newFields)
+                   }
+    val ansHead = head.rename(rename)
+    (ansHead, ansBody2, renamingMap.toMap)
+  }
+
 }

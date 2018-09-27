@@ -34,12 +34,12 @@ object NaiveEvaluator extends Evaluator {
     implicit val vs: Semiring[T] = state.vs
 
     var assignments = ParSeq(Assignment.Empty)
-    var remainingLits = rule.bodySet
-    for (literal <- rule.bodyDistinct) {
+    var remainingLits = rule.body
+    for (literal <- rule.body) {
       assignments = extendAssignments(literal, state.config, assignments)
 
       // Collapse assignments
-      remainingLits = remainingLits - literal
+      remainingLits = remainingLits.tail
       val relevantVars = remainingLits.map(_.variables).foldLeft(rule.head.variables)(_ ++ _)
       assignments = assignments.map(_.project(relevantVars))
       assignments = assignments.groupBy(_.map)

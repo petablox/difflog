@@ -30,7 +30,7 @@ class L2Scorer(val edb: Config[FValue], val refIDB: Config[FValue], val evaluato
     val usefulTokens = for (rel <- outputRels.toSeq;
                             allTuples = out(rel).support.map(_._1) ++ refIDB(rel).support.map(_._1);
                             t <- allTuples.toSeq;
-                            token <- out(rel)(t).l.toSeq)
+                            token <- out(rel)(t).l.toVector)
                        yield token
     (highRules, l2, usefulTokens.toSet)
   }

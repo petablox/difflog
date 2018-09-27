@@ -1,7 +1,5 @@
 package qd
 
-import scala.collection.immutable.Seq
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Assignments
 
@@ -29,7 +27,7 @@ case class Assignment[T <: Value[T]](map: Map[Variable, Constant], score: T) ext
     (DTuple(cs), score)
   }
 
-  def toFilter(literal: Literal): Seq[Option[Constant]] = literal.fields.map {
+  def toFilter(literal: Literal): IndexedSeq[Option[Constant]] = literal.fields.map {
     case v @ Variable(_, _) => map.get(v)
     case c @ Constant(_, _) => Some(c)
   }
@@ -42,12 +40,12 @@ object Assignment {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Instances
 
-sealed abstract class Instance[T <: Value[T]](val signature: Seq[Domain])(implicit vs: Semiring[T])
+sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])(implicit vs: Semiring[T])
 extends (DTuple => T) {
   val arity: Int = signature.length
 
   lazy val support: Set[(DTuple, T)] = this match {
-    case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(List()), value)) else Set()
+    case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Vector()), value)) else Set()
     case InstanceInd(_, _, map) => for ((constant, mapA) <- map.view.toSet;
                                         (tuple, value) <- mapA.support)
                                    yield (constant +: tuple) -> value
@@ -66,10 +64,10 @@ extends (DTuple => T) {
     }
   }
 
-  def filter(f: Seq[Option[Constant]]): Set[(DTuple, T)] = {
+  def filter(f: IndexedSeq[Option[Constant]]): Set[(DTuple, T)] = {
     require(f.length == this.arity)
     this match {
-      case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Seq()), value)) else Set()
+      case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Vector()), value)) else Set()
       case InstanceInd(_, _, map) =>
         f.head match {
           case Some(fh) =>
@@ -124,16 +122,16 @@ extends (DTuple => T) {
 }
 
 object Instance {
-  def apply[T <: Value[T]](signature: Seq[Domain])(implicit vs: Semiring[T]): Instance[T] = {
+  def apply[T <: Value[T]](signature: IndexedSeq[Domain])(implicit vs: Semiring[T]): Instance[T] = {
     if (signature.isEmpty) InstanceBase(vs.Zero)
     else InstanceInd(signature.head, signature.tail, Map())
   }
   def apply[T <: Value[T]](relation: Relation)(implicit vs: Semiring[T]): Instance[T] = Instance(relation.signature)
 }
 
-case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) extends Instance[T](Seq())
+case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) extends Instance[T](Vector())
 
-case class InstanceInd[T <: Value[T]](domHead: Domain, domTail: Seq[Domain], map: Map[Constant, Instance[T]])
+case class InstanceInd[T <: Value[T]](domHead: Domain, domTail: IndexedSeq[Domain], map: Map[Constant, Instance[T]])
                                      (implicit vs: Semiring[T])
 extends Instance[T](domHead +: domTail) {
   require(map.forall { case (constant, _) => constant.domain == domHead })

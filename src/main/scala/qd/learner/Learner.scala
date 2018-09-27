@@ -59,7 +59,7 @@ class Learner(q0: Problem) {
     // if (grad.abs == 0) { this }
     val delta = grad.unit * l2 / grad.abs
     val newPos = pos - delta
-    val newPosLim = newPos.limitLower(0.0).limitLower(0.01, pos).limitUpper(0.99, pos).limitUpper(1.0)
+    val newPosLim = newPos.clip(0.0, 1.0).clip(0.01, 0.99, pos)
     val newStep = newPosLim - pos // (newPosLim - pos) * 0.8 + step * 0.2
     val bestL2 = bestIteration.map(_._4).getOrElse(Double.PositiveInfinity)
     // logger.debug(s"  grad: $grad")
@@ -75,7 +75,7 @@ class Learner(q0: Problem) {
     for (k <- Range(1, sortedTokens.size + 1))
     yield {
       val highestTokens = sortedTokens.take(k).toSet
-      val highestRules = bestIteration.get._2.filter(_.coeff.l.toSeq.toSet.subsetOf(highestTokens))
+      val highestRules = bestIteration.get._2.filter(_.coeff.l.toVector.toSet.subsetOf(highestTokens))
 
       val highestPos = TokenVec(tokens, t => if (highestTokens.contains(t)) bestPos.map(t) else 0.0)
       val highestIDB = evaluator(highestRules, edb)
@@ -93,7 +93,7 @@ class Learner(q0: Problem) {
       yield {
         val usefulTokens = for (rel <- scorer.outputRels;
                                 (_, v) <- hiIDB(rel).support;
-                                token <- v.l.toSeq)
+                                token <- v.l.toVector)
                            yield token
 
         val usefulPos = TokenVec(tokens, t => if (usefulTokens.contains(t)) hipos.map(t) else 0.0)
@@ -111,7 +111,7 @@ class Learner(q0: Problem) {
     scribe.debug("Reinterpreting program")
     for ((_, urules, _, _) <- ku)
     yield {
-      val utokens = urules.flatMap(_.coeff.l.toSeq)
+      val utokens = urules.flatMap(_.coeff.l.toVector)
       val rpos = TokenVec(tokens, t => if (utokens.contains(t)) 1.0 else 0.0)
       val rrules = rpos(urules)
       val rIDB = evaluator(rrules, edb)

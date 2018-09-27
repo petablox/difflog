@@ -1,12 +1,10 @@
 package qd
 
-import scala.collection.immutable.Seq
-
 object Enumerator {
 
   def skeleton[T <: Value[T]](
                                inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
-                               weight: (Literal, Seq[Literal]) => (Token, T),
+                               weight: (Literal, IndexedSeq[Literal]) => (Token, T),
                                maxLiterals: Int, maxVars: Int
                              )(implicit vs: Semiring[T]): (Map[Token, T], Set[Rule[T]]) = {
 
@@ -22,8 +20,8 @@ object Enumerator {
       if (length == 0) Set(Set())
       else {
         def allLiterals(hypRel: Relation): Set[(Literal, Set[Variable])] = {
-          def allBindings(signature: Seq[Domain], fvp: Set[Variable]): Set[Seq[Variable]] = {
-            if (signature.isEmpty) Set(Seq())
+          def allBindings(signature: IndexedSeq[Domain], fvp: Set[Variable]): Set[Vector[Variable]] = {
+            if (signature.isEmpty) Set(Vector())
             else {
               val domHead = signature.head
               def newVar(): Variable = {
@@ -48,13 +46,12 @@ object Enumerator {
     }
 
     val allBodies = (0 to maxLiterals).flatMap(length => allLiteralSets(length, Set()))
-                                      .map(litSet => Literal.normalize(litSet)._1)
                                       .toSet
 
     def allHeads(targetRel: Relation, body: Set[Literal]): Set[Literal] = {
       val allVars = body.flatMap(_.variables)
-      def allBindings(signature: Seq[Domain]): Set[Seq[Variable]] = {
-        if (signature.isEmpty) Set(Seq())
+      def allBindings(signature: IndexedSeq[Domain]): Set[Vector[Variable]] = {
+        if (signature.isEmpty) Set(Vector())
         else {
           val availableVars = allVars.filter(_.domain == signature.head)
           for (bhead <- availableVars; brest <- allBindings(signature.tail))
@@ -67,9 +64,10 @@ object Enumerator {
 
     def reachableVars(rule: Rule[T]): Set[Variable] = {
       var (ans, candidate) = (Set[Variable](), rule.head.variables)
+      val rbs = rule.body.toSet
       while (ans != candidate) {
         ans = candidate
-        candidate = for (lit <- rule.bodySet if lit.variables.intersect(ans).nonEmpty; v <- lit.variables)
+        candidate = for (lit <- rbs if lit.variables.intersect(ans).nonEmpty; v <- lit.variables)
                     yield v
       }
       ans
@@ -82,12 +80,11 @@ object Enumerator {
     }
 
     val unweightedRules = for (targetRel <- inventedRels ++ outputRels;
-                               bodySet <- allBodies;
-                               body = bodySet.toList.sortBy(_.toString);
-                               head <- allHeads(targetRel, bodySet);
-                               rule = Rule(vs.One, head, body)
+                               body <- allBodies;
+                               head <- allHeads(targetRel, body);
+                               rule = Rule(vs.One, head, body.toVector)
                                if !isDegenerate(rule))
-                          yield rule
+                          yield rule.normalized
 
     val weightedTriples = for (uwrule <- unweightedRules)
                           yield {

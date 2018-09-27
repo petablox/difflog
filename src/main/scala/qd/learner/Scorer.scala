@@ -15,7 +15,7 @@ abstract class Scorer {
 
   def gradient(pos: TokenVec, out: Config[FValue], rel: Relation, t: DTuple): TokenVec = {
     val vt = out(rel)(t).v
-    val prov = out(rel)(t).l.toSeq
+    val prov = out(rel)(t).l.toVector
     val freq = pos.keySet.map(token => token -> prov.count(_ == token)).toMap
     def gw(t: Token): Double = {
       val ans = freq(t) * vt / pos(t).v

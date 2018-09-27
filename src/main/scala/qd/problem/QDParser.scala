@@ -34,7 +34,8 @@ class QDParser extends JavaTokenParsers {
   // Ignore C and C++-style comments. See: https://stackoverflow.com/a/5954831
   protected override val whiteSpace: Regex = """(\s|//.*|(?m)/\*(\*(?!/)|[^*])*\*/)+""".r
 
-  def identList: Parser[Seq[String]] = (ident ~ ("," ~> ident).* ^^ mkList) | ("" ^^ (_ => List()))
+  def identList: Parser[Vector[String]] = (ident ~ ("," ~> ident).* ^^ (x => mkList(x).toVector)) |
+                                          ("" ^^ (_ => Vector()))
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Domains and Relation Declarations
@@ -72,7 +73,7 @@ class QDParser extends JavaTokenParsers {
 
   def readEDBBlock: Parser[Problem => Problem] = "ReadEDB" ~ "(" ~> stringLiteral <~")" ^^ { f => problem =>
     val fname = f.substring(1, f.length - 1)
-    println(s"ReadEDBBlock: ${f}")
+    println(s"ReadEDBBlock: $f")
     ???
   }
 
@@ -127,7 +128,7 @@ class QDParser extends JavaTokenParsers {
         require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
         require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
-        def weight(l: Literal, ls: Seq[Literal]): (Token, FValue) = {
+        def weight(l: Literal, ls: IndexedSeq[Literal]): (Token, FValue) = {
           val token = nextToken()
           val value = if (weightSpec.nonEmpty) FValue(weightSpec.get, token) else FValue(rng.nextDouble(), token)
           (token, value)
@@ -160,7 +161,7 @@ class QDParser extends JavaTokenParsers {
         require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
         require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
-        def weight(l: Literal, ls: Seq[Literal]): (Token, FValue) = {
+        def weight(l: Literal, ls: IndexedSeq[Literal]): (Token, FValue) = {
           val token = nextToken()
           val value = if (weightSpec.nonEmpty) FValue(weightSpec.get, token) else FValue(rng.nextDouble(), token)
           (token, value)
@@ -178,7 +179,7 @@ class QDParser extends JavaTokenParsers {
 
         scribe.debug(s"Chose $numNewRules new rules from skeleton containing ${skeleton._2.size} rules.")
 
-        val newTokens = newRules.flatMap(_.coeff.l.toSeq)
+        val newTokens = newRules.flatMap(_.coeff.l.toVector)
 
         val p1 = newTokens.foldLeft(p0) { case (p, token) => p.addToken(token, pos.map(token)) }
         val p2 = p1.addRules(newRules)
@@ -225,8 +226,10 @@ class QDParser extends JavaTokenParsers {
     }
   }
 
-  def literalSeq: Parser[Seq[Problem => Literal]] = literal ~ ("," ~ literal ^^ (_._2)).* ^^ mkList |
-                                                  "" ^^ (_ => List())
+  def literalSeq: Parser[Vector[Problem => Literal]] = {
+    literal ~ ("," ~ literal ^^ (_._2)).* ^^ (ls => mkList(ls).toVector) |
+    "" ^^ (_ => Vector())
+  }
 
   def literal: Parser[Problem => Literal] = ident ~ "(" ~ identList ~ ")" ^^ { f => problem =>
     val relName = f._1._1._1

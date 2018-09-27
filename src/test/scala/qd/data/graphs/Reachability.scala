@@ -15,10 +15,10 @@ object Reachability {
   val y = Variable("y", node)
   val z = Variable("z", node)
 
-  val ruleE = Rule(ve, path(List(x, y)), List(edge(List(x, y))))
-  val rulePE = Rule(vt, path(List(x, z)), List(path(List(x, y)), edge(List(y, z))))
-  val ruleEP = Rule(vt, path(List(x, z)), List(edge(List(x, y)), path(List(y, z))))
-  val rulePP = Rule(vt, path(List(x, z)), List(path(List(x, y)), path(List(y, z))))
+  val ruleE = Rule(ve, path(Vector(x, y)), Vector(edge(Vector(x, y))))
+  val rulePE = Rule(vt, path(Vector(x, z)), Vector(path(Vector(x, y)), edge(Vector(y, z))))
+  val ruleEP = Rule(vt, path(Vector(x, z)), Vector(edge(Vector(x, y)), path(Vector(y, z))))
+  val rulePP = Rule(vt, path(Vector(x, z)), Vector(path(Vector(x, y)), path(Vector(y, z))))
 
   val PE: (String, Set[Rule[FValue]]) = ("PE", Set(ruleE, rulePE))
   val EP: (String, Set[Rule[FValue]]) = ("EP", Set(ruleE, ruleEP))

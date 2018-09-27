@@ -16,19 +16,19 @@ class InstanceSpec extends FunSuite {
   val d1 = Constant(1, digit)
   val d2 = Constant(2, digit)
 
-  val ad0 = DTuple(List(a, d0))
-  val ad1 = DTuple(List(a, d1))
-  val abd0 = DTuple(List(a, b, d0))
-  val cbd0 = DTuple(List(c, b, d0))
+  val ad0 = DTuple(Vector(a, d0))
+  val ad1 = DTuple(Vector(a, d1))
+  val abd0 = DTuple(Vector(a, b, d0))
+  val cbd0 = DTuple(Vector(c, b, d0))
 
   val f1 = FValue(0.3, Empty)
   val f2 = FValue(0.25, Empty)
   val f12: FValue = f1 + f2
 
-  val instAD1: Instance[FValue] = Instance(List(alphabet, digit))
+  val instAD1: Instance[FValue] = Instance(Vector(alphabet, digit))
   val instAD2: Instance[FValue] = instAD1 + (ad0 -> f1)
 
-  val instAAD1: Instance[FValue] = Instance(List(alphabet, alphabet, digit))
+  val instAAD1: Instance[FValue] = Instance(Vector(alphabet, alphabet, digit))
   val instAAD2: Instance[FValue] = instAAD1 + (abd0 -> f2)
   val instAAD3: Instance[FValue] = instAAD2 + (abd0 -> f1)
   val instAAD4: Instance[FValue] = instAAD2 + (cbd0 -> f12)
@@ -63,7 +63,7 @@ class InstanceSpec extends FunSuite {
   }
 
   test("Instances are filtered correctly") {
-    def fmatch(f: Seq[Option[Constant]], t: Seq[Constant]): Boolean = {
+    def fmatch(f: Seq[Option[Constant]], t: IndexedSeq[Constant]): Boolean = {
       require(f.length == t.length, s"$f, $t")
       if (f.nonEmpty) {
         val fhead = f.head
@@ -74,20 +74,20 @@ class InstanceSpec extends FunSuite {
     }
 
     for (inst <- Set(instAD1, instAD2);
-         f <- Set(Seq(None, None),
-                  Seq(Some(a), None),
-                  Seq(Some(b), None),
-                  Seq(Some(a), Some(b)),
-                  Seq(None, Some(c)))) {
+         f <- Set(Vector(None, None),
+                  Vector(Some(a), None),
+                  Vector(Some(b), None),
+                  Vector(Some(a), Some(b)),
+                  Vector(None, Some(c)))) {
       assert(inst.filter(f) == inst.support.filter { case (tuple, _) => fmatch(f, tuple) })
     }
 
     for (inst <- Set(instAAD1, instAAD2, instAAD3, instAAD4);
-         f <- Set(Seq(None, None, None),
-                  Seq(Some(a), None, Some(d0)),
-                  Seq(Some(b), Some(c), Some(d1)),
-                  Seq(Some(a), Some(b), None),
-                  Seq(None, Some(c), Some(d2)))) {
+         f <- Set(Vector(None, None, None),
+                  Vector(Some(a), None, Some(d0)),
+                  Vector(Some(b), Some(c), Some(d1)),
+                  Vector(Some(a), Some(b), None),
+                  Vector(None, Some(c), Some(d2)))) {
       assert(inst.filter(f) == inst.support.filter { case (tuple, _) => fmatch(f, tuple) })
     }
   }

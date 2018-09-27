@@ -13,7 +13,7 @@ class LearnerSpec extends FunSuite {
 
   val node: Domain = Graphs.node
   val edge: Relation = Graphs.edge
-  val nullRel: Relation = Relation("null", List())
+  val nullRel: Relation = Relation("null", Vector())
   val path: Relation = Graphs.path
   val scc: Relation = Graphs.scc
 
@@ -50,8 +50,8 @@ class LearnerSpec extends FunSuite {
       val maxIters = 1000
 
       val p0 = Problem().addInputRel(edge).addOutputRel(path)
-                        .addEDBTuples(graph.edgeSet.map({ case (u, v) => (edge, DTuple(List(u, v)), 1.0) }).toSeq:_*)
-                        .addIDBTuples(graph.reachable.map({ case (u, v) => (path, DTuple(List(u, v)), 1.0) }).toSeq:_*)
+                        .addEDBTuples(graph.edgeSet.map({ case (u, v) => (edge, DTuple(Vector(u, v)), 1.0) }).toSeq:_*)
+                        .addIDBTuples(graph.reachable.map({ case (u, v) => (path, DTuple(Vector(u, v)), 1.0) }).toSeq:_*)
 
       var numTokens = 0
       def nextToken(): Token = { val ans = numTokens; numTokens = numTokens + 1; Token(s"R$ans") }

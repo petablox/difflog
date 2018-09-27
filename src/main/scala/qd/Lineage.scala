@@ -14,13 +14,13 @@ sealed abstract class Lineage {
     case (_, _) => And(this, that)
   }
 
-  def toSeq: Seq[Token] = this match {
-    case Empty => Seq()
-    case t @ Token(_) => Seq(t)
-    case And(l1, l2) => l1.toSeq ++ l2.toSeq
+  def toVector: Vector[Token] = this match {
+    case Empty => Vector()
+    case t @ Token(_) => Vector(t)
+    case And(l1, l2) => l1.toVector ++ l2.toVector
   }
 
-  def toMultiset: Multiset[Token] = toSeq.foldLeft(Multiset[Token]())(_ + _)
+  def toMultiset: Multiset[Token] = toVector.foldLeft(Multiset[Token]())(_ + _)
 
   override def toString: String = this match {
     case Empty => "Empty"

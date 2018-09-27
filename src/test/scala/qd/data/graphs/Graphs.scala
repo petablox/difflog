@@ -6,14 +6,10 @@ import scala.util.Random
 
 object Graphs {
 
-  val vs: Semiring[FValue] = implicitly[Semiring[FValue]]
-
   val node: Domain = Domain("Node")
-  val edge: Relation = Relation("edge", List(node, node))
-  val path = Relation("path", List(node, node))
-  val scc = Relation("scc", List(node, node))
-
-  def vertex(name: Any): Constant = Constant(name, node)
+  val edge: Relation = Relation("edge", Vector(node, node))
+  val path = Relation("path", Vector(node, node))
+  val scc = Relation("scc", Vector(node, node))
 
   val Graphs: Set[Graph] = Set(smallGraph) ++
                            Range(1, 16, 2).map(line).toSet ++
@@ -22,25 +18,33 @@ object Graphs {
 
   case class Graph(name: Any, nodeSet: Set[Constant], edgeSet: Set[(Constant, Constant)]) {
     require(nodeSet.nonEmpty)
+    require(nodeSet.forall(_.domain == node))
     require(edgeSet.forall { case (from, to) => nodeSet(from) && nodeSet(to) })
 
-    def edb: Config[FValue] = Config(Map(edge -> edgeSet.map({ case (a, b) => DTuple(List(a, b)) -> vs.One})
-                                                        .foldLeft(Instance[FValue](List(node, node)))(_ + _)))
-
-    val reachable: Set[(Constant, Constant)] = reachable(nodeSet.size + 1)
-
-    def reachable(steps: Int): Set[(Constant, Constant)] = {
-      require(steps >= 1)
-      if (steps == 1) edgeSet
-      else {
-        val rn1 = reachable(steps - 1)
-        val r = for ((i, j) <- rn1; (k, l) <- edgeSet; if j == k) yield (i, l)
-        rn1 ++ r
-      }
+    lazy val edb: Config[FValue] = {
+      val vs: Semiring[FValue] = implicitly[Semiring[FValue]]
+      val edgeTuples = edgeSet.map { case (a, b) => DTuple(Vector(a, b)) -> vs.One }
+      val edgeInstance = edgeTuples.foldLeft(Instance[FValue](Vector(node, node)))(_ + _)
+      Config(Map(edge -> edgeInstance))
     }
 
-    val components: Set[(Constant, Constant)] = reachable.filter(p => reachable((p._2, p._1)))
+    lazy val reachable: Set[(Constant, Constant)] = {
+      def int(steps: Int): Set[(Constant, Constant)] = {
+        require(steps >= 1)
+        if (steps == 1) edgeSet
+        else {
+          val rn1 = int(steps - 1)
+          val r = for ((i, j) <- rn1; (k, l) <- edgeSet; if j == k) yield (i, l)
+          rn1 ++ r
+        }
+      }
+      int(nodeSet.size + 1)
+    }
+
+    lazy val components: Set[(Constant, Constant)] = reachable.filter(p => reachable((p._2, p._1)))
   }
+
+  def vertex(name: Any): Constant = Constant(name, node)
 
   def smallGraph: Graph = {
     val node1 = vertex(1)
