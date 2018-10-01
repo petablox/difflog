@@ -1,31 +1,25 @@
-# README #
+# Difflog #
 
-5/31/2018: NIPS 2018 submissions
+## Materials & Submissions
+### 5/31/2018: NIPS 2018 submissions
+> In progress...
 
-This README would normally document whatever steps are necessary to get your application up and running.
+### MLP 2018 Overview
+[Draft](https://www.cis.upenn.edu/~rmukund/pdf/2018-MLP.pdf) | 
+[Slides](https://www.cis.upenn.edu/~rmukund/pdf/2018-MLP.pptx) | 
+[Video](https://www.youtube.com/watch?v=4d4cNL9xbrs)
 
-### What is this repository for? ###
+## Usage
+### Toolchain 
+- `scala`
+- `sbt` 
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+### How to run
+> `sbt -J-Xms4G -J-Xmx8G "run tab2 ./src/test/resources/Path-Train.qd 0.1 400 ./src/test/resources/Path-Test.qd"`
 
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
+- `-J-Xms4G`/`-J-Xmx8G`: Start the JVM with access to 4GB of memory, and allow it to access no more than 8GB. 
+    - Feel free to increase if you have more ram available.
+- `tab2`: Generates table 2 of the Difflog paper submission.
+- `Path-Train.qd`, `Path-Test.qd`: Training and testing data. 
+- `0.1`: Target loss. Stop iterating if the l2 loss drops below this value.
+- `400`: Do no more than 400 iterations in any case.
