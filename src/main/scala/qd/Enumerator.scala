@@ -2,11 +2,11 @@ package qd
 
 object Enumerator {
 
-  def skeleton[T <: Value[T]](
-                               inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
-                               weight: (Literal, IndexedSeq[Literal]) => (Token, T),
-                               maxLiterals: Int, maxVars: Int
-                             )(implicit vs: Semiring[T]): (Map[Token, T], Set[Rule[T]]) = {
+  def enumerate[T <: Value[T]](
+                                inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
+                                weight: (Literal, IndexedSeq[Literal]) => (Token, T),
+                                maxLiterals: Int, maxVars: Int
+                              )(implicit vs: Semiring[T]): (Map[Token, T], Set[Rule[T]]) = {
 
     require(inputRels.intersect(inventedRels).isEmpty)
     require(inputRels.intersect(outputRels).isEmpty)

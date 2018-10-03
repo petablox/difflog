@@ -62,8 +62,8 @@ class LearnerSpec extends FunSuite {
         (token, value)
       }
 
-      val skeleton = Enumerator.skeleton[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
-                                                 weight, maxLiterals, maxVars)
+      val skeleton = Enumerator.enumerate[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
+                                                  weight, maxLiterals, maxVars)
       val pos = TokenVec(skeleton._1.mapValues(_.v))
       val rules = skeleton._2
 

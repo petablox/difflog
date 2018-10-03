@@ -7,14 +7,12 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
   def keySet: Set[Token] = map.keySet
   override def iterator: Iterator[(Token, Double)] = map.iterator
 
+  def apply(rules: Set[Rule[FValue]]): Set[Rule[FValue]] = rules.map(r => this(r))
+  def apply(rule: Rule[FValue]): Rule[FValue] = Rule(this(rule.coeff.l), rule.head, rule.body)
   override def apply(lineage: Lineage): FValue = lineage match {
     case Empty => implicitly[Semiring[FValue]].One
     case token @ Token(_) => FValue(map(token), token)
     case And(l1, l2) => this(l1) * this(l2)
-  }
-
-  def apply(rules: Set[Rule[FValue]]): Set[Rule[FValue]] = {
-    rules.map(r => Rule(this(r.coeff.l), r.head, r.body))
   }
 
   def +(tv: (Token, Double)): TokenVec = {

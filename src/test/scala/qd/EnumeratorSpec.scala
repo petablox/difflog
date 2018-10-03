@@ -26,8 +26,8 @@ class EnumeratorSpec extends FunSuite {
   val maxLiterals = 3
   val maxVars = 4
 
-  val posRules: (Map[Token, FValue], Set[Rule[FValue]]) = Enumerator.skeleton(Set(edge), Set(path), Set(scc),
-                                                                              weight, maxLiterals, maxVars)
+  val posRules: (Map[Token, FValue], Set[Rule[FValue]]) = Enumerator.enumerate(Set(edge), Set(path), Set(scc),
+                                                                               weight, maxLiterals, maxVars)
 
   if (maxLiterals == 3 && maxVars == 4) {
     test("Since maxLiterals == 3 and maxVars == 4, the skeleton program should have 21443 rules") {
