@@ -14,22 +14,22 @@ class BaseSpec extends FunSuite {
   val y = Variable("y", node)
   val z = Variable("z", node)
 
-  val rule1 = Rule(vs.Zero, Literal(path, Vector(u, v)),
-                            Vector(Literal(edge, Vector(u, v))))
-  val rule2 = Rule(vs.Zero, Literal(path, Vector(x, u)),
+  val rule1 = Rule(vs.One, Literal(path, Vector(u, v)),
+                           Vector(Literal(edge, Vector(u, v))))
+  val rule2 = Rule(vs.One, Literal(path, Vector(x, u)),
                             Vector(Literal(edge, Vector(x, u))))
-  val rule3 = Rule(vs.Zero, Literal(path, Vector(u, v)),
-                            Vector(Literal(edge, Vector(v, u))))
-  val rule4 = Rule(vs.Zero, Literal(path, Vector(u, w)),
-                            Vector(Literal(edge, Vector(u, v)),
-                                   Literal(edge, Vector(v, w))))
-  val rule5 = Rule(vs.Zero, Literal(path, Vector(u, w)),
-                            Vector(Literal(edge, Vector(v, w)),
-                                   Literal(edge, Vector(u, v))))
-  val rule6 = Rule(vs.Zero, Literal(path, Vector(u, x)),
-                            Vector(Literal(edge, Vector(u, v)),
-                                   Literal(edge, Vector(w, x)),
-                                   Literal(edge, Vector(v, w))))
+  val rule3 = Rule(vs.One, Literal(path, Vector(u, v)),
+                           Vector(Literal(edge, Vector(v, u))))
+  val rule4 = Rule(vs.One, Literal(path, Vector(u, w)),
+                           Vector(Literal(edge, Vector(u, v)),
+                                  Literal(edge, Vector(v, w))))
+  val rule5 = Rule(vs.One, Literal(path, Vector(u, w)),
+                           Vector(Literal(edge, Vector(v, w)),
+                                  Literal(edge, Vector(u, v))))
+  val rule6 = Rule(vs.One, Literal(path, Vector(u, x)),
+                           Vector(Literal(edge, Vector(u, v)),
+                                  Literal(edge, Vector(w, x)),
+                                  Literal(edge, Vector(v, w))))
 
   test("Valencies should be correctly computed") {
     assert(rule1.valency == 2)

@@ -2,8 +2,6 @@ package qd
 
 import org.scalatest.FunSuite
 import data.graphs.Graphs
-import evaluator.{Evaluator, TrieSemiEvaluator}
-import qd.data.graphs.Graphs.Graph
 
 import scala.util.Random
 
@@ -23,27 +21,50 @@ class EnumeratorSpec extends FunSuite {
     (token, FValue(value, token))
   }
 
-  val maxLiterals = 3
-  val maxVars = 4
+  val s: Set[Relation] = Set()
+  val se = Set(edge)
+  val sp = Set(path)
+  val ss = Set(scc)
+  
+  val memo = Set((se, s, ss, 0, 0, 0),
+                 (se, s, ss, 0, 1, 0),
+                 (se, s, ss, 0, 2, 0),
+                 (se, s, ss, 0, 3, 0),
 
-  val posRules: (Map[Token, FValue], Set[Rule[FValue]]) = Enumerator.enumerate(Set(edge), Set(path), Set(scc),
-                                                                               weight, maxLiterals, maxVars)
+                 (se, s, ss, 1, 0, 0),
+                 (se, s, ss, 1, 1, 1),
+                 (se, s, ss, 1, 2, 8),
+                 (se, s, ss, 1, 3, 8),
 
-  if (maxLiterals == 3 && maxVars == 4) {
-    test("Since maxLiterals == 3 and maxVars == 4, the skeleton program should have 21443 rules") {
-      assert(posRules._2.size == 21443)
+                 (se, sp, ss, 0, 0, 0),
+                 (se, sp, ss, 0, 1, 0),
+                 (se, sp, ss, 0, 2, 0),
+                 (se, sp, ss, 0, 3, 0),
+
+                 (se, sp, ss, 1, 0, 0),
+                 (se, sp, ss, 1, 1, 4),
+                 (se, sp, ss, 1, 2, 26),
+                 (se, sp, ss, 1, 3, 26),
+
+                 (se, sp, ss, 3, 4, 19238))
+
+  test("Should enumerate expected number of rules") {
+    for ((edbRels, invRels, idbRels, maxLiterals, maxVars, expSize) <- memo) {
+      val rules = Enumerator.enumerate(edbRels, invRels, idbRels, weight, maxLiterals, maxVars)._2
+      lazy val caseName = s"${edbRels.map(_.name)}, ${invRels.map(_.name)}, ${idbRels.map(_.name)}, " +
+        s"$maxLiterals, $maxVars, $expSize"
+      assert(rules.size == expSize, s"(Case $caseName)")
     }
   }
 
-  val graph: Graph = Graphs.circle(5)
-  val evaluator: Evaluator = TrieSemiEvaluator
-  test(testName = s"Applying evaluator ${evaluator.getClass} to " +
-    s"${posRules._2.size} rules and graph ${graph.name}") {
-    // val idb = SeminaiveEvaluator(p, graph.edb)
-    val idb = evaluator(posRules._2, graph.edb)
-    val produced = idb(Graphs.path)
-    assert(produced.support.forall(_._1.length == 2))
-    assert(produced.support.map(tv => (tv._1.head, tv._1(1))) == graph.reachable)
+  test("Should contain the usual suspects") {
+    val vs = implicitly[Semiring[FValue]]
+    val allRules = Enumerator.enumerate(se, sp, ss, weight, 3, 4)._2
+                             .map(r => Rule(vs.One, r.head, r.body))
+    val baseSpec = new BaseSpec
+    for (rule <- Set(baseSpec.rule1, baseSpec.rule2, baseSpec.rule3, baseSpec.rule4, baseSpec.rule5, baseSpec.rule6)) {
+      assert(allRules.contains(Rule(vs.One, rule.head, rule.body).normalized))
+    }
   }
 
 }

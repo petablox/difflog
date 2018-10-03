@@ -74,9 +74,7 @@ object Enumerator {
     }
 
     def isDegenerate(rule: Rule[T]): Boolean = {
-      val head = rule.head
-      val body = rule.body
-      body.contains(head) || reachableVars(rule).size < rule.variables.size
+      rule.body.contains(rule.head) || reachableVars(rule).size < rule.variables.size
     }
 
     val unweightedRules = for (targetRel <- inventedRels ++ outputRels;
