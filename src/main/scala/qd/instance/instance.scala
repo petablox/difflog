@@ -1,4 +1,5 @@
 package qd
+package instance
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Assignments
@@ -80,6 +81,12 @@ extends (DTuple => T) {
             yield (constant +: tuple, value)
         }
     }
+  }
+
+  def *(t: T): Instance[T] = this match {
+    case InstanceBase(value) => InstanceBase(value * t)
+    case InstanceInd(domHead, domTail, map) =>
+      InstanceInd(domHead, domTail, map.map { case (c, inst) => c -> inst * t })
   }
 
   def ++(that: Instance[T]): Instance[T] = (this, that) match {

@@ -1,6 +1,9 @@
 package qd
+package instance
 
 import org.scalatest.FunSuite
+import qd._
+
 import scala.collection.immutable.Seq
 
 class InstanceSpec extends FunSuite {
