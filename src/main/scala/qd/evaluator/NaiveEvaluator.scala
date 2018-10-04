@@ -1,6 +1,8 @@
 package qd
 package evaluator
 
+import qd.instance.{Assignment, Config}
+
 import scala.collection.parallel.{ParMap, ParSeq}
 
 object NaiveEvaluator extends Evaluator {

@@ -1,6 +1,7 @@
 package qd
 package evaluator
 
+import qd.instance.Config
 import qd.problem.Problem.NormMode
 
 abstract class Evaluator {

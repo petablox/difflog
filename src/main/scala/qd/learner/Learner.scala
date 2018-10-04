@@ -2,6 +2,7 @@ package qd
 package learner
 
 import qd.evaluator.{Evaluator, TrieEvaluator}
+import qd.instance.Config
 import qd.problem.Problem
 
 class Learner(q0: Problem) {

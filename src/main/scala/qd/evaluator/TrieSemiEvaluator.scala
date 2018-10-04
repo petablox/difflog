@@ -3,6 +3,7 @@ package evaluator
 
 import scala.collection.parallel.{ParMap, ParSeq}
 import TrieEvaluator.RuleTrie
+import qd.instance.{Assignment, Config}
 
 object TrieSemiEvaluator extends Evaluator {
 

@@ -3,6 +3,7 @@ package qd.learner
 import qd.Semiring.FValueSemiringObj
 import qd._
 import qd.evaluator.Evaluator
+import qd.instance.Config
 
 abstract class Scorer {
 

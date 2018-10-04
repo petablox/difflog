@@ -1,6 +1,7 @@
 package qd.problem
 
 import qd._
+import qd.instance.Config
 
 import scala.collection.immutable.Seq
 

@@ -2,6 +2,7 @@ package qd
 package learner
 
 import qd.evaluator.Evaluator
+import qd.instance.Config
 
 class L2Scorer(val edb: Config[FValue], val refIDB: Config[FValue], val evaluator: Evaluator) extends Scorer {
 

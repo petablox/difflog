@@ -2,54 +2,17 @@ package qd
 package instance
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Assignments
-
-case class Assignment[T <: Value[T]](map: Map[Variable, Constant], score: T) extends (Variable => Constant) {
-  require(map.forall { case (key, value) => key.domain == value.domain })
-
-  override def apply(key: Variable): Constant = map(key)
-  def get(key: Variable): Option[Constant] = map.get(key)
-  def contains(key: Variable): Boolean = map.contains(key)
-
-  def +(kv: (Variable, Constant)): Assignment[T] = {
-    val (key, _) = kv
-    require(!map.contains(key))
-    Assignment(map + kv, score)
-  }
-  def *(coeff: T): Assignment[T] = Assignment(map, score * coeff)
-
-  def project(rvs: Set[Variable]): Assignment[T] = Assignment(map.filterKeys(rvs), score)
-
-  def toTuple(lit: Literal): (DTuple, T) = {
-    val cs = lit.fields.map {
-      case c @ Constant(_, _) => c
-      case v @ Variable(_, _) => this(v)
-    }
-    (DTuple(cs), score)
-  }
-
-  def toFilter(literal: Literal): IndexedSeq[Option[Constant]] = literal.fields.map {
-    case v @ Variable(_, _) => map.get(v)
-    case c @ Constant(_, _) => Some(c)
-  }
-}
-
-object Assignment {
-  def Empty[T <: Value[T]]()(implicit vs: Semiring[T]): Assignment[T] = Assignment(Map(), vs.One)
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Instances
 
 sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])(implicit vs: Semiring[T])
-extends (DTuple => T) {
+  extends (DTuple => T) {
   val arity: Int = signature.length
 
   lazy val support: Set[(DTuple, T)] = this match {
     case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Vector()), value)) else Set()
     case InstanceInd(_, _, map) => for ((constant, mapA) <- map.view.toSet;
                                         (tuple, value) <- mapA.support)
-                                   yield (constant +: tuple) -> value
+      yield (constant +: tuple) -> value
   }
 
   lazy val nonEmpty: Boolean = support.nonEmpty
@@ -78,7 +41,7 @@ extends (DTuple => T) {
           case None =>
             for ((constant, ind) <- map.toSet;
                  (tuple, value) <- ind.filter(f.tail))
-            yield (constant +: tuple, value)
+              yield (constant +: tuple, value)
         }
     }
   }
@@ -94,13 +57,13 @@ extends (DTuple => T) {
     case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, _, map2)) =>
       require(domH1 == domH2)
       val nm1 = for ((chead, v1) <- map1)
-                yield {
-                  val ov2 = map2.get(chead)
-                  val v12 = if (ov2.nonEmpty) v1 ++ ov2.get else v1
-                  chead -> v12
-                }
+        yield {
+          val ov2 = map2.get(chead)
+          val v12 = if (ov2.nonEmpty) v1 ++ ov2.get else v1
+          chead -> v12
+        }
       val nm2 = for ((chead, v2) <- map2 if !nm1.contains(chead))
-                yield chead -> v2
+        yield chead -> v2
       val newMap = nm1 ++ nm2
       InstanceInd(domH1, domT1, newMap)
     case (_, _) => throw new IllegalArgumentException
@@ -140,38 +103,7 @@ case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) exten
 
 case class InstanceInd[T <: Value[T]](domHead: Domain, domTail: IndexedSeq[Domain], map: Map[Constant, Instance[T]])
                                      (implicit vs: Semiring[T])
-extends Instance[T](domHead +: domTail) {
+  extends Instance[T](domHead +: domTail) {
   require(map.forall { case (constant, _) => constant.domain == domHead })
   require(map.forall { case (_, instance) => instance.signature == domTail })
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Configurations
-
-case class Config[T <: Value[T]](map: Map[Relation, Instance[T]])(implicit vs: Semiring[T])
-extends (Relation => Instance[T]) {
-  require(map.forall { case (relation, instance) => relation.signature == instance.signature })
-
-  override def apply(relation: Relation): Instance[T] = map.getOrElse(relation, Instance(relation))
-  def get(relation: Relation): Option[Instance[T]] = Some(this(relation))
-  def +(ri: (Relation, Instance[T])): Config[T] = {
-    val (relation, instance) = ri
-    val newInstance = this(relation) ++ instance
-    Config(map + (relation -> newInstance))
-  }
-
-  def add(relation: Relation, tuple: DTuple, value: T): Config[T] = {
-    val newInstance = this(relation) + (tuple -> value)
-    Config(map + (relation -> newInstance))
-  }
-
-  def nonEmptySupport: Boolean = map.values.exists(_.nonEmpty)
-}
-
-object Config {
-  def apply[T <: Value[T]](firstPair: (Relation, Instance[T]), remainingPairs: (Relation, Instance[T])*)
-                          (implicit vs: Semiring[T]): Config[T] = {
-    Config((firstPair +: remainingPairs).toMap)
-  }
-  def apply[T <: Value[T]]()(implicit vs: Semiring[T]): Config[T] = Config[T](Map[Relation, Instance[T]]())
 }
