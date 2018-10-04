@@ -48,7 +48,7 @@ object AssignmentTrie {
   }
 
   def join[T <: Value[T]](at1: AssignmentTrie[T], at2: AssignmentTrie[T])
-                         (implicit ordering: Ordering[Variable]): AssignmentTrie[T] = {
+                         (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
     ???
   }
 

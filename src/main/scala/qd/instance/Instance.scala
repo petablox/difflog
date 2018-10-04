@@ -12,7 +12,7 @@ sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])
     case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Vector()), value)) else Set()
     case InstanceInd(_, _, map) => for ((constant, mapA) <- map.view.toSet;
                                         (tuple, value) <- mapA.support)
-      yield (constant +: tuple) -> value
+                                   yield (constant +: tuple) -> value
   }
 
   lazy val nonEmpty: Boolean = support.nonEmpty
@@ -41,7 +41,7 @@ sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])
           case None =>
             for ((constant, ind) <- map.toSet;
                  (tuple, value) <- ind.filter(f.tail))
-              yield (constant +: tuple, value)
+            yield (constant +: tuple, value)
         }
     }
   }
@@ -57,13 +57,13 @@ sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])
     case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, _, map2)) =>
       require(domH1 == domH2)
       val nm1 = for ((chead, v1) <- map1)
-        yield {
-          val ov2 = map2.get(chead)
-          val v12 = if (ov2.nonEmpty) v1 ++ ov2.get else v1
-          chead -> v12
-        }
+                yield {
+                  val ov2 = map2.get(chead)
+                  val v12 = if (ov2.nonEmpty) v1 ++ ov2.get else v1
+                  chead -> v12
+                }
       val nm2 = for ((chead, v2) <- map2 if !nm1.contains(chead))
-        yield chead -> v2
+                yield chead -> v2
       val newMap = nm1 ++ nm2
       InstanceInd(domH1, domT1, newMap)
     case (_, _) => throw new IllegalArgumentException
