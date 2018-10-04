@@ -2,6 +2,8 @@ package qd
 package data
 package graphs
 
+import qd.instance.{Config, Instance}
+
 import scala.util.Random
 
 object Graphs {
