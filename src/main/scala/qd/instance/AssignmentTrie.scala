@@ -74,8 +74,25 @@ object AssignmentTrie {
     AssignmentTrie(signature, trie)
   }
 
-  def ground[T <: Value[T]](at: AssignmentTrie[T], head: Literal): Instance[T] = {
-    ???
+  def ground[T <: Value[T]](at: AssignmentTrie[T])(implicit vs: Semiring[T]): Map[Map[Variable, Constant], T] = {
+    at.instance match {
+      case InstanceBase(value) => Map(Map[Variable, Constant]() -> value)
+      case InstanceInd(_, _, map) =>
+        for ((c, inst) <- map; (m, v) <- ground(AssignmentTrie(at.signature.tail, inst)))
+        yield (m + (at.signature.head -> c)) -> v
+    }
+  }
+
+  def ground[T <: Value[T]](at: AssignmentTrie[T], head: Literal)(implicit vs: Semiring[T]): Instance[T] = {
+    var ans = Instance(head.relation.signature)
+    for ((m, v) <- ground(at)) {
+      val t = head.fields.map {
+        case v @ Variable(_, _) => m(v)
+        case c @ Constant(_, _) => c
+      }
+      ans = ans + (DTuple(t) -> v)
+    }
+    ans
   }
 
   def join[T <: Value[T]](at1: AssignmentTrie[T], at2: AssignmentTrie[T])
