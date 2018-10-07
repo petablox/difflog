@@ -1,7 +1,10 @@
 package qd
 package instance
 
+import scala.collection.SortedMap
+
 case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instance: Instance[T]) {
+  require(signature.distinct.size == signature.size)
   require(signature.map(_.domain) == instance.signature)
   def *(t: T): AssignmentTrie[T] = AssignmentTrie(signature, instance * t)
 }
@@ -11,14 +14,22 @@ object AssignmentTrie {
   def apply[T <: Value[T]](instance: Instance[T], bodyLit: Literal)
                           (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
     require(instance.signature == bodyLit.relation.signature)
+    val signature = bodyLit.variables.toVector.sorted
 
-    def buildTrie(
-                   inst: Instance[T],
-                   fields: IndexedSeq[Parameter],
-                   context: Map[Variable, Constant]
-                 ): (IndexedSeq[Variable], Set[Variable], Instance[T]) = {
+    def buildRec(
+                  inst: Instance[T],
+                  fields: IndexedSeq[Parameter],
+                  context: SortedMap[Variable, Constant]
+                ): Instance[T] = {
+      require(inst.signature == fields.map(_.domain))
+      val ansVars = (fields.collect({ case v @ Variable(_, _) => v }) ++ context.keys).sorted
+      val ansDoms = ansVars.map(_.domain)
+
       inst match {
-        case InstanceBase(_) => (Vector(), Set(), inst)
+        case InstanceBase(value) =>
+          val t = DTuple(context.values.toVector)
+          Instance(ansDoms) + (t -> value)
+
         case InstanceInd(domHead, _, map) =>
           val fieldsHead = fields.head
           val fieldsTail = fields.tail
@@ -26,20 +37,40 @@ object AssignmentTrie {
 
           fieldsHead match {
             case cHead @ Constant(_, _) =>
-              if (map.contains(cHead)) {
-                buildTrie(map(cHead), fieldsTail, context)
-              } else {
-                val varVec = fieldsTail.collect { case v @ Variable(_, _) => v }
-                val varSet = varVec.toSet
-                val ans = Instance[T](varVec.map(_.domain))
-                (varVec, varSet, ans)
+              if (map.contains(cHead)) buildRec(map(cHead), fieldsTail, context) else Instance[T](ansDoms)
+
+            case vHead @ Variable(_, _) =>
+              val vBindings = if (!context.contains(vHead)) map.keySet
+                              else if (map.contains(context(vHead))) Set(context(vHead))
+                              else Set[Constant]()
+
+              val tailVars = fieldsTail.collect({ case v @ Variable(_, _) => v })
+              val minTailVar = tailVars.min
+              var contextCurr = context.filterKeys(v => ordering.lt(v, minTailVar))
+              var contextTail = context.filterKeys(v => ordering.gteq(v, minTailVar))
+
+              var ans = Instance(ansDoms)
+              for (vb <- vBindings) {
+                if (ordering.lt(vHead, minTailVar)) {
+                  contextCurr = contextCurr + (vHead -> vb)
+                } else {
+                  contextTail = contextTail + (vHead -> vb)
+                }
+
+                var recAns = buildRec(map(vb), fieldsTail, contextTail)
+                for ((v, c) <- contextCurr.toSeq.reverse) {
+                  assert(v.domain == c.domain)
+                  recAns = InstanceInd(v.domain, recAns.signature, Map(c -> recAns))
+                }
+                ans = ans ++ recAns
               }
-            case vHead @ Variable(_, _) => ???
+              ans
           }
       }
+
     }
 
-    val (signature, _, trie) = buildTrie(instance, bodyLit.fields, Map())
+    val trie = buildRec(instance, bodyLit.fields, SortedMap())
     AssignmentTrie(signature, trie)
   }
 
