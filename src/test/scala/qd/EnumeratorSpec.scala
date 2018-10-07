@@ -14,7 +14,7 @@ class EnumeratorSpec extends FunSuite {
   val rng: Random = new Random(0)
   var ruleIndex = 0
 
-  def weight(l: Literal, ls: Seq[Literal]): (Token, FValue) = {
+  def weight(): (Token, FValue) = {
     val token = Token(s"R$ruleIndex")
     ruleIndex = ruleIndex + 1
     val value = rng.nextDouble()
@@ -50,7 +50,7 @@ class EnumeratorSpec extends FunSuite {
 
   test("Should enumerate expected number of rules") {
     for ((edbRels, invRels, idbRels, maxLiterals, maxVars, expSize) <- memo) {
-      val rules = Enumerator.enumerate(edbRels, invRels, idbRels, weight, maxLiterals, maxVars)._2
+      val rules = Enumerator.enumerate(edbRels, invRels, idbRels, (_, _) => weight(), maxLiterals, maxVars)._2
       lazy val caseName = s"${edbRels.map(_.name)}, ${invRels.map(_.name)}, ${idbRels.map(_.name)}, " +
         s"$maxLiterals, $maxVars, $expSize"
       assert(rules.size == expSize, s"(Case $caseName)")
@@ -59,7 +59,7 @@ class EnumeratorSpec extends FunSuite {
 
   test("Should contain the usual suspects") {
     val vs = implicitly[Semiring[FValue]]
-    val allRules = Enumerator.enumerate(se, sp, ss, weight, 3, 4)._2
+    val allRules = Enumerator.enumerate(se, sp, ss, (_, _) => weight(), 3, 4)._2
                              .map(r => Rule(vs.One, r.head, r.body))
     val baseSpec = new BaseSpec
     for (rule <- Set(baseSpec.rule1, baseSpec.rule2, baseSpec.rule3, baseSpec.rule4, baseSpec.rule5, baseSpec.rule6)) {

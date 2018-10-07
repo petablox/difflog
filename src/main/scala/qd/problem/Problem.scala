@@ -3,8 +3,6 @@ package qd.problem
 import qd._
 import qd.instance.Config
 
-import scala.collection.immutable.Seq
-
 class Problem private (
                         val inputRels: Set[Relation],
                         val inventedRels: Set[Relation],
