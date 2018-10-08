@@ -71,6 +71,16 @@ object Graphs {
     Graph(s"Circle($n)", nodeSet, edgeSet)
   }
 
+  def lasso(m: Int, n: Int): Graph = {
+    require(m > 0 && n > 0)
+    val aNodes = Range(0, m).map(i => vertex(s"a$i")).toSet
+    val bNodes = Range(0, n).map(i => vertex(s"b$i")).toSet
+    val edgeSet = Range(0, m - 1).map(i => (vertex(s"a$i"), vertex(s"a${i + 1}"))).toSet ++
+                  Set((vertex(s"a${m - 1}"), vertex(s"b${0}"))) ++
+                  Range(0, n).map(i => (vertex(s"b$i"), vertex(s"b${(i + 1) % n}"))).toSet
+    Graph(s"Lasso($m, $n)", aNodes ++ bNodes, edgeSet)
+  }
+
   def erdosRenyi(n: Int, p: Double, seed: Int): Graph = {
     require(n > 0 && 0.0 <= p && p <= 1.0)
     val random = new Random(seed)

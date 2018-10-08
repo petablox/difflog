@@ -1,62 +1,74 @@
-   86 ./src/main/scala/qd/Main.scala
+    86 ./src/main/scala/qd/Main.scala
 
-   34 ./src/main/scala/qd/Lineage.scala
-  115 ./src/main/scala/qd/value.scala
-   71 ./src/main/scala/qd/TokenVec.scala
-  123 ./src/main/scala/qd/base.scala
+    34 ./src/main/scala/qd/Lineage.scala
+   115 ./src/main/scala/qd/value.scala
+    66 ./src/main/scala/qd/TokenVec.scala
+   114 ./src/main/scala/qd/base.scala
 
-  172 ./src/main/scala/qd/instance.scala
-  105 ./src/main/scala/qd/Enumerator.scala
-  114 ./src/main/scala/qd/problem/Problem.scala
-  248 ./src/main/scala/qd/problem/QDParser.scala
+   116 ./src/main/scala/qd/instance/AssignmentTrie.scala
+   109 ./src/main/scala/qd/instance/Instance.scala
+    39 ./src/main/scala/qd/instance/Assignment.scala
+    33 ./src/main/scala/qd/instance/Config.scala
 
-   10 ./src/main/scala/qd/evaluator/Evaluator.scala
-   83 ./src/main/scala/qd/evaluator/NaiveEvaluator.scala
-  109 ./src/main/scala/qd/evaluator/SeminaiveEvaluator.scala
-  132 ./src/main/scala/qd/evaluator/TrieEvaluator.scala
-  122 ./src/main/scala/qd/evaluator/TrieSemiEvaluator.scala
+    11 ./src/main/scala/qd/evaluator/Evaluator.scala
+    85 ./src/main/scala/qd/evaluator/NaiveEvaluator.scala
+   111 ./src/main/scala/qd/evaluator/SeminaiveEvaluator.scala
+   136 ./src/main/scala/qd/evaluator/TrieEvaluator.scala
+   128 ./src/main/scala/qd/evaluator/TrieSemiEvaluator.scala
 
-   69 ./src/main/scala/qd/learner/Scorer.scala
-   39 ./src/main/scala/qd/learner/L2Scorer.scala
-  129 ./src/main/scala/qd/learner/Learner.scala
+   100 ./src/main/scala/qd/Enumerator.scala
+   113 ./src/main/scala/qd/problem/Problem.scala
+   249 ./src/main/scala/qd/problem/QDParser.scala
 
------
-
-   38 ./src/test/scala/qd/BaseSpec.scala
-  101 ./src/test/scala/qd/InstanceSpec.scala
-   51 ./src/test/scala/qd/EnumeratorSpec.scala
-  150 ./src/test/scala/qd/ParserSpec.scala
-
-   76 ./src/test/scala/qd/data/graphs/Graphs.scala
-   29 ./src/test/scala/qd/data/graphs/Reachability.scala
-   22 ./src/test/scala/qd/evaluator/EvaluatorReachabilitySpec.scala
-  132 ./src/test/scala/qd/learner/LearnerSpec.scala
+    70 ./src/main/scala/qd/learner/Scorer.scala
+    39 ./src/main/scala/qd/learner/L2Scorer.scala
+   127 ./src/main/scala/qd/learner/Learner.scala
 
 -----
-  108 ./src/main/scala/qd/util/bdd/BDD.scala
-   34 ./src/main/scala/qd/util/Multiset.scala
-   61 ./src/test/scala/qd/util/MultisetSpec.scala
+
+    60 ./src/test/scala/qd/BaseSpec.scala
+   104 ./src/test/scala/qd/instance/InstanceSpec.scala
+
+    82 ./src/test/scala/qd/data/graphs/Graphs.scala
+    29 ./src/test/scala/qd/data/graphs/Reachability.scala
+    22 ./src/test/scala/qd/evaluator/EvaluatorReachabilitySpec.scala
+
+    70 ./src/test/scala/qd/EnumeratorSpec.scala
+   150 ./src/test/scala/qd/ParserSpec.scala
+
+   132 ./src/test/scala/qd/learner/LearnerSpec.scala
+
+-----
+   108 ./src/main/scala/qd/util/bdd/BDD.scala
+    34 ./src/main/scala/qd/util/Multiset.scala
+    61 ./src/test/scala/qd/util/MultisetSpec.scala
 -----
 
- 2563 total
+  2733 total
 
 --------------------------------------------------------------------------------
 
 0. Experiment Scripts
 
-1. Optimization
+1. Cleanup
+   a. Choose appropriate collections: Vector, List, Seq
+   b. Map.mapValues
+   c. lazy val
+   d. hashCode
+
+2. Optimization
    a. Cross entropy
    b. Gradient descent
    c. Parallel runs
 
-2. Training Details
+3. Training Details
    a. Statistical significance (t-test)
 
-3. New Benchmarks
+4. New Benchmarks
    a. Kinship, Nations, UMLS
    c. FB15K, WN18
 
-4. Better join algorithms
+5. Better join algorithms
    a. Assignments as tries
 
 --------------------------------------------------------------------------------
