@@ -12,33 +12,29 @@ case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instan
 
 object AssignmentTrie {
 
-  def apply[T <: Value[T]](instance: Instance[T], bodyLit: Literal)
+  def build[T <: Value[T]](instance: Instance[T], bodyLit: Literal)
                           (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
     require(instance.signature == bodyLit.relation.signature)
 
     val signature = bodyLit.variables.toVector.sorted
-    val instAns = Instance[T](signature.map(_.domain))
 
     def buildRec(
                   inst: Instance[T],
-                  fields: IndexedSeq[Parameter],
+                  litFields: IndexedSeq[Parameter],
                   context: SortedMap[Variable, Constant]
                 ): Instance[T] = {
-      require(inst.signature == fields.map(_.domain))
-      val ansVars = (fields.collect({ case v @ Variable(_, _) => v }) ++ context.keys).sorted
+      require(inst.signature == litFields.map(_.domain))
+      val ansVars = (litFields.collect({ case v @ Variable(_, _) => v }) ++ context.keys).distinct.sorted
       val ansDoms = ansVars.map(_.domain)
 
       inst match {
-        case InstanceBase(value) =>
-          val t = DTuple(context.values.toVector)
-          Instance(ansDoms) + (t -> value)
+        case InstanceBase(value) => Instance(ansDoms) + (DTuple(context.values.toVector) -> value)
 
         case InstanceInd(domHead, _, map) =>
-          val fieldsHead = fields.head
-          val fieldsTail = fields.tail
-          require(fieldsHead.domain == domHead)
+          require(litFields.head.domain == domHead)
+          val fieldsTail = litFields.tail
 
-          fieldsHead match {
+          litFields.head match {
             case cHead @ Constant(_, _) =>
               if (map.contains(cHead)) buildRec(map(cHead), fieldsTail, context) else Instance[T](ansDoms)
 
@@ -48,13 +44,21 @@ object AssignmentTrie {
                               else Set[Constant]()
 
               val tailVars = fieldsTail.collect({ case v @ Variable(_, _) => v })
-              val minTailVar = tailVars.min
-              var contextCurr = context.filterKeys(v => ordering.lt(v, minTailVar))
-              var contextTail = context.filterKeys(v => ordering.gteq(v, minTailVar))
+
+              var contextCurr = context
+              var contextTail = SortedMap[Variable, Constant]()
+              var emitVHead = true
+
+              if (tailVars.nonEmpty) {
+                val minTailVar = tailVars.min
+                contextCurr = context.filterKeys(v => ordering.lt(v, minTailVar))
+                contextTail = context.filterKeys(v => ordering.gteq(v, minTailVar))
+                emitVHead = ordering.lt(vHead, minTailVar)
+              }
 
               var ans = Instance(ansDoms)
               for (vb <- vBindings) {
-                if (ordering.lt(vHead, minTailVar)) {
+                if (emitVHead) {
                   contextCurr = contextCurr + (vHead -> vb)
                 } else {
                   contextTail = contextTail + (vHead -> vb)

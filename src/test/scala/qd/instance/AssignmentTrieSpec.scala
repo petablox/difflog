@@ -43,7 +43,8 @@ class AssignmentTrieSpec extends FunSuite {
                                                      (DTuple(Vector(a, b, c)) -> FValue(0.06, Empty)) +
                                                      (DTuple(Vector(b, b, c)) -> FValue(0.10, Empty)))
 
-  val lit1: Literal = Literal(Relation("R3", Vector(node, node,node)), Vector(v(1), v(1), v(2)))
+  val lit1: Literal = Literal(Relation("R3", Vector(node, node,node)), Vector(v(2), v(2), v(1)))
+  val lit2: Literal = Literal(Relation("R3", Vector(node, node,node)), Vector(v(1), v(1), v(2)))
 
   val inst1: Instance[FValue] = Instance[FValue](Vector(node, node, node)) +
                                 (DTuple(Vector(b, b, c)) -> FValue(0.2, Empty)) +
@@ -52,8 +53,20 @@ class AssignmentTrieSpec extends FunSuite {
                                 (DTuple(Vector(a, a, c)) -> FValue(0.1, Empty)) +
                                 (DTuple(Vector(c, c, c)) -> FValue(0.4, Empty))
 
+  val asgn5: AssignmentTrie[FValue] = AssignmentTrie(Vector(v(1), v(2)),
+                                                     Instance[FValue](Vector(node, node)) +
+                                                     (DTuple(Vector(c, b)) -> FValue(0.2, Empty)) +
+                                                     (DTuple(Vector(c, c)) -> FValue(0.3, Empty)) +
+                                                     (DTuple(Vector(c, b)) -> FValue(0.5, Empty)) +
+                                                     (DTuple(Vector(c, a)) -> FValue(0.1, Empty)) +
+                                                     (DTuple(Vector(c, c)) -> FValue(0.4, Empty)))
+
+  test("Assignments should be correctly constructed") {
+    assert(AssignmentTrie.build(inst1, lit1) == asgn5)
+  }
+
   test("Assignments should be correctly grounded") {
-    assert(AssignmentTrie.ground(asgn1, lit1) == inst1)
+    assert(AssignmentTrie.ground(asgn1, lit2) == inst1)
   }
 
   test("Joins should be correctly computed") {
