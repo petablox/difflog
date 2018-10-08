@@ -79,12 +79,15 @@ object AssignmentTrie {
 
   def ground[T <: Value[T]](at: AssignmentTrie[T])
                            (implicit ordering: Ordering[Variable], vs: Semiring[T]): Map[Map[Variable, Constant], T] = {
-    at.instance match {
-      case InstanceBase(value) => Map(Map[Variable, Constant]() -> value)
-      case InstanceInd(_, _, map) =>
-        for ((c, inst) <- map; (m, v) <- ground(AssignmentTrie(at.signature.tail, inst)))
-        yield (m + (at.signature.head -> c)) -> v
+    def groundRec(signature: IndexedSeq[Variable], instance: Instance[T]): Map[Map[Variable, Constant], T] = {
+      instance match {
+        case InstanceBase(value) => Map(Map[Variable, Constant]() -> value)
+        case InstanceInd(_, _, map) =>
+          for ((c, instTl) <- map; (m, v) <- groundRec(signature.tail, instTl))
+          yield (m + (signature.head -> c)) -> v
+      }
     }
+    groundRec(at.signature, at.instance)
   }
 
   def ground[T <: Value[T]](at: AssignmentTrie[T], head: Literal)
