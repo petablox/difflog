@@ -104,5 +104,5 @@ class Problem private (
 }
 
 object Problem {
-  def apply(): Problem = new Problem(Set(), Set(), Set(), Config(), Config(), TokenVec(Map()), Set())
+  val Empty: Problem = new Problem(Set(), Set(), Set(), Config(), Config(), TokenVec(Map()), Set())
 }

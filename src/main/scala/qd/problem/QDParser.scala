@@ -19,10 +19,9 @@ class QDParser extends JavaTokenParsers {
                                   edbBlock |
                                   idbBlock |
                                   ruleBlock).* ^^ { f =>
-    f.foldLeft(initialProblem) { case (problem, transformer) => transformer(problem) }
+    f.foldLeft(Problem.Empty) { case (problem, transformer) => transformer(problem) }
   }
 
-  val initialProblem: Problem = Problem()
   val rng: Random = Random
   var numTokens = 0
   def nextToken(): Token = { val ans = numTokens; numTokens = numTokens + 1; Token(s"R$ans") }
