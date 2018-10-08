@@ -17,11 +17,24 @@ class ParserSpec extends FunSuite {
   val c = Constant("c", node)
   val d = Constant("d", node)
 
+  val v1 = Variable("v1", node)
+  val v2 = Variable("v2", node)
+
+  var ruleIndex = 0
+  def weight(): (Token, FValue) = {
+    val token = Token(s"R$ruleIndex")
+    ruleIndex = ruleIndex + 1
+    (token, FValue(0.2, token))
+  }
+
+  val allRulesRef: Set[Rule[FValue]] = Enumerator.enumerate(Set(edge), Set(path), Set(scc),
+                                                            (_, _) => weight(), 3, 4)._2
+
   val simpleInput1: String = """Input { edge(Node, Node), null() }
                               |Invented { path(Node, Node) }
                               |Output { scc(Node, Node) }
-                              |EDB { edge(a, b), edge(b, c), edge(c, d), edge(a, c) }
-                              |IDB { path(a, b), path(b, c) }
+                              |EDB { edge(a, b), edge(b, c), edge(c, d), edge(d, a) }
+                              |IDB { scc(a, b), scc(b, c) }
                               |Rules{
                               |  path(v1, v2) :- edge(v2, v1).
                               |  0.2: null() :- .
@@ -37,12 +50,14 @@ class ParserSpec extends FunSuite {
     assert(problem.inventedRels == Set(path))
     assert(problem.outputRels == Set(scc))
 
-    assert(problem.edb == Set((edge, DTuple(Vector(a, b)), 1.0),
-                              (edge, DTuple(Vector(b, c)), 1.0),
-                              (edge, DTuple(Vector(c, d)), 1.0),
-                              (edge, DTuple(Vector(a, c)), 1.0)))
-    assert(problem.idb == Set((path, DTuple(Vector(a, b)), 1.0),
-                              (path, DTuple(Vector(b, c)), 1.0)))
+    val pedge = problem.edb(edge).support.map(tv => (tv._1, tv._2.v))
+    assert(pedge == Set((DTuple(Vector(a, b)), 1.0),
+                        (DTuple(Vector(b, c)), 1.0),
+                        (DTuple(Vector(c, d)), 1.0),
+                        (DTuple(Vector(d, a)), 1.0)))
+    val pscc = problem.idb(scc).support.map(tv => (tv._1, tv._2.v))
+    assert(pscc == Set((DTuple(Vector(a, b)), 1.0),
+                       (DTuple(Vector(b, c)), 1.0)))
 
     assert(problem.rules.size == 2)
     val nullRule = problem.rules.find(rule => rule.head.relation == nullRel && rule.body.isEmpty).get
@@ -67,7 +82,7 @@ class ParserSpec extends FunSuite {
     assert(!problem.edb.nonEmptySupport)
     assert(!problem.idb.nonEmptySupport)
 
-    assert(problem.rules.size == 21443)
+    assert(problem.rules.size == allRulesRef.size)
   }
 
   val simpleInput3: String = """Input { edge(Node, Node) }
@@ -88,7 +103,7 @@ class ParserSpec extends FunSuite {
     assert(!problem.edb.nonEmptySupport)
     assert(!problem.idb.nonEmptySupport)
 
-    assert(problem.rules.size == 21443)
+    assert(problem.rules.size == allRulesRef.size)
     assert(problem.rules.forall(_.coeff.v == 0.2))
   }
 
@@ -98,8 +113,11 @@ class ParserSpec extends FunSuite {
                                  |Invented { // } path(Node)
                                  |}
                                  |Output { scc(Node, Node) }
+                                 |Rules{
+                                 |  path(v1, v2) :- edge(v2, v1).
+                                 |}
                                  |EDB { edge(a, b), edge(b, c), edge(c, d), edge(a, c) }
-                                 |IDB { path(a, b), path(b, c) }""".stripMargin
+                                 |IDB { scc(a, b), scc(b, c) }""".stripMargin
 
   test("Should parse the commented input") {
     val parser = new QDParser
@@ -111,14 +129,18 @@ class ParserSpec extends FunSuite {
     assert(problem.inventedRels == Set(path))
     assert(problem.outputRels == Set(scc))
 
-    assert(problem.edb == Set((edge, DTuple(Vector(a, b)), 1.0),
-                              (edge, DTuple(Vector(b, c)), 1.0),
-                              (edge, DTuple(Vector(c, d)), 1.0),
-                              (edge, DTuple(Vector(a, c)), 1.0)))
-    assert(problem.idb == Set((path, DTuple(Vector(a, b)), 1.0),
-                              (path, DTuple(Vector(b, c)), 1.0)))
+    val pedge = problem.edb(edge).support.map(tv => (tv._1, tv._2.v))
+    assert(pedge == Set((DTuple(Vector(a, b)), 1.0),
+                        (DTuple(Vector(b, c)), 1.0),
+                        (DTuple(Vector(c, d)), 1.0),
+                        (DTuple(Vector(a, c)), 1.0)))
+    val pscc = problem.idb(scc).support.map(tv => (tv._1, tv._2.v))
+    assert(pscc == Set((DTuple(Vector(a, b)), 1.0),
+                       (DTuple(Vector(b, c)), 1.0)))
 
-    assert(problem.rules.isEmpty)
+    assert(problem.rules.size == 1)
+    val prule = problem.rules.head
+    assert(prule == Rule(prule.coeff, path(Vector(v1, v2)), Vector(edge(Vector(v2, v1)))))
   }
 
   val badInput1: String = """Input { edge(Node, Node),

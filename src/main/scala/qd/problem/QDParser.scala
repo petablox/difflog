@@ -216,7 +216,7 @@ class QDParser extends JavaTokenParsers {
       val head = f._1._2(problem)
       val body = f._2.map(_(problem))
 
-      val allVars = body.flatMap(_.variables) ++ head.variables
+      val allVars = (body.flatMap(_.variables) ++ head.variables).toSet
       for ((name, instances) <- allVars.groupBy(_.name)) {
         require(instances.size == 1, s"Multiple incompatible uses of variable name $name")
       }

@@ -8,8 +8,8 @@ abstract class Evaluator {
 }
 
 object Evaluator {
-  val STD_EVALUATORS = Map("Naive" -> NaiveEvaluator,
-                           "Seminaive" -> SeminaiveEvaluator,
-                           "Trie" -> TrieEvaluator,
-                           "TrieSemi" -> TrieSemiEvaluator)
+  val STD_EVALUATORS = Map("naive" -> NaiveEvaluator,
+                           "seminaive" -> SeminaiveEvaluator,
+                           "trie" -> TrieEvaluator,
+                           "trie-semi" -> TrieSemiEvaluator)
 }

@@ -1,6 +1,6 @@
 package qd
 
-import qd.evaluator.{Evaluator, NaiveEvaluator, SeminaiveEvaluator, TrieEvaluator}
+import qd.evaluator.Evaluator
 import qd.problem.{Problem, QDParser}
 
 import scala.io.Source
@@ -15,19 +15,10 @@ object Main extends App {
     parser.parseAll(parser.problem, inputString).get
   }
 
-  def getEvaluator(name: String): Evaluator = name match {
-    case "trie" => TrieEvaluator
-    case "semi" => SeminaiveEvaluator
-    case "naive" => NaiveEvaluator
-    case _ =>
-      scribe.warn(s"Unable to find evaluator $name")
-      TrieEvaluator
-  }
-
   args match {
     case Array("eval", _*) =>
       val queryFilename = args(1)
-      val evaluator = getEvaluator(if (2 < args.length) args(2) else "trie")
+      val evaluator = Evaluator.STD_EVALUATORS(if (2 < args.length) args(2) else "trie")
 
       val query = readProblem(queryFilename)
       val idb = evaluator(query.rules, query.edb)
@@ -52,11 +43,11 @@ object Main extends App {
         """Usage:
           |
           |  1. eval query.qd
-          |          [[trie] | semi | naive]
+          |          [[trie] | trie-semi | naive | seminaive]
           |     Evaluates the query query.qd using the specified evaluator
           |
           |  2. learn problem.qd
-          |           [[trie] | semi | naive]
+          |           [[trie] | trie-semi | naive | seminaive]
           |           [[xentropy] | loglinear | l2]
           |           tgtLoss [= 0.01]
           |           maxIters [= 1000]
@@ -64,8 +55,7 @@ object Main extends App {
           |
           |  3. tab2 problem.qd
           |          test.qd
-          |          [[trie] | semi]
-          |          [[auto] | norm | nonorm]
+          |          [[trie] | trie-semi | naive | seminaive]
           |          [[xentropy] | loglinear | l2]
           |          tgtLoss [= 0.01]
           |          maxIters [= 1000]

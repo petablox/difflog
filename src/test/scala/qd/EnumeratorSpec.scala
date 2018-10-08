@@ -52,7 +52,7 @@ class EnumeratorSpec extends FunSuite {
     for ((edbRels, invRels, idbRels, maxLiterals, maxVars, expSize) <- memo) {
       val rules = Enumerator.enumerate(edbRels, invRels, idbRels, (_, _) => weight(), maxLiterals, maxVars)._2
       lazy val caseName = s"${edbRels.map(_.name)}, ${invRels.map(_.name)}, ${idbRels.map(_.name)}, " +
-        s"$maxLiterals, $maxVars, $expSize"
+                          s"$maxLiterals, $maxVars, $expSize"
       assert(rules.size == expSize, s"(Case $caseName)")
     }
   }
