@@ -9,7 +9,7 @@ import scala.collection.parallel.{ParMap, ParSeq}
 object TrieEvaluator extends Evaluator {
 
   override def apply[T <: Value[T]](rules: Set[Rule[T]], edb: Config[T])(implicit vs: Semiring[T]): Config[T] = {
-    val trie = RuleTrie(rules.map(_.normalized))
+    val trie = RuleTrie(rules)
     var state = State(trie, edb, changed = true)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config

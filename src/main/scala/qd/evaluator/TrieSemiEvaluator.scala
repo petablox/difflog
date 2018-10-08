@@ -8,13 +8,9 @@ import qd.instance.{Assignment, Config}
 object TrieSemiEvaluator extends Evaluator {
 
   override def apply[T <: Value[T]](rules: Set[Rule[T]], edb: Config[T])(implicit vs: Semiring[T]): Config[T] = {
-    // val trie = RuleTrie(rules.map(_.normalized))
-    val oldMaxValency = rules.map(_.valency).max
-    val newRules = rules.map(_.normalized)
-    val newMaxValency = newRules.map(_.valency).max
-    val trie = RuleTrie(newRules)
+    val trie = RuleTrie(rules)
     var state = State(trie, edb, Config(), edb)
-    println(s"!!! $oldMaxValency $newMaxValency ${trie.numLiterals} ${rules.toSeq.map(_.body.size).sum}")
+    println(s"!!! ${trie.numLiterals} ${rules.toSeq.map(_.body.size).sum}")
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
   }

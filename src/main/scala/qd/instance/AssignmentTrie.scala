@@ -81,8 +81,7 @@ object AssignmentTrie {
     AssignmentTrie(signature, trie)
   }
 
-  def ground[T <: Value[T]](at: AssignmentTrie[T])
-                           (implicit ordering: Ordering[Variable], vs: Semiring[T]): Map[Map[Variable, Constant], T] = {
+  def ground[T <: Value[T]](at: AssignmentTrie[T]): Map[Map[Variable, Constant], T] = {
     def groundRec(signature: IndexedSeq[Variable], instance: Instance[T]): Map[Map[Variable, Constant], T] = {
       instance match {
         case InstanceBase(value) => Map(Map[Variable, Constant]() -> value)
@@ -95,7 +94,7 @@ object AssignmentTrie {
   }
 
   def ground[T <: Value[T]](at: AssignmentTrie[T], head: Literal)
-                           (implicit ordering: Ordering[Variable], vs: Semiring[T]): Instance[T] = {
+                           (implicit vs: Semiring[T]): Instance[T] = {
     var ans = Instance(head.relation.signature)
     for ((m, v) <- ground(at)) {
       val t = head.fields.map {

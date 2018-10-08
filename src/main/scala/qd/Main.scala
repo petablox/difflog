@@ -1,7 +1,6 @@
 package qd
 
 import qd.evaluator.{Evaluator, NaiveEvaluator, SeminaiveEvaluator, TrieEvaluator}
-import qd.problem.Problem._
 import qd.problem.{Problem, QDParser}
 
 import scala.io.Source
@@ -25,20 +24,13 @@ object Main extends App {
       TrieEvaluator
   }
 
-  def getNormMode(name: String): NormMode = name match {
-    case "auto" => AUTO_NORM
-    case "norm" => DO_NORM
-    case "nonorm" => NO_NORM
-  }
-
   args match {
     case Array("eval", _*) =>
       val queryFilename = args(1)
       val evaluator = getEvaluator(if (2 < args.length) args(2) else "trie")
-      val normMode = getNormMode(if (3 < args.length) args(3) else "auto")
 
       val query = readProblem(queryFilename)
-      val idb = evaluator(query.rules, normMode, query.edb)
+      val idb = evaluator(query.rules, query.edb)
       for (rel <- query.outputRels) {
         for ((t, v) <- idb(rel).support.toSeq.sortBy(-_._2.v)) {
           println(s"$v: ${rel.name}$t")
@@ -61,12 +53,10 @@ object Main extends App {
           |
           |  1. eval query.qd
           |          [[trie] | semi | naive]
-          |          [[auto] | norm | nonorm]
-          |     Evaluates the query query.qd, using the specified evaluator and query normalization setting
+          |     Evaluates the query query.qd using the specified evaluator
           |
           |  2. learn problem.qd
           |           [[trie] | semi | naive]
-          |           [[auto] | norm | nonorm]
           |           [[xentropy] | loglinear | l2]
           |           tgtLoss [= 0.01]
           |           maxIters [= 1000]

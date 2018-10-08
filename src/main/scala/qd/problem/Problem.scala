@@ -105,9 +105,4 @@ class Problem private (
 
 object Problem {
   def apply(): Problem = new Problem(Set(), Set(), Set(), Config(), Config(), TokenVec(Map()), Set())
-
-  sealed abstract class NormMode
-  final object AUTO_NORM extends NormMode
-  final object DO_NORM extends NormMode
-  final object NO_NORM extends NormMode
 }
