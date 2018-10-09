@@ -101,4 +101,5 @@ case class XEntropyScorer(edb: Config[FValue], refIDB: Config[FValue], evaluator
     val gradv = gradient(pos, out, rel, t)
     gradv * (vt - lt) / vt / (1 - vt)
   }
+
 }

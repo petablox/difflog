@@ -5,14 +5,14 @@ import qd.evaluator.{Evaluator, TrieEvaluator}
 import qd.instance.Config
 import qd.problem.Problem
 
-class Learner(q0: Problem) {
+class Learner(q0: Problem, scorerFactory: (Config[FValue], Config[FValue], Evaluator) => Scorer) {
 
   val edb: Config[FValue] = q0.edb
   val referenceIDB: Config[FValue] = q0.idb
 
   val tokens: Set[Token] = q0.pos.keySet
   val evaluator: Evaluator = TrieEvaluator
-  val scorer = new L2Scorer(edb, referenceIDB, evaluator)
+  val scorer: Scorer = scorerFactory(edb, referenceIDB, evaluator)
 
   private var pos: TokenVec = q0.pos
   private var rules: Set[Rule[FValue]] = q0.rules
