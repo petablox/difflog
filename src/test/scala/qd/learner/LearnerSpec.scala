@@ -3,6 +3,7 @@ package learner
 
 import org.scalatest.FunSuite
 import qd.data.graphs.Graphs
+import qd.evaluator.TrieEvaluator
 import qd.problem.{Problem, QDParser}
 
 class LearnerSpec extends FunSuite {
@@ -35,7 +36,7 @@ class LearnerSpec extends FunSuite {
     val tgtLoss = 0.1
     val maxIters = 100
 
-    val learner = new Learner(problem, L2Scorer)
+    val learner = new Learner(problem, TrieEvaluator, L2Scorer)
     val result = learner.learn(tgtLoss, maxIters)
     assert(result._4 < tgtLoss)
   }

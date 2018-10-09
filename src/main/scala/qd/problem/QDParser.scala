@@ -176,7 +176,7 @@ class QDParser extends JavaTokenParsers {
         val numNewRules = maxRules - p0.rules.size
         val newRules = Random.shuffle(allNewRules.toSeq).take(maxRules - p0.rules.size).toSet
 
-        scribe.debug(s"Chose $numNewRules new rules from skeleton containing ${skeleton._2.size} rules.")
+        scribe.info(s"Chose $numNewRules new rules from skeleton containing ${skeleton._2.size} rules.")
 
         val newTokens = newRules.flatMap(_.coeff.l.toVector)
 
