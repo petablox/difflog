@@ -48,7 +48,7 @@ object Main extends App {
           |
           |  2. learn problem.qd
           |           [[trie] | trie-semi | naive | seminaive]
-          |           [[xentropy] | loglinear | l2]
+          |           [[xentropy] | l2]
           |           tgtLoss [= 0.01]
           |           maxIters [= 1000]
           |     Solves the query synthesis problem described in problem.qd
@@ -56,7 +56,7 @@ object Main extends App {
           |  3. tab2 problem.qd
           |          test.qd
           |          [[trie] | trie-semi | naive | seminaive]
-          |          [[xentropy] | loglinear | l2]
+          |          [[xentropy] | l2]
           |          tgtLoss [= 0.01]
           |          maxIters [= 1000]
           |     Produces the statistics needed for Table 2 of the Difflog paper

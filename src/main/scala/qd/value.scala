@@ -113,3 +113,30 @@ class DValueSemiring extends Semiring[DValue] {
   override def Zero: DValue = DValue(Set())
   override def nonZero(t: DValue): Boolean = t.r.nonEmpty
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Vectors of Values
+
+case class VecValue[T <: Value[T]](vec: IndexedSeq[T]) extends Value[VecValue[T]] {
+  override def +(that: VecValue[T]): VecValue[T] = {
+    require(vec.size == that.vec.size)
+    VecValue(vec.zip(that.vec).map { case (v1, v2) => v1 + v2 })
+  }
+  override def *(that: VecValue[T]): VecValue[T] = {
+    require(vec.size == that.vec.size)
+    VecValue(vec.zip(that.vec).map { case (v1, v2) => v1 * v2 })
+  }
+  override def <~(that: VecValue[T]): Boolean = {
+    require(vec.size == that.vec.size)
+    vec.zip(that.vec).forall { case (v1, v2) => v1 <~ v2 }
+  }
+  override def unwrap: VecValue[T] = this
+  override def toString: String = s"VecValue(${vec.mkString(", ")})"
+}
+
+case class VecValueSemiring[T <: Value[T]](n: Int)(implicit vs: Semiring[T]) extends Semiring[VecValue[T]] {
+  require(n >= 0)
+  override def One: VecValue[T] = VecValue(Range(0, n).map(_ => vs.One))
+  override def Zero: VecValue[T] = VecValue(Range(0, n).map(_ => vs.Zero))
+  override def nonZero(t: VecValue[T]): Boolean = t.vec.exists(vs.nonZero)
+}

@@ -68,3 +68,37 @@ abstract class Scorer {
   }
 
 }
+
+object Scorer {
+  val STD_SCORERS = Map("l2" -> L2Scorer, "xentropy" -> XEntropyScorer)
+}
+
+case class L2Scorer(edb: Config[FValue], refIDB: Config[FValue], evaluator: Evaluator) extends Scorer {
+
+  override def loss(out: Config[FValue], rel: Relation, t: DTuple): Double = {
+    val vt = out(rel)(t).v
+    val lt = refIDB(rel)(t).v
+    (vt - lt) * (vt - lt)
+  }
+
+  override def gradientLoss(pos: TokenVec, out: Config[FValue], rel: Relation, t: DTuple): TokenVec = {
+    gradient(pos, out, rel, t) * (out(rel)(t).v - refIDB(rel)(t).v) * 2
+  }
+
+}
+
+case class XEntropyScorer(edb: Config[FValue], refIDB: Config[FValue], evaluator: Evaluator) extends Scorer {
+
+  override def loss(out: Config[FValue], rel: Relation, t: DTuple): Double = {
+    val vt = out(rel)(t).v
+    val lt = refIDB(rel)(t).v
+    -(lt * Math.log(vt) + (1 - lt) * Math.log(1 - vt))
+  }
+
+  override def gradientLoss(pos: TokenVec, out: Config[FValue], rel: Relation, t: DTuple): TokenVec = {
+    val vt = out(rel)(t).v
+    val lt = refIDB(rel)(t).v
+    val gradv = gradient(pos, out, rel, t)
+    gradv * (vt - lt) / vt / (1 - vt)
+  }
+}
