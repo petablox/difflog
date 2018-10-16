@@ -8,8 +8,6 @@ import qd.problem.{Problem, QDParser}
 
 class LearnerSpec extends FunSuite {
 
-  val parser = new QDParser
-
   val node: Domain = Graphs.node
   val edge: Relation = Graphs.edge
   val nullRel: Relation = Relation("null", Vector())
@@ -30,7 +28,7 @@ class LearnerSpec extends FunSuite {
                                |                              path(c, d), path(c, e),
                                |                                          path(d, e) }
                                |AllRules(2, 3)""".stripMargin
-  val problem: Problem = parser.parseAll(parser.problem, simpleInput).get
+  val problem: Problem = new QDParser().parse(simpleInput)
 
   test(s"Should be able to learn transitive closure from Line(5) and ${problem.rules.size} rules") {
     val tgtLoss = 0.1

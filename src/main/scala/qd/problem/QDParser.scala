@@ -12,6 +12,8 @@ class QDParser extends JavaTokenParsers {
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Main Block
 
+  def parse(inputStr: String): Problem = this.parseAll(problem, inputStr).get
+
   def problem: Parser[Problem] = (// domainBlock | // Commented because domains are now implicitly declared
                                   inputDeclBlock |
                                   inventedDeclBlock |

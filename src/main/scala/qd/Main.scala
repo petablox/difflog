@@ -12,8 +12,7 @@ object Main extends App {
 
   def readProblem(filename: String): Problem = {
     val inputString = Source.fromFile(filename).mkString
-    val parser = new QDParser()
-    parser.parseAll(parser.problem, inputString).get
+    new QDParser().parse(inputString)
   }
 
   args match {

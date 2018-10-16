@@ -41,10 +41,7 @@ class ParserSpec extends FunSuite {
                               |}""".stripMargin
 
   test("Should parse simpleInput1") {
-    val parser = new QDParser
-    val result = parser.parseAll(parser.problem, simpleInput1)
-    assert(result.successful)
-    val problem = result.get
+    val problem = new QDParser().parse(simpleInput1)
 
     assert(problem.inputRels == Set(edge, nullRel))
     assert(problem.inventedRels == Set(path))
@@ -70,10 +67,7 @@ class ParserSpec extends FunSuite {
                                |AllRules(3, 4)""".stripMargin
 
   test("Should parse simpleInput2") {
-    val parser = new QDParser
-    val result = parser.parseAll(parser.problem, simpleInput2)
-    assert(result.successful)
-    val problem = result.get
+    val problem = new QDParser().parse(simpleInput2)
 
     assert(problem.inputRels == Set(edge))
     assert(problem.inventedRels == Set(path))
@@ -91,10 +85,7 @@ class ParserSpec extends FunSuite {
                                |AllRules(3, 4, 0.2)""".stripMargin
 
   test("Should parse simpleInput3") {
-    val parser = new QDParser
-    val result = parser.parseAll(parser.problem, simpleInput3)
-    assert(result.successful)
-    val problem = result.get
+    val problem = new QDParser().parse(simpleInput3)
 
     assert(problem.inputRels == Set(edge))
     assert(problem.inventedRels == Set(path))
@@ -120,10 +111,7 @@ class ParserSpec extends FunSuite {
                                  |IDB { scc(a, b), scc(b, c) }""".stripMargin
 
   test("Should parse the commented input") {
-    val parser = new QDParser
-    val result = parser.parseAll(parser.problem, commentedInput)
-    assert(result.successful)
-    val problem = result.get
+    val problem = new QDParser().parse(commentedInput)
 
     assert(problem.inputRels == Set(edge, Relation("null", Vector())))
     assert(problem.inventedRels == Set(path))
@@ -150,9 +138,10 @@ class ParserSpec extends FunSuite {
                             |IDB { path(a, b), path(b, c) }""".stripMargin
 
   test("Should fail to parse badInput1") {
-    val parser = new QDParser
-    val result = parser.parseAll(parser.problem, badInput1)
-    assert(!result.successful)
+    try {
+      new QDParser().parse(badInput1)
+      fail()
+    } catch { case _: Throwable => () }
   }
 
   val badInput2: String = """Input { edge(Node, Node), edge() }
@@ -163,8 +152,7 @@ class ParserSpec extends FunSuite {
 
   test("Should fail to parse badInput2") {
     try {
-      val parser = new QDParser
-      parser.parseAll(parser.problem, badInput2)
+      new QDParser().parse(badInput2)
       fail()
     } catch { case _: Throwable => () }
   }
