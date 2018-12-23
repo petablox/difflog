@@ -56,6 +56,16 @@ class InstanceSpec extends FunSuite {
     assert(instAAD4.support == Set((abd0, f2), (cbd0, f12)))
   }
 
+  test("Instance emptiness check works as desired") {
+    assert(instAD1.isEmpty)
+    assert(instAD2.nonEmpty)
+
+    assert(instAAD1.isEmpty)
+    assert(instAAD2.nonEmpty)
+    assert(instAAD3.nonEmpty)
+    assert(instAAD4.nonEmpty)
+  }
+
   test("Values are retrieved correctly") {
     val vs = implicitly[Semiring[FValue]]
     assert(instAD1(ad0) == vs.Zero)
