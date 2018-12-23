@@ -15,7 +15,10 @@ sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])
                                    yield (constant +: tuple) -> value
   }
 
-  lazy val nonEmpty: Boolean = support.nonEmpty
+  lazy val nonEmpty: Boolean = this match {
+    case InstanceBase(value) => vs.nonZero(value)
+    case InstanceInd(_, _, map) => map.values.exists(_.nonEmpty)
+  }
 
   override def apply(tuple: DTuple): T = {
     require(tuple.arity == this.arity)

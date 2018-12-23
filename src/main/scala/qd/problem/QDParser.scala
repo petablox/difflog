@@ -135,8 +135,8 @@ class QDParser extends JavaTokenParsers {
           (token, value)
         }
 
-        val skeleton = Enumerator.enumerate[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
-                                                    (_, _) => weight(), maxLiterals, maxVars)
+        val skeleton = RuleEnumerator.enumerate[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
+                                                        (_, _) => weight(), maxLiterals, maxVars)
         val pos = TokenVec(skeleton._1.mapValues(_.v))
         val rules = skeleton._2
 
@@ -168,8 +168,8 @@ class QDParser extends JavaTokenParsers {
           (token, value)
         }
 
-        val skeleton = Enumerator.enumerate[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
-                                                    (_, _) => weight(), maxLiterals, maxVars)
+        val skeleton = RuleEnumerator.enumerate[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
+                                                        (_, _) => weight(), maxLiterals, maxVars)
         val pos = TokenVec(skeleton._1.mapValues(_.v))
 
         val allNewRules = skeleton._2.filter { rnew =>

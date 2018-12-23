@@ -1,6 +1,6 @@
 package qd
 
-object Enumerator {
+object RuleEnumerator {
 
   def enumerate[T <: Value[T]](
                                 inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],

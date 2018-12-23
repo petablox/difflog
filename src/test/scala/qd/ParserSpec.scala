@@ -27,8 +27,8 @@ class ParserSpec extends FunSuite {
     (token, FValue(0.2, token))
   }
 
-  val allRulesRef: Set[Rule[FValue]] = Enumerator.enumerate(Set(edge), Set(path), Set(scc),
-                                                            (_, _) => weight(), 3, 4)._2
+  val allRulesRef: Set[Rule[FValue]] = RuleEnumerator.enumerate(Set(edge), Set(path), Set(scc),
+                                                                (_, _) => weight(), 3, 4)._2
 
   val simpleInput1: String = """Input { edge(Node, Node), null() }
                               |Invented { path(Node, Node) }

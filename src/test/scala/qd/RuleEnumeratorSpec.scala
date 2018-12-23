@@ -5,7 +5,7 @@ import data.graphs.Graphs
 
 import scala.util.Random
 
-class EnumeratorSpec extends FunSuite {
+class RuleEnumeratorSpec extends FunSuite {
 
   val edge: Relation = Graphs.edge
   val path: Relation = Graphs.path
@@ -50,7 +50,7 @@ class EnumeratorSpec extends FunSuite {
 
   test("Should enumerate expected number of rules") {
     for ((edbRels, invRels, idbRels, maxLiterals, maxVars, expSize) <- memo) {
-      val rules = Enumerator.enumerate(edbRels, invRels, idbRels, (_, _) => weight(), maxLiterals, maxVars)._2
+      val rules = RuleEnumerator.enumerate(edbRels, invRels, idbRels, (_, _) => weight(), maxLiterals, maxVars)._2
       lazy val caseName = s"${edbRels.map(_.name)}, ${invRels.map(_.name)}, ${idbRels.map(_.name)}, " +
                           s"$maxLiterals, $maxVars, $expSize"
       assert(rules.size == expSize, s"(Case $caseName)")
@@ -59,8 +59,8 @@ class EnumeratorSpec extends FunSuite {
 
   test("Should contain the usual suspects") {
     val vs = implicitly[Semiring[FValue]]
-    val allRules = Enumerator.enumerate(se, sp, ss, (_, _) => weight(), 3, 4)._2
-                             .map(r => Rule(vs.One, r.head, r.body))
+    val allRules = RuleEnumerator.enumerate(se, sp, ss, (_, _) => weight(), 3, 4)._2
+                                 .map(r => Rule(vs.One, r.head, r.body))
     val baseSpec = new BaseSpec
     for (rule <- Set(baseSpec.rule1, baseSpec.rule2, baseSpec.rule3, baseSpec.rule4, baseSpec.rule5, baseSpec.rule6)) {
       assert(allRules.contains(Rule(vs.One, rule.head, rule.body).normalized))
