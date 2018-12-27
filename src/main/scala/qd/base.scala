@@ -65,7 +65,7 @@ case class Rule[T <: Value[T]](coeff: T, head: Literal, body: IndexedSeq[Literal
   require(head.variables.subsetOf(variables))
 
   override def toString: String = {
-    val sortedBody = body.map(_.toString).toList.sorted
+    val sortedBody = body.map(_.toString)
     s"$coeff: $head :- ${sortedBody.mkString(", ")}."
   }
 

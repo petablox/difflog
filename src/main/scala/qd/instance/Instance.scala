@@ -8,19 +8,19 @@ sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])
   extends (DTuple => T) {
   val arity: Int = signature.length
 
+  val nonEmpty: Boolean = this match {
+    case InstanceBase(value) => vs.nonZero(value)
+    case InstanceInd(_, _, map) => map.values.exists(_.nonEmpty)
+  }
+
+  val isEmpty: Boolean = !this.nonEmpty
+
   lazy val support: Set[(DTuple, T)] = this match {
     case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Vector()), value)) else Set()
     case InstanceInd(_, _, map) => for ((constant, mapA) <- map.view.toSet;
                                         (tuple, value) <- mapA.support)
                                    yield (constant +: tuple) -> value
   }
-
-  lazy val nonEmpty: Boolean = this match {
-    case InstanceBase(value) => vs.nonZero(value)
-    case InstanceInd(_, _, map) => map.values.exists(_.nonEmpty)
-  }
-
-  lazy val isEmpty: Boolean = !this.nonEmpty
 
   override def apply(tuple: DTuple): T = {
     require(tuple.arity == this.arity)

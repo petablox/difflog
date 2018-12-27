@@ -9,7 +9,6 @@ extends (Relation => Instance[T]) {
   require(map.forall { case (relation, instance) => relation.signature == instance.signature })
 
   override def apply(relation: Relation): Instance[T] = map.getOrElse(relation, Instance(relation))
-  def get(relation: Relation): Option[Instance[T]] = Some(this(relation))
   def +(ri: (Relation, Instance[T])): Config[T] = {
     val (relation, instance) = ri
     val newInstance = this(relation) ++ instance
