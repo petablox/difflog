@@ -12,7 +12,7 @@ class Problem private (
                         val idb: Config[FValue],
 
                         val pos: TokenVec,
-                        val rules: Set[Rule[FValue]]
+                        val rules: Set[Rule]
                       ) {
 
   def allTokens: Set[Token] = pos.keySet
@@ -87,19 +87,13 @@ class Problem private (
     new Problem(inputRels, inventedRels, outputRels, edb, idb, pos + (token -> value), rules)
   }
 
-  def addRule(rule: Rule[FValue]): Problem = {
+  def addRule(rule: Rule): Problem = {
     require(knownRelation(rule.head.relation))
     require(rule.body.forall(literal => knownRelation(literal.relation)))
     new Problem(inputRels, inventedRels, outputRels, edb, idb, pos, rules + rule)
   }
 
-  def addRule(lineage: Lineage, head: Literal, body: Vector[Literal]): Problem = {
-    val coeff = pos(lineage)
-    val rule = Rule(coeff, head, body)
-    new Problem(inputRels, inventedRels, outputRels, edb, idb, pos, rules + rule)
-  }
-
-  def addRules(newRules: Set[Rule[FValue]]): Problem = newRules.foldLeft(this)(_ addRule _)
+  def addRules(newRules: Set[Rule]): Problem = newRules.foldLeft(this)(_ addRule _)
 
 }
 

@@ -77,7 +77,7 @@ object SeminaiveEvaluator extends Evaluator {
                                .toSeq.map(mv => Assignment(mv._1, mv._2))
     }
 
-    val newTuples = assignments.map(_ * state.pos(rule.token)).map(_.toTuple(rule.head)).toMap
+    val newTuples = assignments.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head)).toMap
     state.addTuples(rule.head.relation, newTuples)
   }
 

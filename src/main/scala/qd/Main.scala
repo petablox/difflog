@@ -26,7 +26,7 @@ object Main extends App {
       val query = readQDProblem(queryFilename)
       val evaluator = Evaluator.STD_EVALUATORS(evaluatorName)
 
-      val idb = evaluator(query.rules, query.edb)
+      val idb = evaluator(query.rules, query.pos, query.edb)
       for (rel <- query.outputRels) {
         for ((t, v) <- idb(rel).support.toSeq.sortBy(-_._2.v)) {
           println(s"$v: ${rel.name}$t")
@@ -47,7 +47,7 @@ object Main extends App {
       val maxIters = maxItersStr.toInt
       require(maxIters > 0)
 
-      val concept = Learner.learn(queryTrain, evaluator, scorer, tgtLoss, maxIters)
+      Learner.learn(queryTrain, evaluator, scorer, tgtLoss, maxIters)
       ???
 
     case Array("tab2", _*) => ???
@@ -59,7 +59,7 @@ object Main extends App {
       val maxIters = maxItersStr.toInt
       require(maxIters > 0)
 
-      val concept = Learner.learn(query, evaluator, scorer, tgtLoss, maxIters)
+      Learner.learn(query, evaluator, scorer, tgtLoss, maxIters)
       ???
 
     case Array("ntp-learn", _*) => ???

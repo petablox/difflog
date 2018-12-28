@@ -111,38 +111,23 @@ class QDParser extends JavaTokenParsers {
 
   def ruleBlock: Parser[Problem => Problem] = augmentationRuleBlock | explicitRuleBlock | minRuleBlock
 
-  // One may either write:
-  // 1. AllRules(2, 3), to indicate all rules with 2 literals and 3 variables and randomly initialized coefficients, or
-  // 2. AllRules(2, 3, 0.6), to indicate all rules with 2 literals and 3 variables and coefficients set to 0.6.
+  // One may write AllRules(2, 3), to indicate all rules with 2 literals and 3 variables and randomly initialized
+  // coefficients.
 
   def augmentationRuleBlock: Parser[Problem => Problem] = {
     "AllRules" ~> ("(" ~>
                         (wholeNumber ^^ (_.toInt)) ~
-                        ("," ~> (wholeNumber ^^ (_.toInt))) ~
-                        ("," ~> decimalNumber ^^ (f => Some(f.toDouble))| "" ^^ (_ => None)) <~
+                        ("," ~> (wholeNumber ^^ (_.toInt))) <~
                    ")") ^^ {
       f => p0 =>
-        val maxLiterals = f._1._1
-        val maxVars = f._1._2
-        val weightSpec = f._2
+        val maxLiterals = f._1
+        val maxVars = f._2
 
         require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
         require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
-        def weight(): (Token, FValue) = {
-          val token = nextToken()
-          val value = if (weightSpec.nonEmpty) FValue(weightSpec.get, token) else FValue(rng.nextDouble(), token)
-          (token, value)
-        }
-
-        val skeleton = RuleEnumerator.enumerate[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
-                                                        (_, _) => weight(), maxLiterals, maxVars)
-        val pos = TokenVec(skeleton._1.mapValues(_.v))
-        val rules = skeleton._2
-
-        val p1 = pos.foldLeft(p0) { case (p, (token, value)) => p.addToken(token, value) }
-        val p2 = p1.addRules(rules)
-        p2
+        val rules = RuleEnumerator.enumerate(p0.inputRels, p0.inventedRels, p0.outputRels, maxLiterals, maxVars)
+        p0.addRules(rules)
     }
   }
 
@@ -150,41 +135,26 @@ class QDParser extends JavaTokenParsers {
     "MinRules" ~> ("(" ~>
                            (wholeNumber ^^ (_.toInt)) ~
                            ("," ~> (wholeNumber ^^ (_.toInt))) ~
-                           ("," ~> (wholeNumber ^^ (_.toInt))) ~
-                           ("," ~> decimalNumber ^^ (f => Some(f.toDouble))| "" ^^ (_ => None)) <~
+                           ("," ~> (wholeNumber ^^ (_.toInt))) <~
                    ")") ^^ {
       f => p0 =>
-        val maxRules = f._1._1._1
-        val maxLiterals = f._1._1._2
-        val maxVars = f._1._2
-        val weightSpec = f._2
+        val maxRules = f._1._1
+        val maxLiterals = f._1._2
+        val maxVars = f._2
 
         require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
         require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
-        def weight(): (Token, FValue) = {
-          val token = nextToken()
-          val value = if (weightSpec.nonEmpty) FValue(weightSpec.get, token) else FValue(rng.nextDouble(), token)
-          (token, value)
-        }
-
-        val skeleton = RuleEnumerator.enumerate[FValue](p0.inputRels, p0.inventedRels, p0.outputRels,
-                                                        (_, _) => weight(), maxLiterals, maxVars)
-        val pos = TokenVec(skeleton._1.mapValues(_.v))
-
-        val allNewRules = skeleton._2.filter { rnew =>
+        val soup = RuleEnumerator.enumerate(p0.inputRels, p0.inventedRels, p0.outputRels, maxLiterals, maxVars)
+        val allNewRules = soup.filter { rnew =>
           !p0.rules.exists(rold => rold.head == rnew.head && rold.body == rnew.body)
         }
+
         val numNewRules = maxRules - p0.rules.size
         val newRules = Random.shuffle(allNewRules.toSeq).take(maxRules - p0.rules.size).toSet
 
-        scribe.info(s"Chose $numNewRules new rules from skeleton containing ${skeleton._2.size} rules.")
-
-        val newTokens = newRules.flatMap(_.coeff.l.toVector)
-
-        val p1 = newTokens.foldLeft(p0) { case (p, token) => p.addToken(token, pos.map(token)) }
-        val p2 = p1.addRules(newRules)
-        p2
+        scribe.info(s"Chose $numNewRules new rules from soup containing ${soup.size} rules.")
+        p0.addRules(newRules)
     }
   }
 
@@ -207,7 +177,7 @@ class QDParser extends JavaTokenParsers {
   // SmallValue @ path(a, c) :- path(a, d).
   // BigValue @ path(a, c) :- path(a, b), edge(b, c).
 
-  def ruleDecl: Parser[Problem => (Token, Double, Rule[FValue])] = {
+  def ruleDecl: Parser[Problem => (Token, Double, Rule)] = {
     (ident <~ "@" ^^ (f => Some(f)) | "" ^^ (_ => None)) ~
     (decimalNumber <~ ":" ^^ (f => f.toDouble) | "" ^^ (_ => rng.nextDouble())) ~
     literal ~ (":-" ~> literalSeq <~ ".") ^^ { f => problem =>
@@ -222,7 +192,7 @@ class QDParser extends JavaTokenParsers {
         require(instances.size == 1, s"Multiple incompatible uses of variable name $name")
       }
 
-      val rule = Rule(FValue(value, token), head, body)
+      val rule = Rule(token, head, body)
       (token, value, rule)
     }
   }

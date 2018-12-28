@@ -125,8 +125,7 @@ class ALPSParser {
            (headLit, _, _) <- instantiateMetaLiteral(mlits.head, msr, msv, problem.outputRels ++
                                                                            problem.inventedRels)) {
         val token = nextToken()
-        val value = FValue(rng.nextDouble(), token)
-        val rule = Rule(value, headLit, bodyLits.toVector).normalized
+        val rule = Rule(token, headLit, bodyLits.toVector).normalized
         ans = ans.addRule(rule)
       }
     }
