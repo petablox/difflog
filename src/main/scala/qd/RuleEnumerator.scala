@@ -76,15 +76,20 @@ object RuleEnumerator {
       rule.body.contains(rule.head) || reachableVars(rule).size < rule.variables.size
     }
 
+    val unnamedRules = for (targetRel <- inventedRels ++ outputRels;
+                            body <- allBodies;
+                            head <- allHeads(targetRel, body);
+                            rule = Rule(Token(s"R"), head, body.toVector)
+                            if !isDegenerate(rule))
+                       yield {
+                         rule.normalized
+                       }
+
     var ruleIndex = 0
-    for (targetRel <- inventedRels ++ outputRels;
-         body <- allBodies;
-         head <- allHeads(targetRel, body);
-         rule = Rule(Token(s"R$ruleIndex"), head, body.toVector)
-         if !isDegenerate(rule))
+    for (rule <- unnamedRules)
     yield {
       ruleIndex = ruleIndex + 1
-      rule.normalized
+      Rule(Token(s"R$ruleIndex"), rule.head, rule.body)
     }
 
   }

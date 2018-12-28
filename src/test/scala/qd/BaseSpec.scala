@@ -47,14 +47,16 @@ class BaseSpec extends FunSuite {
     }
   }
 
+  def rename(rule: Rule): Rule = Rule(Token("R"), rule.head, rule.body)
+
   test("Normalization preserves variable names") {
-    assert(rule1.normalized == rule2.normalized)
-    assert(rule1 != rule2)
-    assert(rule1.normalized != rule3.normalized)
+    assert(rename(rule1.normalized) == rename(rule2.normalized))
+    assert(rule1 != rule2 && rename(rule1) != rename(rule2))
+    assert(rule1.normalized != rule3.normalized && rename(rule1.normalized) != rename(rule3.normalized))
   }
 
   test("Normalization recovers some rule identities") {
-    assert(rule4.normalized == rule5.normalized)
+    assert(rename(rule4.normalized) == rename(rule5.normalized))
   }
 
 }
