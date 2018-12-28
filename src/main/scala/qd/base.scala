@@ -60,34 +60,18 @@ case class Literal(relation: Relation, fields: IndexedSeq[Parameter]) {
   })
 }
 
-case class Rule[T <: Value[T]](coeff: T, head: Literal, body: IndexedSeq[Literal]) {
+case class Rule(lineage: Lineage, head: Literal, body: IndexedSeq[Literal]) {
   val variables: Set[Variable] = body.flatMap(_.variables).toSet
   require(head.variables.subsetOf(variables))
 
   override def toString: String = {
     val sortedBody = body.map(_.toString)
-    s"$coeff: $head :- ${sortedBody.mkString(", ")}."
+    s"$lineage: $head :- ${sortedBody.mkString(", ")}."
   }
 
   lazy val valency: Int = Rule.valency(head, body)
 
-  lazy val normalized: Rule[T] = {
-    val (newHead, newBody, _) = Rule.normalize(this.head, this.body)
-    Rule(this.coeff, newHead, newBody)
-  }
-}
-
-object Rule {
-
-  def valency(head: Literal, body: IndexedSeq[Literal]): Int = Range(0, 1 + body.size).map({ i =>
-    val left = body.take(i)
-    val right = body.drop(i) :+ head
-    val leftVars = left.flatMap(_.variables).toSet
-    val rightVars = right.flatMap(_.variables).toSet
-    leftVars.intersect(rightVars).size
-  }).max
-
-  def normalize(head: Literal, body: IndexedSeq[Literal]): (Literal, IndexedSeq[Literal], Map[Variable, Variable]) = {
+  lazy val normalized: Rule = {
     val renamingMap = scala.collection.mutable.Map[Variable, Variable]()
     def rename(vOld: Variable): Variable = {
       if (!renamingMap.contains(vOld)) {
@@ -108,7 +92,19 @@ object Rule {
                      Literal(literal.relation, newFields)
                    }
     val ansHead = head.rename(rename)
-    (ansHead, ansBody2, renamingMap.toMap)
+
+    Rule(lineage, ansHead, ansBody2)
   }
+}
+
+object Rule {
+
+  def valency(head: Literal, body: IndexedSeq[Literal]): Int = Range(0, 1 + body.size).map({ i =>
+    val left = body.take(i)
+    val right = body.drop(i) :+ head
+    val leftVars = left.flatMap(_.variables).toSet
+    val rightVars = right.flatMap(_.variables).toSet
+    leftVars.intersect(rightVars).size
+  }).max
 
 }

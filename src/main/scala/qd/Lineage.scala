@@ -22,6 +22,12 @@ sealed abstract class Lineage {
 
   def toMultiset: Multiset[Token] = toVector.foldLeft(Multiset[Token]())(_ + _)
 
+  def tokenSet: Set[Token] = this match {
+    case Empty => Set()
+    case t @ Token(_) => Set(t)
+    case And(l1, l2) => l1.tokenSet ++ l2.tokenSet
+  }
+
   override def toString: String = this match {
     case Empty => "Empty"
     case Token(name) => s"$name"

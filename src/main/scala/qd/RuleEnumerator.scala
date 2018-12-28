@@ -2,11 +2,10 @@ package qd
 
 object RuleEnumerator {
 
-  def enumerate[T <: Value[T]](
-                                inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
-                                weight: (Literal, IndexedSeq[Literal]) => (Token, T),
-                                maxLiterals: Int, maxVars: Int
-                              )(implicit vs: Semiring[T]): (Map[Token, T], Set[Rule[T]]) = {
+  def enumerate(
+                 inputRels: Set[Relation], inventedRels: Set[Relation], outputRels: Set[Relation],
+                 maxLiterals: Int, maxVars: Int
+               ): Set[Rule] = {
 
     require(inputRels.intersect(inventedRels).isEmpty)
     require(inputRels.intersect(outputRels).isEmpty)
@@ -62,7 +61,7 @@ object RuleEnumerator {
       yield Literal(targetRel, binding)
     }
 
-    def reachableVars(rule: Rule[T]): Set[Variable] = {
+    def reachableVars(rule: Rule): Set[Variable] = {
       var (ans, candidate) = (Set[Variable](), rule.head.variables)
       val rbs = rule.body.toSet
       while (ans != candidate) {
@@ -73,27 +72,20 @@ object RuleEnumerator {
       ans
     }
 
-    def isDegenerate(rule: Rule[T]): Boolean = {
+    def isDegenerate(rule: Rule): Boolean = {
       rule.body.contains(rule.head) || reachableVars(rule).size < rule.variables.size
     }
 
-    val unweightedRules = for (targetRel <- inventedRels ++ outputRels;
-                               body <- allBodies;
-                               head <- allHeads(targetRel, body);
-                               rule = Rule(vs.One, head, body.toVector)
-                               if !isDegenerate(rule))
-                          yield rule.normalized
-
-    val weightedTriples = for (uwrule <- unweightedRules)
-                          yield {
-                            val tv = weight(uwrule.head, uwrule.body)
-                            val rule = Rule(tv._2, uwrule.head, uwrule.body)
-                            (tv._1, tv._2, rule)
-                          }
-    val pos = weightedTriples.map(triple => triple._1 -> triple._2).toMap
-    val weightedRules: Set[Rule[T]] = weightedTriples.map(_._3)
-
-    (pos, weightedRules)
+    var ruleIndex = 0
+    for (targetRel <- inventedRels ++ outputRels;
+         body <- allBodies;
+         head <- allHeads(targetRel, body);
+         rule = Rule(Token(s"R$ruleIndex"), head, body.toVector)
+         if !isDegenerate(rule))
+    yield {
+      ruleIndex = ruleIndex + 1
+      rule.normalized
+    }
 
   }
 

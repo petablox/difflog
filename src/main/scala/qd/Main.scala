@@ -42,28 +42,24 @@ object Main extends App {
     case Array("learn", queryFilenameTrain, evaluatorName, scorerName, tgtLossStr, maxItersStr) =>
       val queryTrain = readQDProblem(queryFilenameTrain)
       val evaluator = Evaluator.STD_EVALUATORS(evaluatorName)
-      val scorerFactory = Scorer.STD_SCORERS(scorerName)
+      val scorer = Scorer.STD_SCORERS(scorerName)
       val tgtLoss = tgtLossStr.toDouble
       val maxIters = maxItersStr.toInt
       require(maxIters > 0)
 
-      val learner = new Learner(queryTrain, evaluator, scorerFactory)
-      learner.learn(tgtLoss, maxIters)
-      learner.reinterpret()
+      val concept = Learner.learn(queryTrain, evaluator, scorer, tgtLoss, maxIters)
       ???
 
     case Array("tab2", _*) => ???
     case Array("alps", dataFilename, templateFilename, evaluatorName, scorerName, tgtLossStr, maxItersStr) =>
       val query = readALPSProblem(dataFilename, templateFilename)
       val evaluator = Evaluator.STD_EVALUATORS(evaluatorName)
-      val scorerFactory = Scorer.STD_SCORERS(scorerName)
+      val scorer = Scorer.STD_SCORERS(scorerName)
       val tgtLoss = tgtLossStr.toDouble
       val maxIters = maxItersStr.toInt
       require(maxIters > 0)
 
-      val learner = new Learner(query, evaluator, scorerFactory)
-      learner.learn(tgtLoss, maxIters)
-      learner.reinterpret()
+      val concept = Learner.learn(query, evaluator, scorer, tgtLoss, maxIters)
       ???
 
     case Array("ntp-learn", _*) => ???

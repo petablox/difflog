@@ -7,15 +7,21 @@ import qd.instance.{Assignment, Config}
 
 object TrieSemiEvaluator extends Evaluator {
 
-  override def apply[T <: Value[T]](rules: Set[Rule[T]], edb: Config[T])(implicit vs: Semiring[T]): Config[T] = {
+  override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
+                                   (implicit vs: Semiring[T]): Config[T] = {
     val trie = RuleTrie(rules)
-    var state = State(trie, edb, Config(), edb)
+    var state = State(trie, pos, edb, Config(), edb)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
   }
 
-  case class State[T <: Value[T]](trie: RuleTrie[T], config: Config[T], deltaCurr: Config[T], deltaNext: Config[T])
-                                 (implicit val vs: Semiring[T]) {
+  case class State[T <: Value[T]](
+                                   trie: RuleTrie,
+                                   pos: Token => T,
+                                   config: Config[T],
+                                   deltaCurr: Config[T],
+                                   deltaNext: Config[T]
+                                 )(implicit val vs: Semiring[T]) {
 
     def changed: Boolean = deltaCurr.nonEmptySupport || deltaNext.nonEmptySupport
 
@@ -34,10 +40,10 @@ object TrieSemiEvaluator extends Evaluator {
       val newDNInstance = ntp.foldLeft(oldDNInstance)(_ + _)
       val newDeltaNext = deltaNext + (relation -> newDNInstance)
 
-      State(trie, newConfig, newDeltaCurr, newDeltaNext)
+      State(trie, pos, newConfig, newDeltaCurr, newDeltaNext)
     }
 
-    def nextEpoch: State[T] = if (!changed) this else State(trie, config, deltaNext, Config())
+    def nextEpoch: State[T] = if (!changed) this else State(trie, pos, config, deltaNext, Config())
 
   }
 
@@ -49,7 +55,7 @@ object TrieSemiEvaluator extends Evaluator {
   // Applies a RuleTrie to a configuration
   def immediateConsequence[T <: Value[T]](
                                            state: State[T],
-                                           trie: RuleTrie[T],
+                                           trie: RuleTrie,
                                            assignments: ParSeq[Assignment[T]],
                                            deltaDone: Boolean
                                          ): State[T] = {
@@ -83,7 +89,8 @@ object TrieSemiEvaluator extends Evaluator {
     // Step 2: Process leaves
     if (deltaDone) {
       for (rule <- trie.leaves) {
-        val newTuples = ax2.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
+        implicit val vs: Semiring[T] = state.vs
+        val newTuples = ax2.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head)).toMap
         nextState = nextState.addTuples(rule.head.relation, newTuples)
       }
     }

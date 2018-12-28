@@ -7,13 +7,14 @@ import scala.collection.parallel.{ParMap, ParSeq}
 
 object NaiveEvaluator extends Evaluator {
 
-  override def apply[T <: Value[T]](rules: Set[Rule[T]], edb: Config[T])(implicit vs: Semiring[T]): Config[T] = {
-    var state = State(rules, edb, changed = true)
+  override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
+                                   (implicit vs: Semiring[T]): Config[T] = {
+    var state = State(rules, pos, edb, changed = true)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
   }
 
-  case class State[T <: Value[T]](rules: Set[Rule[T]], config: Config[T], changed: Boolean)
+  case class State[T <: Value[T]](rules: Set[Rule], pos: Token => T, config: Config[T], changed: Boolean)
                                  (implicit val vs: Semiring[T]) {
 
     def addTuples(relation: Relation, newTuples: ParMap[DTuple, T]): State[T] = {
@@ -21,10 +22,10 @@ object NaiveEvaluator extends Evaluator {
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
       val newChanged = changed || newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
-      State(rules, newConfig, newChanged)
+      State(rules, pos, newConfig, newChanged)
     }
 
-    def nextEpoch: State[T] = if (!changed) this else State(rules, config, changed = false)
+    def nextEpoch: State[T] = if (!changed) this else State(rules, pos, config, changed = false)
 
   }
 
@@ -32,10 +33,10 @@ object NaiveEvaluator extends Evaluator {
     state.rules.foldLeft(state)((nextState, rule) => ruleConsequence(nextState, rule))
   }
 
-  def ruleConsequence[T <: Value[T]](state: State[T], rule: Rule[T]): State[T] = {
+  def ruleConsequence[T <: Value[T]](state: State[T], rule: Rule): State[T] = {
     implicit val vs: Semiring[T] = state.vs
 
-    var assignments = ParSeq(Assignment.Empty)
+    var assignments = ParSeq(Assignment.Empty[T])
     var remainingLits = rule.body
     for (literal <- rule.body) {
       assignments = extendAssignments(literal, state.config, assignments)
@@ -49,7 +50,7 @@ object NaiveEvaluator extends Evaluator {
                                .toSeq.map(mv => Assignment(mv._1, mv._2))
     }
 
-    val newTuples = assignments.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
+    val newTuples = assignments.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head)).toMap
     state.addTuples(rule.head.relation, newTuples)
   }
 

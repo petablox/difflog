@@ -8,14 +8,15 @@ import scala.collection.parallel.{ParMap, ParSeq}
 
 object TrieEvaluator extends Evaluator {
 
-  override def apply[T <: Value[T]](rules: Set[Rule[T]], edb: Config[T])(implicit vs: Semiring[T]): Config[T] = {
+  override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
+                                   (implicit vs: Semiring[T]): Config[T] = {
     val trie = RuleTrie(rules)
-    var state = State(trie, edb, changed = true)
+    var state = State(trie, pos, edb, changed = true)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
   }
 
-  case class RuleTrie[T <: Value[T]](leaves: Set[Rule[T]], map: Map[Literal, RuleTrie[T]]) extends Iterable[Rule[T]] {
+  case class RuleTrie(leaves: Set[Rule], map: Map[Literal, RuleTrie]) extends Iterable[Rule] {
 
     // Commented because the following check is too time-consuming
     // require(map.forall { case (literal, trie) => trie.forall(_.body.contains(literal)) })
@@ -24,15 +25,15 @@ object TrieEvaluator extends Evaluator {
     val numRules: Int = leaves.size + map.values.map(_.numRules).sum
     val numLiterals: Int = map.map({ case (_, subTrie) => 1 + subTrie.numLiterals }).sum
     val totalLiterals: Int = map.values.map(subTrie => subTrie.totalLiterals + subTrie.numRules).sum
-    override def iterator: Iterator[Rule[T]] = map.values.foldLeft(leaves.iterator)(_ ++ _.iterator)
+    override def iterator: Iterator[Rule] = map.values.foldLeft(leaves.iterator)(_ ++ _.iterator)
     val variables: Set[Variable] = {
       val vs1 = leaves.flatMap(_.head.variables)
       val vs2 = map.flatMap { case (l, t) => l.variables ++ t.variables }
       vs1 ++ vs2
     }
 
-    def +(rule: Rule[T]): RuleTrie[T] = {
-      def add(remainingLiterals: Seq[Literal], trie: RuleTrie[T]): RuleTrie[T] = {
+    def +(rule: Rule): RuleTrie = {
+      def add(remainingLiterals: Seq[Literal], trie: RuleTrie): RuleTrie = {
         if (remainingLiterals.isEmpty) RuleTrie(trie.leaves + rule, trie.map)
         else {
           val litHead = remainingLiterals.head
@@ -41,17 +42,17 @@ object TrieEvaluator extends Evaluator {
           RuleTrie(trie.leaves, trie.map + (litHead -> add(litRest, subTrie)))
         }
       }
-      add(rule.body.toSeq.sortBy(_.toString), this)
+      add(rule.body.sortBy(_.toString), this)
     }
 
   }
 
   object RuleTrie {
-    def apply[T <: Value[T]](): RuleTrie[T] = RuleTrie(Set(), Map())
-    def apply[T <: Value[T]](rules: Iterable[Rule[T]]): RuleTrie[T] = rules.foldLeft(RuleTrie[T]())(_ + _)
+    def apply(): RuleTrie = RuleTrie(Set(), Map())
+    def apply(rules: Iterable[Rule]): RuleTrie = rules.foldLeft(RuleTrie())(_ + _)
   }
 
-  case class State[T <: Value[T]](trie: RuleTrie[T], config: Config[T], changed: Boolean)
+  case class State[T <: Value[T]](trie: RuleTrie, pos: Token => T, config: Config[T], changed: Boolean)
                                  (implicit val vs: Semiring[T]) {
 
     def addTuples(relation: Relation, newTuples: ParMap[DTuple, T]): State[T] = {
@@ -59,10 +60,10 @@ object TrieEvaluator extends Evaluator {
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
       val newChanged = changed || newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
-      State(trie, newConfig, newChanged)
+      State(trie, pos, newConfig, newChanged)
     }
 
-    def nextEpoch: State[T] = if (!changed) this else State(trie, config, changed = false)
+    def nextEpoch: State[T] = if (!changed) this else State(trie, pos, config, changed = false)
 
   }
 
@@ -74,7 +75,7 @@ object TrieEvaluator extends Evaluator {
   // Applies a RuleTrie to a configuration
   def immediateConsequence[T <: Value[T]](
                                            state: State[T],
-                                           trie: RuleTrie[T],
+                                           trie: RuleTrie,
                                            assignments: ParSeq[Assignment[T]]
                                          ): State[T] = {
     // Step 0: Collapse assignments.
@@ -97,7 +98,8 @@ object TrieEvaluator extends Evaluator {
 
     // Step 2: Process leaves
     for (rule <- trie.leaves) {
-      val newTuples = ax2.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
+      implicit val vs: Semiring[T] = state.vs
+      val newTuples = ax2.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head)).toMap
       nextState = nextState.addTuples(rule.head.relation, newTuples)
     }
 

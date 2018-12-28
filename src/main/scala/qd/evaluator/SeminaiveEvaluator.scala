@@ -7,14 +7,16 @@ import scala.collection.parallel.{ParMap, ParSeq}
 
 object SeminaiveEvaluator extends Evaluator {
 
-  override def apply[T <: Value[T]](rules: Set[Rule[T]], edb: Config[T])(implicit vs: Semiring[T]): Config[T] = {
-    var state = State(rules, edb, Config(), edb)
+  override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
+                                   (implicit vs: Semiring[T]): Config[T] = {
+    var state = State(rules, pos, edb, Config(), edb)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
   }
 
   case class State[T <: Value[T]](
-                                   rules: Set[Rule[T]],
+                                   rules: Set[Rule],
+                                   pos: Token => T,
                                    config: Config[T],
                                    deltaCurr: Config[T],
                                    deltaNext: Config[T]
@@ -37,12 +39,12 @@ object SeminaiveEvaluator extends Evaluator {
       val ndnr = deltaTuples.foldLeft(dnr)(_ + _)
       val newDeltaNext = deltaNext + (relation -> ndnr)
 
-      val ans = State(rules, newConfig, newDeltaCurr, newDeltaNext)
+      val ans = State(rules, pos, newConfig, newDeltaCurr, newDeltaNext)
       assert(if (changed) ans.changed else true)
       ans
     }
 
-    def nextEpoch: State[T] = if (!changed) this else State(rules, config, deltaNext, Config())
+    def nextEpoch: State[T] = if (!changed) this else State(rules, pos, config, deltaNext, Config())
 
   }
 
@@ -50,11 +52,11 @@ object SeminaiveEvaluator extends Evaluator {
     state.rules.foldLeft(state)((nextState, rule) => ruleConsequence(nextState, rule))
   }
 
-  def ruleConsequence[T <: Value[T]](state: State[T], rule: Rule[T]): State[T] = {
+  def ruleConsequence[T <: Value[T]](state: State[T], rule: Rule): State[T] = {
     rule.body.foldLeft(state)((nextState, literal) => deltaConsequence(nextState, rule, literal))
   }
 
-  def deltaConsequence[T <: Value[T]](state: State[T], rule: Rule[T], deltaLiteral: Literal): State[T] = {
+  def deltaConsequence[T <: Value[T]](state: State[T], rule: Rule, deltaLiteral: Literal): State[T] = {
     require(rule.body.contains(deltaLiteral))
 
     implicit val vs: Semiring[T] = state.vs
@@ -75,7 +77,7 @@ object SeminaiveEvaluator extends Evaluator {
                                .toSeq.map(mv => Assignment(mv._1, mv._2))
     }
 
-    val newTuples = assignments.map(_ * rule.coeff).map(_.toTuple(rule.head)).toMap
+    val newTuples = assignments.map(_ * state.pos(rule.token)).map(_.toTuple(rule.head)).toMap
     state.addTuples(rule.head.relation, newTuples)
   }
 

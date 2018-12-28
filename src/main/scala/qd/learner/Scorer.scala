@@ -1,104 +1,107 @@
-package qd.learner
+package qd
+package learner
 
-import qd.Semiring.FValueSemiringObj
-import qd._
-import qd.evaluator.Evaluator
 import qd.instance.Config
 
 abstract class Scorer {
 
-  val edb: Config[FValue]
-  val refIDB: Config[FValue]
-  val evaluator: Evaluator
-
-  implicit val vs: FValueSemiring = FValueSemiringObj
-  val outputRels: Set[Relation] = refIDB.map.keySet
-
-  def gradient(pos: TokenVec, out: Config[FValue], rel: Relation, t: DTuple): TokenVec = {
-    val vt = out(rel)(t).v
-    val prov = out(rel)(t).l.toVector
-    val freq = pos.keySet.map(token => token -> prov.count(_ == token)).toMap
-    def gw(t: Token): Double = {
-      val ans = freq(t) * vt / pos(t).v
-      if (!ans.isNaN) ans else 0.0
+  def gradient(pos: TokenVec, cOut: Config[FValue], rel: Relation, t: DTuple): TokenVec = {
+    val vt = cOut(rel)(t).v
+    val prov = cOut(rel)(t).l.toVector
+    val freq = prov.groupBy(identity).map { case (token, value) => token -> value.size }
+    val ans = pos.keySet.map { token =>
+      val dvtDtoken = freq(token) * vt / pos(token).v
+      token -> (if (!dvtDtoken.isNaN) dvtDtoken else 0.0)
     }
-    TokenVec(freq.map { case (token, _) => token -> gw(token) })
+    TokenVec(ans.toMap)
   }
 
-  def loss(out: Config[FValue]): Double = outputRels.toSeq.map(rel => loss(out, rel)).sum
+  def loss(vOut: Double, vRef: Double): Double
 
-  def loss(out: Config[FValue], rel: Relation): Double = {
-    val allTuples = out(rel).support.map(_._1) ++ refIDB(rel).support.map(_._1)
-    val allErrors = allTuples.toSeq.map(t => loss(out, rel, t))
+  def loss(cOut: Config[FValue], cRef: Config[FValue], rel: Relation, t: DTuple): Double = {
+    val vOut = cOut(rel)(t).v
+    val vRef = cRef(rel)(t).v
+    loss(vOut, vRef)
+  }
+
+  def loss(cOut: Config[FValue], cRef: Config[FValue], rel: Relation): Double = {
+    val allTuples = cOut(rel).support.map(_._1) ++ cRef(rel).support.map(_._1)
+    val allErrors = allTuples.toSeq.map(t => loss(cOut, cRef, rel, t))
     allErrors.sum
   }
 
-  def loss(out: Config[FValue], rel: Relation, t: DTuple): Double
+  def loss(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation]): Double = {
+    outputRels.map(rel => loss(cOut, cRef, rel)).sum
+  }
 
-  def gradientLoss(pos: TokenVec, out: Config[FValue]): TokenVec = {
+  def gradientLoss(pos: TokenVec, cOut: Config[FValue], cRef: Config[FValue], rel: Relation, t: DTuple): TokenVec
+
+  def gradientLoss(pos: TokenVec, cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation]): TokenVec = {
     val numeratorVecs = for (rel <- outputRels.toSeq;
-                             allTuples = out(rel).support.map(_._1) ++ refIDB(rel).support.map(_._1);
+                             allTuples = cOut(rel).support.map(_._1) ++ cRef(rel).support.map(_._1);
                              t <- allTuples.toSeq)
-                        yield gradientLoss(pos, out, rel, t)
+                        yield gradientLoss(pos, cOut, cRef, rel, t)
     numeratorVecs.foldLeft(TokenVec.zero(pos.keySet))(_ + _)
   }
 
-  def gradientLoss(pos: TokenVec, out: Config[FValue], rel: Relation, t: DTuple): TokenVec
-
-  def f1(out: Config[FValue], cutoff: Double): Double = {
-    val p = precision(out, cutoff)
-    val r = recall(out, cutoff)
+  def f1(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation], cutoff: Double): Double = {
+    val p = precision(cOut, cRef, outputRels, cutoff)
+    val r = recall(cOut, cRef, outputRels, cutoff)
     2 * p * r / (p + r)
   }
 
-  def precision(out: Config[FValue], cutoff: Double): Double = {
+  def precision(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation], cutoff: Double): Double = {
     val ts = for (rel <- outputRels.toSeq;
-                  (t, v) <- out(rel).support.toSeq;
+                  (t, v) <- cOut(rel).support.toSeq
                   if v.v > cutoff)
-             yield if (refIDB(rel)(t).v > cutoff) 1.0 else 0.0
+             yield if (cRef(rel)(t).v > cutoff) 1.0 else 0.0
     ts.sum / ts.size
   }
 
-  def recall(out: Config[FValue], cutoff: Double): Double = {
+  def recall(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation], cutoff: Double): Double = {
     val ts = for (rel <- outputRels.toSeq;
-                  (t, v) <- refIDB(rel).support.toSeq;
+                  (t, v) <- cRef(rel).support.toSeq
                   if v.v > cutoff)
-      yield if (out(rel)(t).v > cutoff) 1.0 else 0.0
+             yield if (cOut(rel)(t).v > cutoff) 1.0 else 0.0
     ts.sum / ts.size
   }
 
 }
 
 object Scorer {
-  val STD_SCORERS = Map("l2" -> L2Scorer, "xentropy" -> XEntropyScorer)
+  val STD_SCORERS: Map[String, Scorer] = Map("l2" -> L2Scorer, "xentropy" -> XEntropyScorer)
 }
 
-case class L2Scorer(edb: Config[FValue], refIDB: Config[FValue], evaluator: Evaluator) extends Scorer {
+object L2Scorer extends Scorer {
 
-  override def loss(out: Config[FValue], rel: Relation, t: DTuple): Double = {
-    val vt = out(rel)(t).v
-    val lt = refIDB(rel)(t).v
-    (vt - lt) * (vt - lt)
-  }
+  override def loss(vOut: Double, vRef: Double): Double = (vOut - vRef) * (vOut - vRef)
 
-  override def gradientLoss(pos: TokenVec, out: Config[FValue], rel: Relation, t: DTuple): TokenVec = {
-    gradient(pos, out, rel, t) * (out(rel)(t).v - refIDB(rel)(t).v) * 2
+  override def gradientLoss(
+                             pos: TokenVec,
+                             cOut: Config[FValue],
+                             cRef: Config[FValue],
+                             rel: Relation,
+                             t: DTuple
+                           ): TokenVec = {
+    gradient(pos, cOut, rel, t) * (cOut(rel)(t).v - cRef(rel)(t).v) * 2
   }
 
 }
 
-case class XEntropyScorer(edb: Config[FValue], refIDB: Config[FValue], evaluator: Evaluator) extends Scorer {
+object XEntropyScorer extends Scorer {
 
-  override def loss(out: Config[FValue], rel: Relation, t: DTuple): Double = {
-    val vt = out(rel)(t).v
-    val lt = refIDB(rel)(t).v
-    -(lt * Math.log(vt) + (1 - lt) * Math.log(1 - vt))
-  }
+  override def loss(vOut: Double, vRef: Double): Double = -(vRef * Math.log(vOut) + (1 - vRef) * Math.log(1 - vOut))
 
-  override def gradientLoss(pos: TokenVec, out: Config[FValue], rel: Relation, t: DTuple): TokenVec = {
-    val vt = out(rel)(t).v
-    val lt = refIDB(rel)(t).v
-    val gradv = gradient(pos, out, rel, t)
+  override def gradientLoss(
+                             pos: TokenVec,
+                             cOut: Config[FValue],
+                             cRef: Config[FValue],
+                             rel: Relation,
+                             t: DTuple
+                           ): TokenVec = {
+    val vt = cOut(rel)(t).v
+    val lt = cRef(rel)(t).v
+    val gradv = gradient(pos, cOut, rel, t)
     gradv * (vt - lt) / vt / (1 - vt)
   }
 
