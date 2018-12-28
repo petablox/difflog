@@ -27,8 +27,7 @@ class ParserSpec extends FunSuite {
     (token, FValue(0.2, token))
   }
 
-  val allRulesRef: Set[Rule[FValue]] = RuleEnumerator.enumerate(Set(edge), Set(path), Set(scc),
-                                                                (_, _) => weight(), 3, 4)._2
+  val allRulesRef: Set[Rule] = RuleEnumerator.enumerate(Set(edge), Set(path), Set(scc), 3, 4)
 
   val simpleInput1: String = """Input { edge(Node, Node), null() }
                               |Invented { path(Node, Node) }
@@ -37,7 +36,7 @@ class ParserSpec extends FunSuite {
                               |IDB { scc(a, b), scc(b, c) }
                               |Rules{
                               |  path(v1, v2) :- edge(v2, v1).
-                              |  0.2: null() :- .
+                              |  null() :- .
                               |}""".stripMargin
 
   test("Should parse simpleInput1") {
@@ -57,8 +56,7 @@ class ParserSpec extends FunSuite {
                        (DTuple(Vector(b, c)), 1.0)))
 
     assert(problem.rules.size == 2)
-    val nullRule = problem.rules.find(rule => rule.head.relation == nullRel && rule.body.isEmpty).get
-    assert(nullRule.coeff.v == 0.2)
+    problem.rules.find(rule => rule.head.relation == nullRel && rule.body.isEmpty).get
   }
 
   val simpleInput2: String = """Input { edge(Node, Node) }
@@ -82,7 +80,7 @@ class ParserSpec extends FunSuite {
   val simpleInput3: String = """Input { edge(Node, Node) }
                                |Invented { path(Node, Node) }
                                |Output { scc(Node, Node) }
-                               |AllRules(3, 4, 0.2)""".stripMargin
+                               |AllRules(3, 4)""".stripMargin
 
   test("Should parse simpleInput3") {
     val problem = new QDParser().parse(simpleInput3)
@@ -95,7 +93,6 @@ class ParserSpec extends FunSuite {
     assert(!problem.idb.nonEmptySupport)
 
     assert(problem.rules.size == allRulesRef.size)
-    assert(problem.rules.forall(_.coeff.v == 0.2))
   }
 
   val commentedInput: String = """Input { edge(Node, Node), null() }
@@ -128,7 +125,7 @@ class ParserSpec extends FunSuite {
 
     assert(problem.rules.size == 1)
     val prule = problem.rules.head
-    assert(prule == Rule(prule.coeff, path(Vector(v1, v2)), Vector(edge(Vector(v2, v1)))))
+    assert(prule == Rule(prule.lineage, path(Vector(v1, v2)), Vector(edge(Vector(v2, v1)))))
   }
 
   val badInput1: String = """Input { edge(Node, Node),

@@ -34,9 +34,8 @@ class LearnerSpec extends FunSuite {
     val tgtLoss = 0.1
     val maxIters = 100
 
-    val learner = new Learner(problem, TrieEvaluator, L2Scorer)
-    val result = learner.learn(tgtLoss, maxIters)
-    assert(result._4 < tgtLoss)
+    val result = Learner.learn(problem, TrieEvaluator, L2Scorer, tgtLoss, maxIters)
+    assert(result.loss < tgtLoss)
   }
 
 }
