@@ -7,6 +7,8 @@ import qd.instance.{Assignment, Config}
 
 object TrieSemiEvaluator extends Evaluator {
 
+  override val toString: String = "TrieSemiEvaluator"
+
   override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
                                    (implicit vs: Semiring[T]): Config[T] = {
     val trie = RuleTrie(rules)

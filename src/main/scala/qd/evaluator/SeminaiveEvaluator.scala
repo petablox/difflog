@@ -7,6 +7,8 @@ import scala.collection.parallel.{ParMap, ParSeq}
 
 object SeminaiveEvaluator extends Evaluator {
 
+  override val toString: String = "SeminaiveEvaluator"
+
   override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
                                    (implicit vs: Semiring[T]): Config[T] = {
     var state = State(rules, pos, edb, Config(), edb)
@@ -90,7 +92,7 @@ object SeminaiveEvaluator extends Evaluator {
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
          newAssignment <- extendAssignment(literal, tuple, assignment))
-      yield newAssignment * score
+    yield newAssignment * score
   }
 
   def extendAssignment[T <: Value[T]](

@@ -8,6 +8,8 @@ import scala.collection.parallel.{ParMap, ParSeq}
 
 object TrieEvaluator extends Evaluator {
 
+  override val toString: String = "TrieEvaluator"
+
   override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
                                    (implicit vs: Semiring[T]): Config[T] = {
     val trie = RuleTrie(rules)

@@ -7,6 +7,8 @@ import scala.collection.parallel.{ParMap, ParSeq}
 
 object NaiveEvaluator extends Evaluator {
 
+  override val toString: String = "NaiveEvaluator"
+
   override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
                                    (implicit vs: Semiring[T]): Config[T] = {
     var state = State(rules, pos, edb, changed = true)
