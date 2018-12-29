@@ -28,13 +28,14 @@ object Main extends App {
 
       val idb = evaluator(query.rules, query.pos, query.edb)
       for (rel <- query.outputRels) {
-        for ((t, v) <- idb(rel).support.toSeq.sortBy(-_._2.v)) {
+        val x = idb(rel).support.toSeq
+        for ((t, v) <- idb(rel).support.seq.toSeq.sortBy(-_._2.v)) {
           println(s"$v: ${rel.name}$t")
           scribe.trace(s"$v: ${rel.name}$t")
         }
       }
       for (rel <- query.inventedRels) {
-        for ((t, v) <- idb(rel).support.toSeq.sortBy(-_._2.v)) {
+        for ((t, v) <- idb(rel).support.seq.toSeq.sortBy(-_._2.v)) {
           scribe.trace(s"$v: ${rel.name}$t")
         }
       }

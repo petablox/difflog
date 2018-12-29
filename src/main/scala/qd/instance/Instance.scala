@@ -1,6 +1,8 @@
 package qd
 package instance
 
+import scala.collection.parallel.{ParMap, ParSet}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Instances
 
@@ -15,9 +17,9 @@ sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])
 
   val isEmpty: Boolean = !this.nonEmpty
 
-  lazy val support: Set[(DTuple, T)] = this match {
-    case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Vector()), value)) else Set()
-    case InstanceInd(_, _, map) => for ((constant, mapA) <- map.view.toSet;
+  lazy val support: ParSet[(DTuple, T)] = this match {
+    case InstanceBase(value) => if (vs.nonZero(value)) ParSet((DTuple(Vector()), value)) else ParSet()
+    case InstanceInd(_, _, map) => for ((constant, mapA) <- map.toSet;
                                         (tuple, value) <- mapA.support)
                                    yield (constant +: tuple) -> value
   }
@@ -33,16 +35,16 @@ sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])
     }
   }
 
-  def filter(f: IndexedSeq[Option[Constant]]): Set[(DTuple, T)] = {
+  def filter(f: IndexedSeq[Option[Constant]]): ParSet[(DTuple, T)] = {
     require(f.length == this.arity)
     this match {
-      case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Vector()), value)) else Set()
+      case InstanceBase(value) => if (vs.nonZero(value)) ParSet((DTuple(Vector()), value)) else ParSet()
       case InstanceInd(_, _, map) =>
         f.head match {
           case Some(fh) =>
             val mfh = map.get(fh)
             if (mfh.nonEmpty) mfh.get.filter(f.tail).map { case (tuple, value) => (fh +: tuple, value) }
-            else Set()
+            else ParSet()
           case None =>
             for ((constant, ind) <- map.toSet;
                  (tuple, value) <- ind.filter(f.tail))
@@ -99,14 +101,14 @@ sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])
 object Instance {
   def apply[T <: Value[T]](signature: IndexedSeq[Domain])(implicit vs: Semiring[T]): Instance[T] = {
     if (signature.isEmpty) InstanceBase(vs.Zero)
-    else InstanceInd(signature.head, signature.tail, Map())
+    else InstanceInd(signature.head, signature.tail, ParMap())
   }
   def apply[T <: Value[T]](relation: Relation)(implicit vs: Semiring[T]): Instance[T] = Instance(relation.signature)
 }
 
 case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) extends Instance[T](Vector())
 
-case class InstanceInd[T <: Value[T]](domHead: Domain, domTail: IndexedSeq[Domain], map: Map[Constant, Instance[T]])
+case class InstanceInd[T <: Value[T]](domHead: Domain, domTail: IndexedSeq[Domain], map: ParMap[Constant, Instance[T]])
                                      (implicit vs: Semiring[T])
   extends Instance[T](domHead +: domTail) {
   require(map.forall { case (constant, _) => constant.domain == domHead })
