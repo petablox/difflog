@@ -62,7 +62,7 @@ class AssignmentTrieSpec extends FunSuite {
                                                      (DTuple(Vector(c, c)) -> FValue(0.4, Empty)))
 
   test("Assignments should be correctly constructed") {
-    assert(AssignmentTrie.build(inst1, lit1) == asgn5)
+    assert(AssignmentTrie.fromInstance(inst1, lit1) == asgn5)
   }
 
   test("Assignments should be correctly grounded") {

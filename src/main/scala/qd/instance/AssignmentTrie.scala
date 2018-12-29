@@ -12,72 +12,41 @@ case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instan
 
 object AssignmentTrie {
 
-  def build[T <: Value[T]](instance: Instance[T], bodyLit: Literal)
-                          (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
-    require(instance.signature == bodyLit.relation.signature)
+  def fromInstance[T <: Value[T]](instance: Instance[T], literal: Literal)
+                                 (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
+    require(instance.signature == literal.relation.signature)
 
-    val signature = bodyLit.variables.toVector.sorted
+    def _fromInstance(
+                       subInstance: Instance[T],
+                       fields: IndexedSeq[Parameter],
+                       context: SortedMap[Variable, Constant]
+                     ): Seq[(SortedMap[Variable, Constant], T)] = {
+      subInstance match {
+        case InstanceBase(value) =>
+          assert(fields.isEmpty)
+          Seq((context, value))
+        case InstanceInd(instHeadDom, _, map) =>
+          val fieldHead = fields.head
+          assert(fieldHead.domain == instHeadDom)
 
-    def buildRec(
-                  inst: Instance[T],
-                  litFields: IndexedSeq[Parameter],
-                  context: SortedMap[Variable, Constant]
-                ): Instance[T] = {
-      require(inst.signature == litFields.map(_.domain))
-      val ansVars = (litFields.collect({ case v @ Variable(_, _) => v }) ++ context.keys).distinct.sorted
-      val ansDoms = ansVars.map(_.domain)
+          fieldHead match {
+            case cfh @ Constant(_, _) if map.contains(cfh) => _fromInstance(map(cfh), fields.tail, context)
+            case Constant(_, _) => Seq()
 
-      inst match {
-        case InstanceBase(value) => Instance(ansDoms) + (DTuple(context.values.toVector) -> value)
-
-        case InstanceInd(domHead, _, map) =>
-          require(litFields.head.domain == domHead)
-          val fieldsTail = litFields.tail
-
-          litFields.head match {
-            case cHead @ Constant(_, _) =>
-              if (map.contains(cHead)) buildRec(map(cHead), fieldsTail, context) else Instance[T](ansDoms)
-
-            case vHead @ Variable(_, _) =>
-              val vBindings = if (!context.contains(vHead)) map.keySet
-                              else if (map.contains(context(vHead))) Set(context(vHead))
-                              else Set[Constant]()
-
-              val tailVars = fieldsTail.collect({ case v @ Variable(_, _) => v })
-
-              var contextCurr = context
-              var contextTail = SortedMap[Variable, Constant]()
-              var emitVHead = true
-
-              if (tailVars.nonEmpty) {
-                val minTailVar = tailVars.min
-                contextCurr = context.filterKeys(v => ordering.lt(v, minTailVar))
-                contextTail = context.filterKeys(v => ordering.gteq(v, minTailVar))
-                emitVHead = ordering.lt(vHead, minTailVar)
-              }
-
-              var ans = Instance(ansDoms)
-              for (vb <- vBindings) {
-                if (emitVHead) {
-                  contextCurr = contextCurr + (vHead -> vb)
-                } else {
-                  contextTail = contextTail + (vHead -> vb)
-                }
-
-                var recAns = buildRec(map(vb), fieldsTail, contextTail)
-                for ((v, c) <- contextCurr.toSeq.reverse) {
-                  assert(v.domain == c.domain)
-                  recAns = InstanceInd(v.domain, recAns.signature, Map(c -> recAns))
-                }
-                ans = ans ++ recAns
-              }
-              ans
+            case vfh @ Variable(_, _) if !context.contains(vfh) =>
+              for ((cfh, subSubInstance) <- map.toSeq;
+                   mv <- _fromInstance(subSubInstance, fields.tail, context + (vfh -> cfh)))
+              yield mv
+            case vfh @ Variable(_, _) if map.contains(context(vfh)) =>
+              _fromInstance(map(context(vfh)), fields.tail, context)
+            case Variable(_, _) => Seq()
           }
       }
-
     }
 
-    val trie = buildRec(instance, bodyLit.fields, SortedMap())
+    val signature = literal.variables.toVector.sorted
+    val tvs = _fromInstance(instance, literal.fields, SortedMap()).map({ case (m, v) => (DTuple(m.values.toVector), v)})
+    val trie = tvs.foldLeft(Instance(signature.map(_.domain)))(_ + _)
     AssignmentTrie(signature, trie)
   }
 
