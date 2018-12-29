@@ -51,19 +51,21 @@ object AssignmentTrie {
   }
 
   def ground[T <: Value[T]](at: AssignmentTrie[T]): Map[Map[Variable, Constant], T] = {
-    def groundRec(signature: IndexedSeq[Variable], instance: Instance[T]): Map[Map[Variable, Constant], T] = {
+    def _ground(signature: IndexedSeq[Variable], instance: Instance[T]): Map[Map[Variable, Constant], T] = {
       instance match {
-        case InstanceBase(value) => Map(Map[Variable, Constant]() -> value)
+        case InstanceBase(value) =>
+          assert(signature.isEmpty)
+          Map(Map[Variable, Constant]() -> value)
         case InstanceInd(_, _, map) =>
-          for ((c, instTl) <- map; (m, v) <- groundRec(signature.tail, instTl))
+          for ((c, instTl) <- map; (m, v) <- _ground(signature.tail, instTl))
           yield (m + (signature.head -> c)) -> v
       }
     }
-    groundRec(at.signature, at.instance)
+    _ground(at.signature, at.instance)
   }
 
-  def ground[T <: Value[T]](at: AssignmentTrie[T], head: Literal)
-                           (implicit vs: Semiring[T]): Instance[T] = {
+  def toInstance[T <: Value[T]](at: AssignmentTrie[T], head: Literal)
+                               (implicit vs: Semiring[T]): Instance[T] = {
     var ans = Instance(head.relation.signature)
     for ((m, v) <- ground(at)) {
       val t = head.fields.map {
@@ -78,8 +80,8 @@ object AssignmentTrie {
   def join[T <: Value[T]](at1: AssignmentTrie[T], at2: AssignmentTrie[T])
                          (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
 
-    def joinRec(sign1: IndexedSeq[Variable], inst1: Instance[T],
-                sign2: IndexedSeq[Variable], inst2: Instance[T]): Instance[T] = {
+    def _join(sign1: IndexedSeq[Variable], inst1: Instance[T],
+              sign2: IndexedSeq[Variable], inst2: Instance[T]): Instance[T] = {
 
       if (sign1.nonEmpty && sign2.nonEmpty) {
 
@@ -87,7 +89,7 @@ object AssignmentTrie {
         if (ordering.lt(head1, head2)) {
           val InstanceInd(domHead, _, map1) = inst1
           val domTailAns = (sign1.tail ++ sign2).distinct.sorted.map(_.domain)
-          val mapAns = for ((c1, instTl1) <- map1) yield c1 -> joinRec(sign1.tail, instTl1, sign2, inst2)
+          val mapAns = for ((c1, instTl1) <- map1) yield c1 -> _join(sign1.tail, instTl1, sign2, inst2)
           InstanceInd(domHead, domTailAns, mapAns)
         } else if (ordering.equiv(head1, head2)) {
           val InstanceInd(domHead, domTail1, map1) = inst1
@@ -96,14 +98,14 @@ object AssignmentTrie {
           val mapAns = (for (c <- map1.keySet ++ map2.keySet;
                              instTl1 = map1.getOrElse(c, Instance(domTail1));
                              instTl2 = map2.getOrElse(c, Instance(domTail2));
-                             instTl = joinRec(sign1.tail, instTl1, sign2.tail, instTl2))
+                             instTl = _join(sign1.tail, instTl1, sign2.tail, instTl2))
                         yield c -> instTl).toMap
           InstanceInd(domHead, domTailAns, mapAns)
         } else {
           assert(ordering.gt(head1, head2))
           val InstanceInd(domHead, _, map2) = inst2
           val domTailAns = (sign1 ++ sign2.tail).distinct.sorted.map(_.domain)
-          val mapAns = for ((c2, instTl2) <- map2) yield c2 -> joinRec(sign1, inst1, sign2.tail, instTl2)
+          val mapAns = for ((c2, instTl2) <- map2) yield c2 -> _join(sign1, inst1, sign2.tail, instTl2)
           InstanceInd(domHead, domTailAns, mapAns)
         }
 
@@ -119,7 +121,7 @@ object AssignmentTrie {
     }
 
     val signature = (at1.signature ++ at2.signature).sorted.distinct
-    val instance = joinRec(at1.signature, at1.instance, at2.signature, at2.instance)
+    val instance = _join(at1.signature, at1.instance, at2.signature, at2.instance)
     AssignmentTrie(signature, instance)
 
   }

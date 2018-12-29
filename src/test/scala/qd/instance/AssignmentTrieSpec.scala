@@ -66,7 +66,7 @@ class AssignmentTrieSpec extends FunSuite {
   }
 
   test("Assignments should be correctly grounded") {
-    assert(AssignmentTrie.ground(asgn1, lit2) == inst1)
+    assert(AssignmentTrie.toInstance(asgn1, lit2) == inst1)
   }
 
   test("Joins should be correctly computed") {
