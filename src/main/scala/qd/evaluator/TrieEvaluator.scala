@@ -18,7 +18,7 @@ object TrieEvaluator extends Evaluator {
     state.config
   }
 
-  case class RuleTrie(leaves: Set[Rule], map: Map[Literal, RuleTrie]) extends Iterable[Rule] {
+  class RuleTrie private (val leaves: Set[Rule], val map: Map[Literal, RuleTrie]) extends Iterable[Rule] {
 
     // Commented because the following check is too time-consuming
     // require(map.forall { case (literal, trie) => trie.forall(_.body.contains(literal)) })
@@ -36,12 +36,12 @@ object TrieEvaluator extends Evaluator {
 
     def +(rule: Rule): RuleTrie = {
       def add(remainingLiterals: Seq[Literal], trie: RuleTrie): RuleTrie = {
-        if (remainingLiterals.isEmpty) RuleTrie(trie.leaves + rule, trie.map)
+        if (remainingLiterals.isEmpty) new RuleTrie(trie.leaves + rule, trie.map)
         else {
           val litHead = remainingLiterals.head
           val litRest = remainingLiterals.tail
           val subTrie = trie.map.getOrElse(litHead, RuleTrie())
-          RuleTrie(trie.leaves, trie.map + (litHead -> add(litRest, subTrie)))
+          new RuleTrie(trie.leaves, trie.map + (litHead -> add(litRest, subTrie)))
         }
       }
       add(rule.body.sortBy(_.toString), this)
@@ -50,7 +50,7 @@ object TrieEvaluator extends Evaluator {
   }
 
   object RuleTrie {
-    def apply(): RuleTrie = RuleTrie(Set(), Map())
+    def apply(): RuleTrie = new RuleTrie(Set(), Map())
     def apply(rules: Iterable[Rule]): RuleTrie = rules.foldLeft(RuleTrie())(_ + _)
   }
 
@@ -117,7 +117,7 @@ object TrieEvaluator extends Evaluator {
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
          newAssignment <- extendAssignment(literal, tuple, assignment))
-      yield newAssignment * score
+    yield newAssignment * score
   }
 
   def extendAssignment[T <: Value[T]](

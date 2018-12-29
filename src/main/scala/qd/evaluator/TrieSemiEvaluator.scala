@@ -109,7 +109,7 @@ object TrieSemiEvaluator extends Evaluator {
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
          newAssignment <- extendAssignment(literal, tuple, assignment))
-      yield newAssignment * score
+    yield newAssignment * score
   }
 
   def extendAssignment[T <: Value[T]](
