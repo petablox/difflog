@@ -2,7 +2,7 @@ package qd
 package instance
 
 import scala.collection.SortedMap
-import scala.collection.parallel.{ParMap, ParSeq}
+import scala.collection.parallel.immutable.{ParMap, ParSeq}
 
 case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instance: Instance[T])
                                         (implicit ordering: Ordering[Variable]) {

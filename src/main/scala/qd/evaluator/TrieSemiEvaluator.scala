@@ -1,7 +1,7 @@
 package qd
 package evaluator
 
-import scala.collection.parallel.{ParMap, ParSeq}
+import scala.collection.parallel.immutable.{ParMap, ParSeq}
 import TrieEvaluator.RuleTrie
 import qd.instance.{Assignment, Config}
 

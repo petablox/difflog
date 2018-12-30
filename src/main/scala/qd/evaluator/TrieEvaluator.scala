@@ -4,7 +4,7 @@ package evaluator
 import qd.instance.{Assignment, Config}
 
 import scala.collection.immutable.Iterable
-import scala.collection.parallel.{ParMap, ParSeq}
+import scala.collection.parallel.immutable.{ParMap, ParSeq}
 
 object TrieEvaluator extends Evaluator {
 

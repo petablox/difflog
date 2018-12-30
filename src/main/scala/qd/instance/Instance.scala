@@ -1,12 +1,12 @@
 package qd
 package instance
 
-import scala.collection.parallel.{ParMap, ParSet}
+import scala.collection.parallel.immutable.{ParMap, ParSet}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Instances
 
-sealed abstract class Instance[T <: Value[T]](val signature: IndexedSeq[Domain])(implicit vs: Semiring[T])
+sealed abstract class Instance[T <: Value[T]] protected (val signature: IndexedSeq[Domain])(implicit vs: Semiring[T])
   extends (DTuple => T) {
   val arity: Int = signature.length
 
