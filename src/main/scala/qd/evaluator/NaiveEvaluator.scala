@@ -3,8 +3,6 @@ package evaluator
 
 import qd.instance.{Assignment, Config}
 
-import scala.collection.parallel.{ParMap, ParSeq}
-
 object NaiveEvaluator extends Evaluator {
 
   override val toString: String = "NaiveEvaluator"
@@ -19,7 +17,7 @@ object NaiveEvaluator extends Evaluator {
   case class State[T <: Value[T]](rules: Set[Rule], pos: Token => T, config: Config[T], changed: Boolean)
                                  (implicit val vs: Semiring[T]) {
 
-    def addTuples(relation: Relation, newTuples: ParMap[DTuple, T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Map[DTuple, T]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
@@ -38,7 +36,7 @@ object NaiveEvaluator extends Evaluator {
   def ruleConsequence[T <: Value[T]](state: State[T], rule: Rule): State[T] = {
     implicit val vs: Semiring[T] = state.vs
 
-    var assignments = ParSeq(Assignment.Empty[T])
+    var assignments = Seq(Assignment.Empty[T])
     var remainingLits = rule.body
     for (literal <- rule.body) {
       assignments = extendAssignments(literal, state.config, assignments)
@@ -59,8 +57,8 @@ object NaiveEvaluator extends Evaluator {
   def extendAssignments[T <: Value[T]](
                                         literal: Literal,
                                         config: Config[T],
-                                        assignments: ParSeq[Assignment[T]]
-                                      ): ParSeq[Assignment[T]] = {
+                                        assignments: Seq[Assignment[T]]
+                                      ): Seq[Assignment[T]] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

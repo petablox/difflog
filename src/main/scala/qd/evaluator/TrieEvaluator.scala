@@ -4,7 +4,6 @@ package evaluator
 import qd.instance.{Assignment, Config}
 
 import scala.collection.immutable.Iterable
-import scala.collection.parallel.immutable.{ParMap, ParSeq}
 
 object TrieEvaluator extends Evaluator {
 
@@ -57,7 +56,7 @@ object TrieEvaluator extends Evaluator {
   case class State[T <: Value[T]](trie: RuleTrie, pos: Token => T, config: Config[T], changed: Boolean)
                                  (implicit val vs: Semiring[T]) {
 
-    def addTuples(relation: Relation, newTuples: ParMap[DTuple, T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Map[DTuple, T]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
@@ -71,14 +70,14 @@ object TrieEvaluator extends Evaluator {
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
     implicit val vs: Semiring[T] = state.vs
-    immediateConsequence(state, state.trie, ParSeq(Assignment.Empty()))
+    immediateConsequence(state, state.trie, Seq(Assignment.Empty()))
   }
 
   // Applies a RuleTrie to a configuration
   def immediateConsequence[T <: Value[T]](
                                            state: State[T],
                                            trie: RuleTrie,
-                                           assignments: ParSeq[Assignment[T]]
+                                           assignments: Seq[Assignment[T]]
                                          ): State[T] = {
     // Step 0: Collapse assignments.
     // Elided because early experiments showed no reductions in number of assignments, and
@@ -111,8 +110,8 @@ object TrieEvaluator extends Evaluator {
   def extendAssignments[T <: Value[T]](
                                         literal: Literal,
                                         config: Config[T],
-                                        assignments: ParSeq[Assignment[T]]
-                                      ): ParSeq[Assignment[T]] = {
+                                        assignments: Seq[Assignment[T]]
+                                      ): Seq[Assignment[T]] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

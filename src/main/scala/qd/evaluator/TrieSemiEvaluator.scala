@@ -1,7 +1,6 @@
 package qd
 package evaluator
 
-import scala.collection.parallel.immutable.{ParMap, ParSeq}
 import TrieEvaluator.RuleTrie
 import qd.instance.{Assignment, Config}
 
@@ -27,7 +26,7 @@ object TrieSemiEvaluator extends Evaluator {
 
     def changed: Boolean = deltaCurr.nonEmptySupport || deltaNext.nonEmptySupport
 
-    def addTuples(relation: Relation, newTuples: ParMap[DTuple, T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Map[DTuple, T]): State[T] = {
       val oldInstance = config(relation)
       val ntp = newTuples.filter { case (tuple, value) => value > oldInstance(tuple) }
 
@@ -51,14 +50,14 @@ object TrieSemiEvaluator extends Evaluator {
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
     implicit val vs: Semiring[T] = state.vs
-    immediateConsequence(state, state.trie, ParSeq(Assignment.Empty()), deltaDone = false)
+    immediateConsequence(state, state.trie, Seq(Assignment.Empty()), deltaDone = false)
   }
 
   // Applies a RuleTrie to a configuration
   def immediateConsequence[T <: Value[T]](
                                            state: State[T],
                                            trie: RuleTrie,
-                                           assignments: ParSeq[Assignment[T]],
+                                           assignments: Seq[Assignment[T]],
                                            deltaDone: Boolean
                                          ): State[T] = {
     // Step 0: Collapse assignments.
@@ -103,8 +102,8 @@ object TrieSemiEvaluator extends Evaluator {
   def extendAssignments[T <: Value[T]](
                                         literal: Literal,
                                         config: Config[T],
-                                        assignments: ParSeq[Assignment[T]]
-                                      ): ParSeq[Assignment[T]] = {
+                                        assignments: Seq[Assignment[T]]
+                                      ): Seq[Assignment[T]] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

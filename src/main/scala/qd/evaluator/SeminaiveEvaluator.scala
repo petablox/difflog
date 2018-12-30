@@ -3,8 +3,6 @@ package evaluator
 
 import qd.instance.{Assignment, Config}
 
-import scala.collection.parallel.{ParMap, ParSeq}
-
 object SeminaiveEvaluator extends Evaluator {
 
   override val toString: String = "SeminaiveEvaluator"
@@ -26,7 +24,7 @@ object SeminaiveEvaluator extends Evaluator {
 
     val changed: Boolean = deltaCurr.nonEmptySupport || deltaNext.nonEmptySupport
 
-    def addTuples(relation: Relation, newTuples: ParMap[DTuple, T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Map[DTuple, T]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
@@ -63,7 +61,7 @@ object SeminaiveEvaluator extends Evaluator {
 
     implicit val vs: Semiring[T] = state.vs
 
-    var assignments = ParSeq(Assignment.Empty)
+    var assignments = Seq(Assignment.Empty)
     var remainingLits = rule.body
     for (literal <- rule.body) {
       assignments = if (literal == deltaLiteral) extendAssignments(literal, state.deltaCurr, assignments)
@@ -86,8 +84,8 @@ object SeminaiveEvaluator extends Evaluator {
   def extendAssignments[T <: Value[T]](
                                         literal: Literal,
                                         config: Config[T],
-                                        assignments: ParSeq[Assignment[T]]
-                                      ): ParSeq[Assignment[T]] = {
+                                        assignments: Seq[Assignment[T]]
+                                      ): Seq[Assignment[T]] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

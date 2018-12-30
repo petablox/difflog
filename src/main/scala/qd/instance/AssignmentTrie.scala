@@ -2,7 +2,6 @@ package qd
 package instance
 
 import scala.collection.SortedMap
-import scala.collection.parallel.immutable.{ParMap, ParSeq}
 
 case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instance: Instance[T])
                                         (implicit ordering: Ordering[Variable]) {
@@ -21,18 +20,18 @@ object AssignmentTrie {
                        subInstance: Instance[T],
                        fields: IndexedSeq[Parameter],
                        context: SortedMap[Variable, Constant]
-                     ): ParSeq[(SortedMap[Variable, Constant], T)] = {
+                     ): Seq[(SortedMap[Variable, Constant], T)] = {
       subInstance match {
         case InstanceBase(value) =>
           assert(fields.isEmpty)
-          ParSeq((context, value))
+          Seq((context, value))
         case InstanceInd(instHeadDom, _, map) =>
           val fieldHead = fields.head
           assert(fieldHead.domain == instHeadDom)
 
           fieldHead match {
             case cfh @ Constant(_, _) if map.contains(cfh) => _fromInstance(map(cfh), fields.tail, context)
-            case Constant(_, _) => ParSeq()
+            case Constant(_, _) => Seq()
 
             case vfh @ Variable(_, _) if !context.contains(vfh) =>
               for ((cfh, subSubInstance) <- map.toSeq;
@@ -40,7 +39,7 @@ object AssignmentTrie {
               yield mv
             case vfh @ Variable(_, _) if map.contains(context(vfh)) =>
               _fromInstance(map(context(vfh)), fields.tail, context)
-            case Variable(_, _) => ParSeq()
+            case Variable(_, _) => Seq()
           }
       }
     }
@@ -51,12 +50,12 @@ object AssignmentTrie {
     AssignmentTrie(signature, trie)
   }
 
-  def ground[T <: Value[T]](at: AssignmentTrie[T]): ParMap[Map[Variable, Constant], T] = {
-    def _ground(signature: IndexedSeq[Variable], instance: Instance[T]): ParMap[Map[Variable, Constant], T] = {
+  def ground[T <: Value[T]](at: AssignmentTrie[T]): Map[Map[Variable, Constant], T] = {
+    def _ground(signature: IndexedSeq[Variable], instance: Instance[T]): Map[Map[Variable, Constant], T] = {
       instance match {
         case InstanceBase(value) =>
           assert(signature.isEmpty)
-          ParMap(Map[Variable, Constant]() -> value)
+          Map(Map[Variable, Constant]() -> value)
         case InstanceInd(_, _, map) =>
           for ((c, instTl) <- map; (m, v) <- _ground(signature.tail, instTl))
           yield (m + (signature.head -> c)) -> v
@@ -68,7 +67,7 @@ object AssignmentTrie {
   def toInstance[T <: Value[T]](at: AssignmentTrie[T], head: Literal)
                                (implicit vs: Semiring[T]): Instance[T] = {
     var ans = Instance(head.relation.signature)
-    for ((m, v) <- ground(at)) {
+    for ((m, v) <- ground(at).seq) {
       val t = head.fields.map {
         case v @ Variable(_, _) => m(v)
         case c @ Constant(_, _) => c
