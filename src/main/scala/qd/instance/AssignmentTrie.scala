@@ -12,6 +12,10 @@ case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instan
 
 object AssignmentTrie {
 
+  def apply[T <: Value[T]]()(implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
+    AssignmentTrie(Vector(), InstanceBase(vs.One))
+  }
+
   def fromInstance[T <: Value[T]](instance: Instance[T], literal: Literal)
                                  (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
     require(instance.signature == literal.relation.signature)

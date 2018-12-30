@@ -6,7 +6,7 @@ import qd.instance.{AssignmentTrie, Config, Instance}
 
 object TrieJoinEvaluator extends Evaluator {
 
-  override val toString: String = "TrieEvaluator"
+  override val toString: String = "TrieJoinEvaluator"
 
   override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
                                    (implicit vs: Semiring[T]): Config[T] = {
@@ -54,12 +54,27 @@ object TrieJoinEvaluator extends Evaluator {
 
     def nextEpoch: State[T] = if (!changed) this else State(trie, pos, allLiterals, config, assignments, changed = false)
 
+    override def toString: String = {
+      val n = System.lineSeparator()
+      val buffer = new StringBuilder()
+      buffer.append(s"===$n")
+      for ((relation, literals) <- allLiterals) {
+        buffer.append(s"---$n")
+        buffer.append(s"Relation $relation$n")
+        buffer.append(s"  Instance: ${config(relation)}$n")
+        for (literal <- literals) {
+          buffer.append(s"  Literal $literal: ${assignments(literal)}$n")
+        }
+      }
+      buffer.toString()
+    }
+
   }
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
     implicit val ordering: Ordering[Variable] = state.ordering
     implicit val vs: Semiring[T] = state.vs
-    immediateConsequence(state, state.trie, AssignmentTrie(Vector(), Instance(Vector())))
+    immediateConsequence(state, state.trie, AssignmentTrie())
   }
 
   // Applies a RuleTrie to a configuration

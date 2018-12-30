@@ -20,6 +20,8 @@ class AssignmentTrieSpec extends FunSuite {
     implicitly[Ordering[Int]].compare(ix, iy)
   }
 
+  val asgn0: AssignmentTrie[FValue] = AssignmentTrie()
+
   val asgn1: AssignmentTrie[FValue] = AssignmentTrie(Vector(v(0), v(1), v(2)),
                                                      Instance[FValue](Vector(node, node, node)) +
                                                      (DTuple(Vector(a, b, c)) -> FValue(0.2, Empty)) +
@@ -70,6 +72,9 @@ class AssignmentTrieSpec extends FunSuite {
   }
 
   test("Joins should be correctly computed") {
+    assert(AssignmentTrie.join(asgn0, asgn2) == asgn2)
+    assert(AssignmentTrie.join(asgn2, asgn0) == asgn2)
+
     val asgn23 = AssignmentTrie.join(asgn2, asgn3)
     assert(asgn23.signature == asgn4.signature)
     for ((t, v23) <- asgn23.instance.support) {
