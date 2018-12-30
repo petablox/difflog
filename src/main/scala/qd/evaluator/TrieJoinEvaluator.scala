@@ -2,9 +2,7 @@ package qd
 package evaluator
 
 import qd.evaluator.TrieEvaluator.RuleTrie
-import qd.instance.{Assignment, AssignmentTrie, Config}
-
-import scala.collection.parallel.{ParMap, ParSeq}
+import qd.instance.{AssignmentTrie, Config, Instance}
 
 object TrieJoinEvaluator extends Evaluator {
 
@@ -32,33 +30,47 @@ object TrieJoinEvaluator extends Evaluator {
                                    pos: Token => T,
                                    allLiterals: Map[Relation, Set[Literal]],
                                    config: Config[T],
-                                   asgns: Map[Literal, AssignmentTrie[T]],
+                                   assignments: Map[Literal, AssignmentTrie[T]],
                                    changed: Boolean
-                                 )(implicit ordering: Ordering[Variable], implicit val vs: Semiring[T]) {
+                                 )(implicit val ordering: Ordering[Variable], implicit val vs: Semiring[T]) {
 
-    def addTuples(relation: Relation, newTuples: ParMap[DTuple, T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Instance[T]): State[T] = {
       val oldInstance = config(relation)
-      val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
+      val newInstance = oldInstance ++ newTuples
       val newConfig = config + (relation -> newInstance)
-      val newChanged = changed || newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
-      State(trie, pos, allLiterals, newConfig, ???, newChanged)
+
+      var newAssignments = assignments
+      for (literal <- allLiterals(relation)) {
+        val oldLas = newAssignments(literal)
+        val deltaLas = AssignmentTrie.fromInstance(newTuples, literal)
+        assert(deltaLas.signature == oldLas.signature)
+        val newLas = AssignmentTrie(oldLas.signature, oldLas.instance ++ deltaLas.instance)
+        newAssignments = newAssignments + (literal -> newLas)
+      }
+
+      val newChanged = changed || newTuples.support.exists { case (tuple, value) => value > oldInstance(tuple) }
+      State(trie, pos, allLiterals, newConfig, newAssignments, newChanged)
     }
 
-    def nextEpoch: State[T] = if (!changed) this else State(trie, pos, allLiterals, config, asgns, changed = false)
+    def nextEpoch: State[T] = if (!changed) this else State(trie, pos, allLiterals, config, assignments, changed = false)
 
   }
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
+    implicit val ordering: Ordering[Variable] = state.ordering
     implicit val vs: Semiring[T] = state.vs
-    immediateConsequence(state, state.trie, ParSeq(Assignment.Empty()))
+    immediateConsequence(state, state.trie, AssignmentTrie(Vector(), Instance(Vector())))
   }
 
   // Applies a RuleTrie to a configuration
   def immediateConsequence[T <: Value[T]](
                                            state: State[T],
                                            trie: RuleTrie,
-                                           assignments: ParSeq[Assignment[T]]
+                                           assignments: AssignmentTrie[T]
                                          ): State[T] = {
+    implicit val ordering: Ordering[Variable] = state.ordering
+    implicit val vs: Semiring[T] = state.vs
+
     // Step 0: Collapse assignments.
     // Elided because early experiments showed no reductions in number of assignments, and
     // caused a slow-down while computing immediate consequences
@@ -73,47 +85,18 @@ object TrieJoinEvaluator extends Evaluator {
 
     // Step 1: Process sub-tries
     for ((literal, subTrie) <- trie.map) {
-      val ax3 = extendAssignments(literal, nextState.config, ax2)
+      val ax3 = AssignmentTrie.join(assignments, state.assignments(literal))
       nextState = immediateConsequence(nextState, subTrie, ax3)
     }
 
     // Step 2: Process leaves
     for (rule <- trie.leaves) {
-      implicit val vs: Semiring[T] = state.vs
-      val newTuples = ax2.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head)).toMap
+      val ax3 = ax2 * Value(rule.lineage, state.pos)
+      val newTuples = AssignmentTrie.toInstance(ax3, rule.head)
       nextState = nextState.addTuples(rule.head.relation, newTuples)
     }
 
     nextState
-  }
-
-  def extendAssignments[T <: Value[T]](
-                                        literal: Literal,
-                                        config: Config[T],
-                                        assignments: ParSeq[Assignment[T]]
-                                      ): ParSeq[Assignment[T]] = {
-    for (assignment <- assignments;
-         f = assignment.toFilter(literal);
-         (tuple, score) <- config(literal.relation).filter(f);
-         newAssignment <- extendAssignment(literal, tuple, assignment))
-    yield newAssignment * score
-  }
-
-  def extendAssignment[T <: Value[T]](
-                                       literal: Literal,
-                                       tuple: DTuple,
-                                       assignment: Assignment[T]
-                                     ): Option[Assignment[T]] = {
-    var ans = assignment
-    for ((par, field) <- literal.fields.zip(tuple)) {
-      par match {
-        case v @ Variable(_, _) =>
-          if (!ans.contains(v)) ans = ans + (v -> field)
-          else if (ans(v) != field) return None
-        case Constant(c, _) => if (c != field) return None
-      }
-    }
-    Some(ans)
   }
 
 }
