@@ -67,7 +67,7 @@ object AssignmentTrie {
   def toInstance[T <: Value[T]](at: AssignmentTrie[T], head: Literal)
                                (implicit vs: Semiring[T]): Instance[T] = {
     var ans = Instance(head.relation.signature)
-    for ((m, v) <- ground(at).seq) {
+    for ((m, v) <- ground(at)) {
       val t = head.fields.map {
         case v @ Variable(_, _) => m(v)
         case c @ Constant(_, _) => c
