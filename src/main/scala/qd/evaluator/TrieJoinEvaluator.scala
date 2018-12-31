@@ -106,8 +106,8 @@ object TrieJoinEvaluator extends Evaluator {
 
     // Step 2: Process leaves
     for (rule <- trie.leaves) {
-      val ax3 = ax2 * Value(rule.lineage, state.pos)
-      val newTuples = AssignmentTrie.ground(ax3, rule.head)
+      val newTuples = AssignmentTrie.ground(ax2, rule.head)
+                                    .transform { case (_, v) => v * Value(rule.lineage, state.pos) }
       nextState = nextState.addTuples(rule.head.relation, newTuples)
     }
 
