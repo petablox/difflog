@@ -1,8 +1,6 @@
 package qd
 package instance
 
-import scala.collection.SortedMap
-
 case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instance: Instance[T])
                                         (implicit ordering: Ordering[Variable]) {
   require(Range(0, signature.size - 1).forall(i => ordering.lt(signature(i), signature(i + 1))))
@@ -16,69 +14,47 @@ object AssignmentTrie {
     AssignmentTrie(Vector(), InstanceBase(vs.One))
   }
 
-  def fromInstance[T <: Value[T]](instance: Instance[T], literal: Literal)
-                                 (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
-    require(instance.signature == literal.relation.signature)
+  def apply[T <: Value[T]](support: Map[DTuple, T], literal: Literal)
+                          (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
+    val allVars = literal.fields.collect({ case v @ Variable(_, _) => v }).sorted.distinct
+    val varIndex = allVars.zipWithIndex.toMap
 
-    def _fromInstance(
-                       subInstance: Instance[T],
-                       fields: IndexedSeq[Parameter],
-                       context: SortedMap[Variable, Constant]
-                     ): Seq[(SortedMap[Variable, Constant], T)] = {
-      subInstance match {
-        case InstanceBase(value) =>
-          assert(fields.isEmpty)
-          Seq((context, value))
-        case InstanceInd(instHeadDom, _, map) =>
-          val fieldHead = fields.head
-          assert(fieldHead.domain == instHeadDom)
-
-          fieldHead match {
-            case cfh @ Constant(_, _) if map.contains(cfh) => _fromInstance(map(cfh), fields.tail, context)
-            case Constant(_, _) => Seq()
-
-            case vfh @ Variable(_, _) if !context.contains(vfh) =>
-              for ((cfh, subSubInstance) <- map.toSeq;
-                   mv <- _fromInstance(subSubInstance, fields.tail, context + (vfh -> cfh)))
-              yield mv
-            case vfh @ Variable(_, _) if map.contains(context(vfh)) =>
-              _fromInstance(map(context(vfh)), fields.tail, context)
-            case Variable(_, _) => Seq()
-          }
+    def shuffle(t: DTuple): Option[DTuple] = {
+      assert(literal.fields.size == t.length)
+      var success = true
+      val ans: Array[Option[Constant]] = Array.fill(allVars.size)(None)
+      for (i <- Range(0, t.length)) {
+        literal.fields(i) match {
+          case c @ Constant(_, _) => if (t(i) != c) { success = false }
+          case v @ Variable(_, _) if ans(varIndex(v)).isEmpty => ans(varIndex(v)) = Some(t(i))
+          case v @ Variable(_, _) => if (t(i) != ans(varIndex(v)).get) { success = false }
+        }
       }
+      if (success) Some(DTuple(ans.map(_.get).toVector)) else None
     }
 
-    val signature = literal.variables.toVector.sorted
-    val tvs = _fromInstance(instance, literal.fields, SortedMap()).map({ case (m, v) => (DTuple(m.values.toVector), v)})
-    val trie = tvs.foldLeft(Instance(signature.map(_.domain)))(_ + _)
-    AssignmentTrie(signature, trie)
+    val shuffledSupport = for ((t, v) <- support; ost = shuffle(t) if ost.nonEmpty) yield (ost.get, v)
+
+    val ansSignature = literal.fields.collect({ case v @ Variable(_, _) => v }).sorted.distinct
+    val ansInstance = shuffledSupport.foldLeft(Instance(ansSignature.map(_.domain)))(_ + _)
+    AssignmentTrie(ansSignature, ansInstance)
   }
 
-  def ground[T <: Value[T]](at: AssignmentTrie[T]): Map[Map[Variable, Constant], T] = {
-    def _ground(signature: IndexedSeq[Variable], instance: Instance[T]): Map[Map[Variable, Constant], T] = {
-      instance match {
-        case InstanceBase(value) =>
-          assert(signature.isEmpty)
-          Map(Map[Variable, Constant]() -> value)
-        case InstanceInd(_, _, map) =>
-          for ((c, instTl) <- map; (m, v) <- _ground(signature.tail, instTl))
-          yield (m + (signature.head -> c)) -> v
-      }
-    }
-    _ground(at.signature, at.instance)
-  }
+  def ground[T <: Value[T]](at: AssignmentTrie[T], head: Literal)
+                               (implicit vs: Semiring[T]): Map[DTuple, T] = {
 
-  def toInstance[T <: Value[T]](at: AssignmentTrie[T], head: Literal)
-                               (implicit vs: Semiring[T]): Instance[T] = {
-    var ans = Instance(head.relation.signature)
-    for ((m, v) <- ground(at)) {
-      val t = head.fields.map {
-        case v @ Variable(_, _) => m(v)
-        case c @ Constant(_, _) => c
-      }
-      ans = ans + (DTuple(t) -> v)
+    val fieldShufflePlan = head.fields.map {
+      case c @ Constant(_, _) => Left(c)
+      case v @ Variable(_, _) => Right(at.signature.indexOf(v))
     }
-    ans
+
+    def execPlan(t: DTuple): DTuple = DTuple(fieldShufflePlan.map {
+      case Left(c) => c
+      case Right(index) => t(index)
+    })
+
+    val ungroupedAns = at.instance.support.map({ case (t, v) => (execPlan(t), v) })
+    ungroupedAns.groupBy(_._1).map { case (t, tvs) => t -> tvs.foldLeft(vs.Zero)(_ + _._2) }
   }
 
   def join[T <: Value[T]](at1: AssignmentTrie[T], at2: AssignmentTrie[T])

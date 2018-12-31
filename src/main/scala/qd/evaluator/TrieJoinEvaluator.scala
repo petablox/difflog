@@ -2,7 +2,7 @@ package qd
 package evaluator
 
 import qd.evaluator.TrieEvaluator.RuleTrie
-import qd.instance.{AssignmentTrie, Config, Instance}
+import qd.instance.{AssignmentTrie, Config}
 
 object TrieJoinEvaluator extends Evaluator {
 
@@ -17,7 +17,7 @@ object TrieJoinEvaluator extends Evaluator {
     val trie = RuleTrie(rules)
     val allLiterals = rules.flatMap(_.body).groupBy(_.relation)
     val asgns = rules.flatMap(_.body)
-                     .map(literal => (literal, AssignmentTrie.fromInstance(edb(literal.relation), literal)))
+                     .map(literal => (literal, AssignmentTrie(edb(literal.relation).support.toMap, literal)))
                      .toMap
 
     var state = State(trie, pos, allLiterals, edb, asgns, changed = true)
@@ -34,21 +34,21 @@ object TrieJoinEvaluator extends Evaluator {
                                    changed: Boolean
                                  )(implicit val ordering: Ordering[Variable], implicit val vs: Semiring[T]) {
 
-    def addTuples(relation: Relation, newTuples: Instance[T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Map[DTuple, T]): State[T] = {
       val oldInstance = config(relation)
-      val newInstance = oldInstance ++ newTuples
+      val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
 
       var newAssignments = assignments
       for (literal <- allLiterals(relation)) {
         val oldLas = newAssignments(literal)
-        val deltaLas = AssignmentTrie.fromInstance(newTuples, literal)
+        val deltaLas = AssignmentTrie(newTuples, literal)
         assert(deltaLas.signature == oldLas.signature)
         val newLas = AssignmentTrie(oldLas.signature, oldLas.instance ++ deltaLas.instance)
         newAssignments = newAssignments + (literal -> newLas)
       }
 
-      val newChanged = changed || newTuples.support.exists { case (tuple, value) => value > oldInstance(tuple) }
+      val newChanged = changed || newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
       State(trie, pos, allLiterals, newConfig, newAssignments, newChanged)
     }
 
@@ -107,7 +107,7 @@ object TrieJoinEvaluator extends Evaluator {
     // Step 2: Process leaves
     for (rule <- trie.leaves) {
       val ax3 = ax2 * Value(rule.lineage, state.pos)
-      val newTuples = AssignmentTrie.toInstance(ax3, rule.head)
+      val newTuples = AssignmentTrie.ground(ax3, rule.head)
       nextState = nextState.addTuples(rule.head.relation, newTuples)
     }
 

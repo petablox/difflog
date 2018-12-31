@@ -64,11 +64,11 @@ class AssignmentTrieSpec extends FunSuite {
                                                      (DTuple(Vector(c, c)) -> FValue(0.4, Empty)))
 
   test("Assignments should be correctly constructed") {
-    assert(AssignmentTrie.fromInstance(inst1, lit1) == asgn5)
+    assert(AssignmentTrie(inst1.support.toMap, lit1) == asgn5)
   }
 
   test("Assignments should be correctly grounded") {
-    assert(AssignmentTrie.toInstance(asgn1, lit2) == inst1)
+    assert(AssignmentTrie.ground(asgn1, lit2) == inst1.support.toMap)
   }
 
   test("Joins should be correctly computed") {
