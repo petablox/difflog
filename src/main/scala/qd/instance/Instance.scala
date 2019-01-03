@@ -106,11 +106,14 @@ object Instance {
   def apply[T <: Value[T]](relation: Relation)(implicit vs: Semiring[T]): Instance[T] = Instance(relation.signature)
 }
 
-case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) extends Instance[T](Vector())
+private[instance] case class InstanceBase[T <: Value[T]](value: T)
+                                                        (implicit vs: Semiring[T]) extends Instance[T](Vector())
 
-case class InstanceInd[T <: Value[T]](domHead: Domain, domTail: IndexedSeq[Domain], map: Map[Constant, Instance[T]])
-                                     (implicit vs: Semiring[T])
+private[instance] case class InstanceInd[T <: Value[T]](
+                                                         domHead: Domain, domTail: IndexedSeq[Domain],
+                                                         map: Map[Constant, Instance[T]]
+                                                       )(implicit vs: Semiring[T])
   extends Instance[T](domHead +: domTail) {
-  Contract.require(map.forall { case (constant, _) => constant.domain == domHead })
-  Contract.require(map.forall { case (_, instance) => instance.signature == domTail })
+  // Contract.require(map.forall { case (constant, _) => constant.domain == domHead })
+  // Contract.require(map.forall { case (_, instance) => instance.signature == domTail })
 }
