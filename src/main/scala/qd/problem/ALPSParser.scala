@@ -1,6 +1,8 @@
 package qd
 package problem
 
+import qd.util.Contract
+
 import scala.util.Random
 
 class ALPSParser {
@@ -33,20 +35,20 @@ class ALPSParser {
     def domainDeclarationsPred(str: String): Boolean = str.contains(":")
     val domainDeclarations = lines.takeWhile(domainDeclarationsPred)
     lines = lines.dropWhile(domainDeclarationsPred)
-    assert(lines.forall(str => !domainDeclarationsPred(str)))
+    Contract.assert(lines.forall(str => !domainDeclarationsPred(str)))
     lines = lines.dropWhile(_.isEmpty)
 
     for (domainDecl <- domainDeclarations) {
       val Array(nameStr, es) = domainDecl.split(":")
 
       val name = nameStr.trim
-      assert(name.nonEmpty)
-      assert(!domainNames.contains(name))
+      Contract.assert(name.nonEmpty)
+      Contract.assert(!domainNames.contains(name))
       val domain = Domain(name)
 
-      assert(es.endsWith("."))
+      Contract.assert(es.endsWith("."))
       val es2 = es.dropRight(1).split(",").map(_.trim)
-      assert(es2.forall(_.nonEmpty))
+      Contract.assert(es2.forall(_.nonEmpty))
       val elems = es2.map(elem => Constant(elem, domain)).toSet
 
       domainNames = domainNames + (name -> domain)
@@ -79,7 +81,7 @@ class ALPSParser {
         val fieldStrs = lines.head.split(",").map(_.trim)
         lines = lines.tail.dropWhile(l => l.isEmpty || l == ";")
 
-        assert(fieldStrs.length == domains.size)
+        Contract.assert(fieldStrs.length == domains.size)
         val fields = domains.zip(fieldStrs).map { case (dom, v) => domainElems(dom).find(_ == Constant(v, dom)).get }
         val t = DTuple(fields)
 
@@ -90,7 +92,7 @@ class ALPSParser {
         }
       }
 
-      assert(lines.head == ".")
+      Contract.assert(lines.head == ".")
       lines = lines.tail.dropWhile(_.isEmpty)
     }
 
@@ -109,7 +111,7 @@ class ALPSParser {
 
     val templateLines = templateStr.split(System.lineSeparator()).map(_.trim).filter(_.nonEmpty)
     for (templateLine <- templateLines) {
-      assert(templateLine.contains(":-") && templateLine.endsWith(".") && !templateLine.contains("\t"))
+      Contract.assert(templateLine.contains(":-") && templateLine.endsWith(".") && !templateLine.contains("\t"))
       val tl2 = templateLine.dropRight(1).trim
                             .replaceAll("\\),", ")\t")
                             .replaceAll(" :- ", "\t")
@@ -119,7 +121,7 @@ class ALPSParser {
                     val ms2 = mlitStr.split("\\(|,|\\)").map(_.trim).filter(_.nonEmpty)
                     (ms2.head, ms2.tail.toVector)
                   }
-      assert(mlitStrs.length >= 2)
+      Contract.assert(mlitStrs.length >= 2)
 
       for ((bodyLits, msr, msv) <- instantiateMetaLiterals(mlits.tail, problem);
            (headLit, _, _) <- instantiateMetaLiteral(mlits.head, msr, msv, problem.outputRels ++
@@ -166,7 +168,7 @@ class ALPSParser {
                            signature: IndexedSeq[Domain],
                            varMap: Map[String, Variable]
                          ): Option[(Vector[Variable], Map[String, Variable])] = {
-    require(varNames.size == signature.size)
+    Contract.require(varNames.size == signature.size)
     if (varNames.isEmpty) {
       Some((Vector(), varMap))
     } else instantiateMetaVars(varNames.tail, signature.tail, varMap) match {

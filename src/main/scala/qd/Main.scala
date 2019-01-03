@@ -3,6 +3,7 @@ package qd
 import qd.evaluator.Evaluator
 import qd.learner.{Learner, Scorer}
 import qd.problem.{ALPSParser, Problem, QDParser}
+import qd.util.Contract
 
 import scala.io.Source
 
@@ -45,7 +46,7 @@ object Main extends App {
       val scorer = Scorer.STD_SCORERS(scorerName)
       val tgtLoss = tgtLossStr.toDouble
       val maxIters = maxItersStr.toInt
-      require(maxIters > 0)
+      Contract.require(maxIters > 0)
 
       Learner.learn(queryTrain, evaluator, scorer, tgtLoss, maxIters)
       ???
@@ -57,7 +58,7 @@ object Main extends App {
       val scorer = Scorer.STD_SCORERS(scorerName)
       val tgtLoss = tgtLossStr.toDouble
       val maxIters = maxItersStr.toInt
-      require(maxIters > 0)
+      Contract.require(maxIters > 0)
 
       Learner.learn(query, evaluator, scorer, tgtLoss, maxIters)
       ???

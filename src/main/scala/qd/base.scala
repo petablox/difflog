@@ -1,5 +1,7 @@
 package qd
 
+import qd.util.Contract
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Domains, Parameters, Constants, and Variables
 
@@ -50,7 +52,7 @@ case class DTuple(fields: IndexedSeq[Constant]) extends IndexedSeq[Constant] {
 // Literals and Rules
 
 case class Literal(relation: Relation, fields: IndexedSeq[Parameter]) {
-  require(relation.signature == fields.map(_.domain))
+  Contract.require(relation.signature == fields.map(_.domain))
   val variables: Set[Variable] = fields.collect({ case v: Variable => v }).toSet
   override def toString: String = s"${relation.name}(${fields.mkString(", ")})"
 
@@ -62,7 +64,7 @@ case class Literal(relation: Relation, fields: IndexedSeq[Parameter]) {
 
 case class Rule(lineage: Lineage, head: Literal, body: IndexedSeq[Literal]) {
   val variables: Set[Variable] = body.flatMap(_.variables).toSet
-  require(head.variables.subsetOf(variables))
+  Contract.require(head.variables.subsetOf(variables))
 
   override def toString: String = {
     val sortedBody = body.map(_.toString)

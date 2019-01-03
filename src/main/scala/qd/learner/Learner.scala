@@ -4,6 +4,7 @@ package learner
 import qd.evaluator.Evaluator
 import qd.instance.Config
 import qd.problem.Problem
+import qd.util.Contract
 
 object Learner {
 
@@ -82,7 +83,7 @@ object Learner {
     val pos = TokenVec(problem.allTokens, t => if (usefulTokens.contains(t)) state.pos.map(t) else 0.0)
     val cOut = evaluator(problem.rules, pos, problem.edb)
     val loss = scorer.loss(cOut, problem.idb, problem.outputRels)
-    assert(cOut == state.cOut && loss == state.loss)
+    Contract.assert(cOut == state.cOut && loss == state.loss)
 
     scribe.info(s"P $loss ${usefulTokens.size}")
     State(pos, cOut, loss)

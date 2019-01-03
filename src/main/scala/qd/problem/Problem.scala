@@ -2,6 +2,7 @@ package qd.problem
 
 import qd._
 import qd.instance.Config
+import qd.util.Contract
 
 class Problem private (
                         val inputRels: Set[Relation],
@@ -25,39 +26,39 @@ class Problem private (
   def isNewRelation(rel: Relation): Boolean = !knownRelation(rel)
 
   def addInputRel(rel: Relation): Problem = {
-    require(isNewRelation(rel), s"Relation $rel multiply declared")
+    Contract.require(isNewRelation(rel), s"Relation $rel multiply declared")
     new Problem(inputRels + rel, inventedRels, outputRels, edb, idb, pos, rules)
   }
 
   def addInputRels(rels: Relation*): Problem = {
     val newInputRels = rels.foldLeft(inputRels) { case (nirs, rel) =>
-      require(isNewRelation(rel), s"Relation $rel multiply declared")
+      Contract.require(isNewRelation(rel), s"Relation $rel multiply declared")
       nirs + rel
     }
     new Problem(newInputRels, inventedRels, outputRels, edb, idb, pos, rules)
   }
 
   def addInventedRel(rel: Relation): Problem = {
-    require(isNewRelation(rel), s"Relation $rel multiply declared")
+    Contract.require(isNewRelation(rel), s"Relation $rel multiply declared")
     new Problem(inputRels, inventedRels + rel, outputRels, edb, idb, pos, rules)
   }
 
   def addInventedRels(rels: Relation*): Problem = {
     val newInventedRels = rels.foldLeft(inventedRels) { case (nirs, rel) =>
-      require(isNewRelation(rel), s"Relation $rel multiply declared")
+      Contract.require(isNewRelation(rel), s"Relation $rel multiply declared")
       nirs + rel
     }
     new Problem(inputRels, newInventedRels, outputRels, edb, idb, pos, rules)
   }
 
   def addOutputRel(rel: Relation): Problem = {
-    require(isNewRelation(rel), s"Relation $rel multiply declared")
+    Contract.require(isNewRelation(rel), s"Relation $rel multiply declared")
     new Problem(inputRels, inventedRels, outputRels + rel, edb, idb, pos, rules)
   }
 
   def addOutputRels(rels: Relation*): Problem = {
     val newOutputRels = rels.foldLeft(outputRels) { case (nors, rel) =>
-      require(isNewRelation(rel), s"Relation $rel multiply declared")
+      Contract.require(isNewRelation(rel), s"Relation $rel multiply declared")
       nors + rel
     }
     new Problem(inputRels, inventedRels, newOutputRels, edb, idb, pos, rules)
@@ -65,7 +66,7 @@ class Problem private (
 
   private def addTuple(rels: Set[Relation])(config: Config[FValue], rtv: (Relation, DTuple, Double)): Config[FValue] = {
     val (rel, tuple, value) = rtv
-    require(rels.contains(rel), s"Undeclared relation $rel")
+    Contract.require(rels.contains(rel), s"Undeclared relation $rel")
     config.add(rel, tuple, FValue(value, Empty))
   }
 
@@ -88,8 +89,8 @@ class Problem private (
   }
 
   def addRule(rule: Rule): Problem = {
-    require(knownRelation(rule.head.relation))
-    require(rule.body.forall(literal => knownRelation(literal.relation)))
+    Contract.require(knownRelation(rule.head.relation))
+    Contract.require(rule.body.forall(literal => knownRelation(literal.relation)))
     new Problem(inputRels, inventedRels, outputRels, edb, idb, pos, rules + rule)
   }
 

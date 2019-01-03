@@ -1,6 +1,7 @@
 package qd.problem
 
 import qd._
+import qd.util.Contract
 
 import scala.collection.immutable.Seq
 import scala.util.Random
@@ -97,10 +98,10 @@ class QDParser extends JavaTokenParsers {
       val t = s"$relName(${fieldNames.mkString(", ")})"
 
       val relOpt = problem.findRel(_.name == relName)
-      require(relOpt.nonEmpty, s"Unable to resolve relation named $relName")
+      Contract.require(relOpt.nonEmpty, s"Unable to resolve relation named $relName")
       val relation = relOpt.get
 
-      require(relation.arity == fieldNames.size, s"Arity mismatch between tuple $t and relation $relation")
+      Contract.require(relation.arity == fieldNames.size, s"Arity mismatch between tuple $t and relation $relation")
       val fields = fieldNames.zip(relation.signature).map { case (c, d) => Constant(c, d) }
       (relation, DTuple(fields), value)
     }
@@ -123,8 +124,8 @@ class QDParser extends JavaTokenParsers {
         val maxLiterals = f._1
         val maxVars = f._2
 
-        require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
-        require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
+        Contract.require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
+        Contract.require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
         val rules = RuleEnumerator.enumerate(p0.inputRels, p0.inventedRels, p0.outputRels, maxLiterals, maxVars)
         p0.addRules(rules)
@@ -142,8 +143,8 @@ class QDParser extends JavaTokenParsers {
         val maxLiterals = f._1._2
         val maxVars = f._2
 
-        require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
-        require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
+        Contract.require(maxLiterals > 0, s"Expected strictly positive value for maxLiterals; instead found $maxLiterals")
+        Contract.require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
         val soup = RuleEnumerator.enumerate(p0.inputRels, p0.inventedRels, p0.outputRels, maxLiterals, maxVars)
         val allNewRules = soup.filter { rnew =>
@@ -189,7 +190,7 @@ class QDParser extends JavaTokenParsers {
 
       val allVars = (body.flatMap(_.variables) ++ head.variables).toSet
       for ((name, instances) <- allVars.groupBy(_.name)) {
-        require(instances.size == 1, s"Multiple incompatible uses of variable name $name")
+        Contract.require(instances.size == 1, s"Multiple incompatible uses of variable name $name")
       }
 
       val rule = Rule(token, head, body)
@@ -208,9 +209,9 @@ class QDParser extends JavaTokenParsers {
     val litString = s"$relName(${fieldNames.mkString(", ")})"
 
     val optRel = problem.findRel(_.name == relName)
-    require(optRel.nonEmpty, s"Unable to resolve relation $relName")
+    Contract.require(optRel.nonEmpty, s"Unable to resolve relation $relName")
     val rel = optRel.get
-    require(rel.arity == fieldNames.size, s"Arity mismatch between relation $rel and literal $litString")
+    Contract.require(rel.arity == fieldNames.size, s"Arity mismatch between relation $rel and literal $litString")
 
     val fields = fieldNames.zip(rel.signature).map { case (name, domain) => Variable(name, domain) }
 

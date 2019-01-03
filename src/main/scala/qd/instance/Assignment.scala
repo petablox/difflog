@@ -1,11 +1,13 @@
 package qd
 package instance
 
+import qd.util.Contract
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Assignments
 
 case class Assignment[T <: Value[T]](map: Map[Variable, Constant], score: T) extends (Variable => Constant) {
-  require(map.forall { case (key, value) => key.domain == value.domain })
+  Contract.require(map.forall { case (key, value) => key.domain == value.domain })
 
   override def apply(key: Variable): Constant = map(key)
   def get(key: Variable): Option[Constant] = map.get(key)
@@ -13,7 +15,7 @@ case class Assignment[T <: Value[T]](map: Map[Variable, Constant], score: T) ext
 
   def +(kv: (Variable, Constant)): Assignment[T] = {
     val (key, _) = kv
-    require(!map.contains(key))
+    Contract.require(!map.contains(key))
     Assignment(map + kv, score)
   }
   def *(coeff: T): Assignment[T] = Assignment(map, score * coeff)

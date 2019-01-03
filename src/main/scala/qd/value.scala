@@ -1,5 +1,7 @@
 package qd
 
+import qd.util.Contract
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Values
 
@@ -71,7 +73,7 @@ class BValueSemiring extends Semiring[BValue] {
 // Viterbi Values
 
 case class FValue(v: Double, l: Lineage) extends Value[FValue] {
-  require(0.0 <= v && v <= 1.0)
+  Contract.require(0.0 <= v && v <= 1.0)
   override def +(that: FValue): FValue = if (this <~ that) that else this
   override def *(that: FValue): FValue = FValue(this.v * that.v, this.l * that.l)
   override def <~(that: FValue): Boolean = this.v <= that.v
@@ -119,15 +121,15 @@ class DValueSemiring extends Semiring[DValue] {
 
 case class VecValue[T <: Value[T]](vec: IndexedSeq[T]) extends Value[VecValue[T]] {
   override def +(that: VecValue[T]): VecValue[T] = {
-    require(vec.size == that.vec.size)
+    Contract.require(vec.size == that.vec.size)
     VecValue(vec.zip(that.vec).map { case (v1, v2) => v1 + v2 })
   }
   override def *(that: VecValue[T]): VecValue[T] = {
-    require(vec.size == that.vec.size)
+    Contract.require(vec.size == that.vec.size)
     VecValue(vec.zip(that.vec).map { case (v1, v2) => v1 * v2 })
   }
   override def <~(that: VecValue[T]): Boolean = {
-    require(vec.size == that.vec.size)
+    Contract.require(vec.size == that.vec.size)
     vec.zip(that.vec).forall { case (v1, v2) => v1 <~ v2 }
   }
   override def unwrap: VecValue[T] = this
@@ -135,7 +137,7 @@ case class VecValue[T <: Value[T]](vec: IndexedSeq[T]) extends Value[VecValue[T]
 }
 
 case class VecValueSemiring[T <: Value[T]](n: Int)(implicit vs: Semiring[T]) extends Semiring[VecValue[T]] {
-  require(n >= 0)
+  Contract.require(n >= 0)
   override def One: VecValue[T] = VecValue(Range(0, n).map(_ => vs.One))
   override def Zero: VecValue[T] = VecValue(Range(0, n).map(_ => vs.Zero))
   override def nonZero(t: VecValue[T]): Boolean = t.vec.exists(vs.nonZero)

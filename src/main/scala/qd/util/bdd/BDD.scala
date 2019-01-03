@@ -1,5 +1,7 @@
 package qd.util.bdd
 
+import qd.util.Contract
+
 //noinspection ScalaUnnecessaryParentheses
 sealed trait BDD[A <: Ordered[A]] extends ((A => Boolean) => Boolean) {
 
@@ -104,6 +106,6 @@ object BDD {
 
 case class Terminal[A <: Ordered[A]](b: Boolean) extends BDD[A]
 case class Nonterminal[A <: Ordered[A]](a: A, hi: BDD[A], lo: BDD[A]) extends BDD[A] {
-  require(hi.firstVar.forall(_ > a))
-  require(lo.firstVar.forall(_ > a))
+  Contract.require(hi.firstVar.forall(_ > a))
+  Contract.require(lo.firstVar.forall(_ > a))
 }

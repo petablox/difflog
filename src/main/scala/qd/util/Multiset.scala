@@ -1,7 +1,7 @@
 package qd.util
 
 class Multiset[A](val map: Map[A, Int]) extends (A => Int) {
-  require(map.values.forall(_ > 0))
+  Contract.require(map.values.forall(_ > 0))
 
   override def apply(a: A): Int = map.getOrElse(a, 0)
   def support: Set[A] = map.keySet

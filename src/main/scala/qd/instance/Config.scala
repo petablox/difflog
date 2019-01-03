@@ -1,12 +1,14 @@
 package qd
 package instance
 
+import qd.util.Contract
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Configurations
 
 case class Config[T <: Value[T]](map: Map[Relation, Instance[T]])(implicit vs: Semiring[T])
 extends (Relation => Instance[T]) {
-  require(map.forall { case (relation, instance) => relation.signature == instance.signature })
+  Contract.require(map.forall { case (relation, instance) => relation.signature == instance.signature })
 
   override def apply(relation: Relation): Instance[T] = map.getOrElse(relation, Instance(relation))
   def +(ri: (Relation, Instance[T])): Config[T] = {

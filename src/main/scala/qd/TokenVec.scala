@@ -1,5 +1,7 @@
 package qd
 
+import qd.util.Contract
+
 case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with Iterable[(Token, Double)] {
 
   def get(key: Token): Option[Double] = map.get(key)
@@ -15,17 +17,17 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
 
   def +(tv: (Token, Double)): TokenVec = {
     val (token, value) = tv
-    require(!map.contains(token))
+    Contract.require(!map.contains(token))
     TokenVec(map + (token -> value))
   }
 
   def +(that: TokenVec): TokenVec = {
-    require(map.keySet == that.keySet)
+    Contract.require(map.keySet == that.keySet)
     TokenVec(for ((k, v) <- map) yield k -> (v + that.map(k)))
   }
 
   def -(that: TokenVec): TokenVec = {
-    require(map.keySet == that.keySet)
+    Contract.require(map.keySet == that.keySet)
     TokenVec(for ((k, v) <- map) yield k -> (v - that.map(k)))
   }
 
@@ -39,7 +41,7 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
   def unit: TokenVec = this / abs
 
   def clip(lo: Double, hi: Double): TokenVec = {
-    require(lo <= hi)
+    Contract.require(lo <= hi)
     TokenVec(map.map { case (t, v) =>
       val vNew = if (v < lo) lo else if (v > hi) hi else v
       t -> vNew
@@ -47,7 +49,7 @@ case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with It
   }
 
   def clip(lo: Double, hi: Double, pos: TokenVec): TokenVec = {
-    require(lo <= hi)
+    Contract.require(lo <= hi)
     TokenVec(map.map { case (t, v) =>
       val vNew = if (v < lo && pos.map(t) >= lo) lo else if (v > hi && pos.map(t) <= hi) hi else v
       t -> vNew

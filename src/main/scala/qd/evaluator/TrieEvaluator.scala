@@ -20,7 +20,7 @@ object TrieEvaluator extends Evaluator {
   class RuleTrie private (val leaves: Set[Rule], val map: Map[Literal, RuleTrie]) extends Iterable[Rule] {
 
     // Commented because the following check is too time-consuming
-    // require(map.forall { case (literal, trie) => trie.forall(_.body.contains(literal)) })
+    // Contract.require(map.forall { case (literal, trie) => trie.forall(_.body.contains(literal)) })
 
     // Savings = totalLiterals (of soup from which this trie is constructed) / numLiterals (which remain after collapse)
     val numRules: Int = leaves.size + map.values.map(_.numRules).sum

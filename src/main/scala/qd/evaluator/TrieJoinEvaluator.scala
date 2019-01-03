@@ -3,6 +3,7 @@ package evaluator
 
 import qd.evaluator.TrieEvaluator.RuleTrie
 import qd.instance.{AssignmentTrie, Config}
+import qd.util.Contract
 
 object TrieJoinEvaluator extends Evaluator {
 
@@ -43,7 +44,7 @@ object TrieJoinEvaluator extends Evaluator {
       for (literal <- allLiterals(relation)) {
         val oldLas = newAssignments(literal)
         val deltaLas = AssignmentTrie(newTuples, literal)
-        assert(deltaLas.signature == oldLas.signature)
+        Contract.assert(deltaLas.signature == oldLas.signature)
         val newLas = AssignmentTrie(oldLas.signature, oldLas.instance ++ deltaLas.instance)
         newAssignments = newAssignments + (literal -> newLas)
       }

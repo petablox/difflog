@@ -2,6 +2,7 @@ package qd
 package evaluator
 
 import qd.instance.{Assignment, Config}
+import qd.util.Contract
 
 object SeminaiveEvaluator extends Evaluator {
 
@@ -40,7 +41,7 @@ object SeminaiveEvaluator extends Evaluator {
       val newDeltaNext = deltaNext + (relation -> ndnr)
 
       val ans = State(rules, pos, newConfig, newDeltaCurr, newDeltaNext)
-      assert(if (changed) ans.changed else true)
+      Contract.assert(if (changed) ans.changed else true)
       ans
     }
 
@@ -57,7 +58,7 @@ object SeminaiveEvaluator extends Evaluator {
   }
 
   def deltaConsequence[T <: Value[T]](state: State[T], rule: Rule, deltaLiteral: Literal): State[T] = {
-    require(rule.body.contains(deltaLiteral))
+    Contract.require(rule.body.contains(deltaLiteral))
 
     implicit val vs: Semiring[T] = state.vs
 

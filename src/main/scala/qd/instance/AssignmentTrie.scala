@@ -1,10 +1,12 @@
 package qd
 package instance
 
+import qd.util.Contract
+
 case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instance: Instance[T])
                                         (implicit ordering: Ordering[Variable]) {
-  require(Range(0, signature.size - 1).forall(i => ordering.lt(signature(i), signature(i + 1))))
-  require(signature.map(_.domain) == instance.signature)
+  Contract.require(Range(0, signature.size - 1).forall(i => ordering.lt(signature(i), signature(i + 1))))
+  Contract.require(signature.map(_.domain) == instance.signature)
   def *(t: T): AssignmentTrie[T] = AssignmentTrie(signature, instance * t)
   lazy val support: Seq[Assignment[T]] = for ((t, v) <- instance.support) yield Assignment(signature.zip(t).toMap, v)
 }
@@ -21,7 +23,7 @@ object AssignmentTrie {
     val varIndex = allVars.zipWithIndex.toMap
 
     def shuffle(t: DTuple): Option[DTuple] = {
-      assert(literal.fields.size == t.length)
+      Contract.assert(literal.fields.size == t.length)
       var success = true
       val ans: Array[Option[Constant]] = Array.fill(allVars.size)(None)
       for (i <- Range(0, t.length)) {
@@ -66,7 +68,7 @@ object AssignmentTrie {
                         yield c -> instTl).toMap
           InstanceInd(domHead, domTailAns, mapAns)
         } else {
-          assert(ordering.gt(head1, head2))
+          Contract.assert(ordering.gt(head1, head2))
           val InstanceInd(domHead, _, map2) = inst2
           val domTailAns = (sign1 ++ sign2.tail).distinct.sorted.map(_.domain)
           val mapAns = for ((c2, instTl2) <- map2) yield c2 -> _join(sign1, inst1, sign2.tail, instTl2)
@@ -77,7 +79,7 @@ object AssignmentTrie {
         val InstanceBase(v1) = inst1
         inst2 * v1
       } else {
-        assert(sign2.isEmpty)
+        Contract.assert(sign2.isEmpty)
         val InstanceBase(v2) = inst2
         inst1 * v2
       }

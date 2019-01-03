@@ -1,6 +1,8 @@
 package qd
 package instance
 
+import qd.util.Contract
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Instances
 
@@ -23,18 +25,18 @@ sealed abstract class Instance[T <: Value[T]] protected (val signature: IndexedS
   }
 
   override def apply(tuple: DTuple): T = {
-    require(tuple.arity == this.arity)
+    Contract.require(tuple.arity == this.arity)
     this match {
       case InstanceBase(value) => value
       case InstanceInd(domHead, _, map) =>
         val chead = tuple.head
-        require(chead.domain == domHead)
+        Contract.require(chead.domain == domHead)
         map.get(chead).map(_(tuple.tail)).getOrElse(vs.Zero)
     }
   }
 
   def filter(f: IndexedSeq[Option[Constant]]): Seq[(DTuple, T)] = {
-    require(f.length == this.arity)
+    Contract.require(f.length == this.arity)
     this match {
       case InstanceBase(value) => if (vs.nonZero(value)) Seq((DTuple(Vector()), value)) else Seq()
       case InstanceInd(_, _, map) =>
@@ -60,7 +62,7 @@ sealed abstract class Instance[T <: Value[T]] protected (val signature: IndexedS
   def ++(that: Instance[T]): Instance[T] = (this, that) match {
     case (InstanceBase(vthis), InstanceBase(vthat)) => InstanceBase(vthis + vthat)
     case (InstanceInd(domH1, domT1, map1), InstanceInd(domH2, _, map2)) =>
-      require(domH1 == domH2)
+      Contract.require(domH1 == domH2)
       val nm1 = for ((chead, v1) <- map1)
                 yield {
                   val ov2 = map2.get(chead)
@@ -77,12 +79,12 @@ sealed abstract class Instance[T <: Value[T]] protected (val signature: IndexedS
   def ++(tvs: Map[DTuple, T]): Instance[T] = tvs.foldLeft(this)(_ + _)
   def +(tv: (DTuple, T)): Instance[T] = {
     val (t, v) = tv
-    require(t.arity == this.arity)
+    Contract.require(t.arity == this.arity)
     this match {
       case InstanceBase(value) => InstanceBase(value + v)
       case InstanceInd(domHead, domTail, map) =>
         val chead = t.head
-        require(chead.domain == domHead)
+        Contract.require(chead.domain == domHead)
         val mapA = map.getOrElse(chead, Instance(domTail))
         val newMapA = mapA + (t.tail -> v)
         InstanceInd(domHead, domTail, map + (chead -> newMapA))
@@ -109,6 +111,6 @@ case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) exten
 case class InstanceInd[T <: Value[T]](domHead: Domain, domTail: IndexedSeq[Domain], map: Map[Constant, Instance[T]])
                                      (implicit vs: Semiring[T])
   extends Instance[T](domHead +: domTail) {
-  require(map.forall { case (constant, _) => constant.domain == domHead })
-  require(map.forall { case (_, instance) => instance.signature == domTail })
+  Contract.require(map.forall { case (constant, _) => constant.domain == domHead })
+  Contract.require(map.forall { case (_, instance) => instance.signature == domTail })
 }

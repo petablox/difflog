@@ -1,5 +1,7 @@
 package qd
 
+import qd.util.Contract
+
 object RuleEnumerator {
 
   def enumerate(
@@ -7,15 +9,15 @@ object RuleEnumerator {
                  maxLiterals: Int, maxVars: Int
                ): Set[Rule] = {
 
-    require(inputRels.intersect(inventedRels).isEmpty)
-    require(inputRels.intersect(outputRels).isEmpty)
-    require(inventedRels.intersect(outputRels).isEmpty)
-    require(maxLiterals >= 0 && maxVars >= 0)
+    Contract.require(inputRels.intersect(inventedRels).isEmpty)
+    Contract.require(inputRels.intersect(outputRels).isEmpty)
+    Contract.require(inventedRels.intersect(outputRels).isEmpty)
+    Contract.require(maxLiterals >= 0 && maxVars >= 0)
 
     val allRels = inputRels ++ inventedRels ++ outputRels
 
     def allLiteralSets(length: Int, freeVars: Set[Variable]): Set[Set[Literal]] = {
-      require(length >= 0)
+      Contract.require(length >= 0)
       if (length == 0) Set(Set())
       else {
         def allLiterals(hypRel: Relation): Set[(Literal, Set[Variable])] = {
