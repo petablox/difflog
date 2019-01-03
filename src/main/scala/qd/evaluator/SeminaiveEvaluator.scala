@@ -24,7 +24,7 @@ object SeminaiveEvaluator extends Evaluator {
 
     val changed: Boolean = deltaCurr.nonEmptySupport || deltaNext.nonEmptySupport
 
-    def addTuples(relation: Relation, newTuples: Map[DTuple, T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Seq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
@@ -77,7 +77,7 @@ object SeminaiveEvaluator extends Evaluator {
                                .toSeq.map(mv => Assignment(mv._1, mv._2))
     }
 
-    val newTuples = assignments.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head)).toMap
+    val newTuples = assignments.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head))
     state.addTuples(rule.head.relation, newTuples)
   }
 

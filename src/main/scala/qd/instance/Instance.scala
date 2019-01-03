@@ -15,9 +15,9 @@ sealed abstract class Instance[T <: Value[T]] protected (val signature: IndexedS
 
   val isEmpty: Boolean = !this.nonEmpty
 
-  lazy val support: Set[(DTuple, T)] = this match {
-    case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Vector()), value)) else Set()
-    case InstanceInd(_, _, map) => for ((constant, mapA) <- map.toSet;
+  lazy val support: Seq[(DTuple, T)] = this match {
+    case InstanceBase(value) => if (vs.nonZero(value)) Seq((DTuple(Vector()), value)) else Seq()
+    case InstanceInd(_, _, map) => for ((constant, mapA) <- map.toSeq;
                                         (tuple, value) <- mapA.support)
                                    yield (constant +: tuple) -> value
   }
@@ -33,18 +33,18 @@ sealed abstract class Instance[T <: Value[T]] protected (val signature: IndexedS
     }
   }
 
-  def filter(f: IndexedSeq[Option[Constant]]): Set[(DTuple, T)] = {
+  def filter(f: IndexedSeq[Option[Constant]]): Seq[(DTuple, T)] = {
     require(f.length == this.arity)
     this match {
-      case InstanceBase(value) => if (vs.nonZero(value)) Set((DTuple(Vector()), value)) else Set()
+      case InstanceBase(value) => if (vs.nonZero(value)) Seq((DTuple(Vector()), value)) else Seq()
       case InstanceInd(_, _, map) =>
         f.head match {
           case Some(fh) =>
             val mfh = map.get(fh)
             if (mfh.nonEmpty) mfh.get.filter(f.tail).map { case (tuple, value) => (fh +: tuple, value) }
-            else Set()
+            else Seq()
           case None =>
-            for ((constant, ind) <- map.toSet;
+            for ((constant, ind) <- map.toSeq;
                  (tuple, value) <- ind.filter(f.tail))
             yield (constant +: tuple, value)
         }

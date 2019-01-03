@@ -11,7 +11,7 @@ class EvaluatorReachabilitySpec(evaluator: Evaluator) extends FunSuite {
       val idb = evaluator(rules, _ => FValueSemiringObj.One, graph.edb)
       val produced = idb(Graphs.path)
       assert(produced.support.forall(_._1.length == 2))
-      assert(produced.support.map(tv => (tv._1(0), tv._1(1))) == graph.reachable)
+      assert(produced.support.map(tv => (tv._1(0), tv._1(1))).toSet == graph.reachable)
       assert(produced.support.forall(_._2.v >= 1.0))
     }
   }

@@ -46,13 +46,13 @@ class InstanceSpec extends FunSuite {
   }
 
   test("Supports are computed correctly") {
-    assert(instAD1.support == Set())
-    assert(instAD2.support == Set((ad0, f1)))
+    assert(instAD1.support.toSet == Set())
+    assert(instAD2.support.toSet == Set((ad0, f1)))
 
-    assert(instAAD1.support == Set())
-    assert(instAAD2.support == Set((abd0, f2)))
-    assert(instAAD3.support == Set((abd0, f12)))
-    assert(instAAD4.support == Set((abd0, f2), (cbd0, f12)))
+    assert(instAAD1.support.toSet == Set())
+    assert(instAAD2.support.toSet == Set((abd0, f2)))
+    assert(instAAD3.support.toSet == Set((abd0, f12)))
+    assert(instAAD4.support.toSet == Set((abd0, f2), (cbd0, f12)))
   }
 
   test("Instance emptiness check works as desired") {
@@ -91,7 +91,7 @@ class InstanceSpec extends FunSuite {
                   Vector(Some(b), None),
                   Vector(Some(a), Some(b)),
                   Vector(None, Some(c)))) {
-      assert(inst.filter(f) == inst.support.filter { case (tuple, _) => fmatch(f, tuple) })
+      assert(inst.filter(f).toSet == inst.support.filter({ case (tuple, _) => fmatch(f, tuple) }).toSet)
     }
 
     for (inst <- Set(instAAD1, instAAD2, instAAD3, instAAD4);
@@ -100,7 +100,7 @@ class InstanceSpec extends FunSuite {
                   Vector(Some(b), Some(c), Some(d1)),
                   Vector(Some(a), Some(b), None),
                   Vector(None, Some(c), Some(d2)))) {
-      assert(inst.filter(f) == inst.support.filter { case (tuple, _) => fmatch(f, tuple) })
+      assert(inst.filter(f).toSet == inst.support.filter({ case (tuple, _) => fmatch(f, tuple) }).toSet)
     }
   }
 

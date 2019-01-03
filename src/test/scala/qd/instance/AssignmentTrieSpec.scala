@@ -2,6 +2,7 @@ package qd
 package instance
 
 import org.scalatest.FunSuite
+import qd.Semiring.FValueSemiringObj
 import qd.data.graphs.Graphs
 
 class AssignmentTrieSpec extends FunSuite {
@@ -19,6 +20,8 @@ class AssignmentTrieSpec extends FunSuite {
     val iy = v.indexOf(y)
     implicitly[Ordering[Int]].compare(ix, iy)
   }
+
+  implicit val vs: Semiring[FValue] = FValueSemiringObj
 
   val asgn0: AssignmentTrie[FValue] = AssignmentTrie()
 
@@ -64,11 +67,12 @@ class AssignmentTrieSpec extends FunSuite {
                                                      (DTuple(Vector(c, c)) -> FValue(0.4, Empty)))
 
   test("Assignments should be correctly constructed") {
-    assert(AssignmentTrie(inst1.support.toMap, lit1) == asgn5)
+    assert(AssignmentTrie(inst1.support, lit1) == asgn5)
   }
 
   test("Assignments should be correctly grounded") {
-    assert(AssignmentTrie.ground(asgn1, lit2) == inst1.support.toMap)
+    val a1inst = asgn1.support.map(_.toTuple(lit2)).foldLeft(Instance(inst1.signature))(_ + _)
+    assert(a1inst.support.toSet == inst1.support.toSet)
   }
 
   test("Joins should be correctly computed") {

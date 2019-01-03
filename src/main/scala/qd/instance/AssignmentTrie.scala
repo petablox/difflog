@@ -6,6 +6,7 @@ case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instan
   require(Range(0, signature.size - 1).forall(i => ordering.lt(signature(i), signature(i + 1))))
   require(signature.map(_.domain) == instance.signature)
   def *(t: T): AssignmentTrie[T] = AssignmentTrie(signature, instance * t)
+  lazy val support: Seq[Assignment[T]] = for ((t, v) <- instance.support) yield Assignment(signature.zip(t).toMap, v)
 }
 
 object AssignmentTrie {
@@ -14,7 +15,7 @@ object AssignmentTrie {
     AssignmentTrie(Vector(), InstanceBase(vs.One))
   }
 
-  def apply[T <: Value[T]](support: Map[DTuple, T], literal: Literal)
+  def apply[T <: Value[T]](support: Seq[(DTuple, T)], literal: Literal)
                           (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
     val allVars = literal.fields.collect({ case v @ Variable(_, _) => v }).sorted.distinct
     val varIndex = allVars.zipWithIndex.toMap
@@ -38,23 +39,6 @@ object AssignmentTrie {
     val ansSignature = literal.fields.collect({ case v @ Variable(_, _) => v }).sorted.distinct
     val ansInstance = shuffledSupport.foldLeft(Instance(ansSignature.map(_.domain)))(_ + _)
     AssignmentTrie(ansSignature, ansInstance)
-  }
-
-  def ground[T <: Value[T]](at: AssignmentTrie[T], head: Literal)
-                               (implicit vs: Semiring[T]): Map[DTuple, T] = {
-
-    val fieldShufflePlan = head.fields.map {
-      case c @ Constant(_, _) => Left(c)
-      case v @ Variable(_, _) => Right(at.signature.indexOf(v))
-    }
-
-    def execPlan(t: DTuple): DTuple = DTuple(fieldShufflePlan.map {
-      case Left(c) => c
-      case Right(index) => t(index)
-    })
-
-    val ungroupedAns = at.instance.support.map({ case (t, v) => (execPlan(t), v) })
-    ungroupedAns.groupBy(_._1).map { case (t, tvs) => t -> tvs.foldLeft(vs.Zero)(_ + _._2) }
   }
 
   def join[T <: Value[T]](at1: AssignmentTrie[T], at2: AssignmentTrie[T])

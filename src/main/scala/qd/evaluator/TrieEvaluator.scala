@@ -56,7 +56,7 @@ object TrieEvaluator extends Evaluator {
   case class State[T <: Value[T]](trie: RuleTrie, pos: Token => T, config: Config[T], changed: Boolean)
                                  (implicit val vs: Semiring[T]) {
 
-    def addTuples(relation: Relation, newTuples: Map[DTuple, T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Seq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
@@ -100,7 +100,7 @@ object TrieEvaluator extends Evaluator {
     // Step 2: Process leaves
     for (rule <- trie.leaves) {
       implicit val vs: Semiring[T] = state.vs
-      val newTuples = ax2.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head)).toMap
+      val newTuples = ax2.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head))
       nextState = nextState.addTuples(rule.head.relation, newTuples)
     }
 

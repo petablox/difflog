@@ -17,7 +17,7 @@ object TrieJoinEvaluator extends Evaluator {
     val trie = RuleTrie(rules)
     val allLiterals = rules.flatMap(_.body).groupBy(_.relation)
     val asgns = rules.flatMap(_.body)
-                     .map(literal => (literal, AssignmentTrie(edb(literal.relation).support.toMap, literal)))
+                     .map(literal => (literal, AssignmentTrie(edb(literal.relation).support, literal)))
                      .toMap
 
     var state = State(trie, pos, allLiterals, edb, asgns, changed = true)
@@ -34,7 +34,7 @@ object TrieJoinEvaluator extends Evaluator {
                                    changed: Boolean
                                  )(implicit val ordering: Ordering[Variable], implicit val vs: Semiring[T]) {
 
-    def addTuples(relation: Relation, newTuples: Map[DTuple, T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Seq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
@@ -106,8 +106,8 @@ object TrieJoinEvaluator extends Evaluator {
 
     // Step 2: Process leaves
     for (rule <- trie.leaves) {
-      val newTuples = AssignmentTrie.ground(ax2, rule.head)
-                                    .transform { case (_, v) => v * Value(rule.lineage, state.pos) }
+      val ax3 = ax2 * Value(rule.lineage, state.pos)
+      val newTuples = ax3.support.map(_.toTuple(rule.head))
       nextState = nextState.addTuples(rule.head.relation, newTuples)
     }
 

@@ -26,7 +26,7 @@ object TrieSemiEvaluator extends Evaluator {
 
     def changed: Boolean = deltaCurr.nonEmptySupport || deltaNext.nonEmptySupport
 
-    def addTuples(relation: Relation, newTuples: Map[DTuple, T]): State[T] = {
+    def addTuples(relation: Relation, newTuples: Seq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
       val ntp = newTuples.filter { case (tuple, value) => value > oldInstance(tuple) }
 
@@ -91,7 +91,7 @@ object TrieSemiEvaluator extends Evaluator {
     if (deltaDone) {
       for (rule <- trie.leaves) {
         implicit val vs: Semiring[T] = state.vs
-        val newTuples = ax2.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head)).toMap
+        val newTuples = ax2.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head))
         nextState = nextState.addTuples(rule.head.relation, newTuples)
       }
     }
