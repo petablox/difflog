@@ -11,9 +11,15 @@ object TrieJoinEvaluator extends Evaluator {
 
   override def apply[T <: Value[T]](rules: Set[Rule], pos: Token => T, edb: Config[T])
                                    (implicit vs: Semiring[T]): Config[T] = {
-    var variableIndex = Map[Variable, Int]()
-    for (v <- rules.flatMap(_.variables)) { variableIndex = variableIndex + (v -> variableIndex.size) }
-    implicit val ordering: Ordering[Variable] = (x: Variable, y: Variable) => variableIndex(x).compare(variableIndex(y))
+
+    implicit val ordering: Ordering[Variable] = new Ordering[Variable]() {
+      val allVariables: Set[Variable] = rules.flatMap(_.variables)
+      val maxOccurrences: Map[Variable, Int] = (for (v <- allVariables)
+                                                yield v -> rules.map(_.body.map(_.fields.count(_ == v)).sum).max).toMap
+      val varSequence: Seq[Variable] = allVariables.toSeq.sortBy(v => -maxOccurrences(v))
+      val variableIndex: Map[Variable, Int] = varSequence.zipWithIndex.toMap
+      override def compare(x: Variable, y: Variable): Int = variableIndex(x).compare(variableIndex(y))
+    }
 
     val trie = RuleTrie(rules)
     val allLiterals = rules.flatMap(_.body).groupBy(_.relation)
@@ -24,6 +30,7 @@ object TrieJoinEvaluator extends Evaluator {
     var state = State(trie, pos, allLiterals, edb, asgns, changed = true)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
+
   }
 
   case class State[T <: Value[T]](
