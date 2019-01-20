@@ -5,8 +5,8 @@ import qd.util.Contract
 
 case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instance: Instance[T])
                                         (implicit ordering: Ordering[Variable]) {
-  Contract.require(Range(0, signature.size - 1).forall(i => ordering.lt(signature(i), signature(i + 1))))
-  Contract.require(signature.map(_.domain) == instance.signature)
+  Contract.deepRequire(Range(0, signature.size - 1).forall(i => ordering.lt(signature(i), signature(i + 1))))
+  Contract.deepRequire(signature.map(_.domain) == instance.signature)
   def *(t: T): AssignmentTrie[T] = AssignmentTrie(signature, instance * t)
   lazy val support: Seq[Assignment[T]] = for ((t, v) <- instance.support) yield Assignment(signature.zip(t).toMap, v)
 }

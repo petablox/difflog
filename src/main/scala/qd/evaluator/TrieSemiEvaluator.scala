@@ -1,7 +1,6 @@
 package qd
 package evaluator
 
-import TrieEvaluator.RuleTrie
 import qd.instance.{Assignment, Config}
 
 object TrieSemiEvaluator extends Evaluator {
@@ -50,14 +49,14 @@ object TrieSemiEvaluator extends Evaluator {
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
     implicit val vs: Semiring[T] = state.vs
-    immediateConsequence(state, state.trie, Seq(Assignment.Empty()), deltaDone = false)
+    immediateConsequence(state, state.trie, Vector(Assignment.Empty()), deltaDone = false)
   }
 
   // Applies a RuleTrie to a configuration
   def immediateConsequence[T <: Value[T]](
                                            state: State[T],
                                            trie: RuleTrie,
-                                           assignments: Seq[Assignment[T]],
+                                           assignments: IndexedSeq[Assignment[T]],
                                            deltaDone: Boolean
                                          ): State[T] = {
     // Step 0: Collapse assignments.
@@ -66,8 +65,8 @@ object TrieSemiEvaluator extends Evaluator {
     /* val ax0 = assignments
     val ax1 = ax0.map(_.project(trie.variables))
     val ax2 = ax1.groupBy(_.map)
-                 .mapValues(_.map(_.score).foldLeft(vs.Zero)(_ + _))
-                 .toSeq.map(mv => Assignment(mv._1, mv._2)) */
+                 .map({ case (m, as) => Assignment(m, as.map(_.score).foldLeft(vs.Zero: T)(_ + _)) })
+                 .toSeq */
     val ax2 = assignments
 
     var nextState = state
@@ -102,8 +101,8 @@ object TrieSemiEvaluator extends Evaluator {
   def extendAssignments[T <: Value[T]](
                                         literal: Literal,
                                         config: Config[T],
-                                        assignments: Seq[Assignment[T]]
-                                      ): Seq[Assignment[T]] = {
+                                        assignments: IndexedSeq[Assignment[T]]
+                                      ): IndexedSeq[Assignment[T]] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

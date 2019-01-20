@@ -6,20 +6,26 @@ import qd.util.Contract
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Instances
 
-sealed abstract class Instance[T <: Value[T]] protected (val signature: IndexedSeq[Domain])(implicit vs: Semiring[T])
+sealed abstract class Instance[T <: Value[T]](implicit vs: Semiring[T])
   extends (DTuple => T) {
-  val arity: Int = signature.length
 
-  val nonEmpty: Boolean = this match {
+  lazy val signature: IndexedSeq[Domain] = this match {
+    case InstanceBase(_) => Vector()
+    case InstanceInd(domHead, domTail, _) => domHead +: domTail
+  }
+
+  lazy val arity: Int = signature.length
+
+  lazy val nonEmpty: Boolean = this match {
     case InstanceBase(value) => vs.nonZero(value)
     case InstanceInd(_, _, map) => map.values.exists(_.nonEmpty)
   }
 
-  val isEmpty: Boolean = !this.nonEmpty
+  lazy val isEmpty: Boolean = !this.nonEmpty
 
-  lazy val support: Seq[(DTuple, T)] = this match {
-    case InstanceBase(value) => if (vs.nonZero(value)) Seq((DTuple(Vector()), value)) else Seq()
-    case InstanceInd(_, _, map) => for ((constant, mapA) <- map.toSeq;
+  lazy val support: Vector[(DTuple, T)] = this match {
+    case InstanceBase(value) => if (vs.nonZero(value)) Vector((DTuple(Vector()), value)) else Vector()
+    case InstanceInd(_, _, map) => for ((constant, mapA) <- map.toVector;
                                         (tuple, value) <- mapA.support)
                                    yield (constant +: tuple) -> value
   }
@@ -35,18 +41,18 @@ sealed abstract class Instance[T <: Value[T]] protected (val signature: IndexedS
     }
   }
 
-  def filter(f: IndexedSeq[Option[Constant]]): Seq[(DTuple, T)] = {
+  def filter(f: IndexedSeq[Option[Constant]]): Vector[(DTuple, T)] = {
     Contract.require(f.length == this.arity)
     this match {
-      case InstanceBase(value) => if (vs.nonZero(value)) Seq((DTuple(Vector()), value)) else Seq()
+      case InstanceBase(value) => if (vs.nonZero(value)) Vector((DTuple(Vector()), value)) else Vector()
       case InstanceInd(_, _, map) =>
         f.head match {
           case Some(fh) =>
             val mfh = map.get(fh)
             if (mfh.nonEmpty) mfh.get.filter(f.tail).map { case (tuple, value) => (fh +: tuple, value) }
-            else Seq()
+            else Vector()
           case None =>
-            for ((constant, ind) <- map.toSeq;
+            for ((constant, ind) <- map.toVector;
                  (tuple, value) <- ind.filter(f.tail))
             yield (constant +: tuple, value)
         }
@@ -106,14 +112,12 @@ object Instance {
   def apply[T <: Value[T]](relation: Relation)(implicit vs: Semiring[T]): Instance[T] = Instance(relation.signature)
 }
 
-private[instance] case class InstanceBase[T <: Value[T]](value: T)
-                                                        (implicit vs: Semiring[T]) extends Instance[T](Vector())
+private[instance] case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) extends Instance[T]
 
 private[instance] case class InstanceInd[T <: Value[T]](
                                                          domHead: Domain, domTail: IndexedSeq[Domain],
                                                          map: Map[Constant, Instance[T]]
-                                                       )(implicit vs: Semiring[T])
-  extends Instance[T](domHead +: domTail) {
-  // Contract.require(map.forall { case (constant, _) => constant.domain == domHead })
-  // Contract.require(map.forall { case (_, instance) => instance.signature == domTail })
+                                                       )(implicit vs: Semiring[T]) extends Instance[T] {
+  Contract.deepRequire(map.forall { case (constant, _) => constant.domain == domHead })
+  Contract.deepRequire(map.forall { case (_, instance) => instance.signature == domTail })
 }

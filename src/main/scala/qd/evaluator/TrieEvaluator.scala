@@ -3,8 +3,6 @@ package evaluator
 
 import qd.instance.{Assignment, Config}
 
-import scala.collection.immutable.Iterable
-
 object TrieEvaluator extends Evaluator {
 
   override val toString: String = "TrieEvaluator"
@@ -15,42 +13,6 @@ object TrieEvaluator extends Evaluator {
     var state = State(trie, pos, edb, changed = true)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
-  }
-
-  class RuleTrie private (val leaves: Set[Rule], val map: Map[Literal, RuleTrie]) extends Iterable[Rule] {
-
-    // Commented because the following check is too time-consuming
-    // Contract.require(map.forall { case (literal, trie) => trie.forall(_.body.contains(literal)) })
-
-    // Savings = totalLiterals (of soup from which this trie is constructed) / numLiterals (which remain after collapse)
-    val numRules: Int = leaves.size + map.values.map(_.numRules).sum
-    val numLiterals: Int = map.map({ case (_, subTrie) => 1 + subTrie.numLiterals }).sum
-    val totalLiterals: Int = map.values.map(subTrie => subTrie.totalLiterals + subTrie.numRules).sum
-    override def iterator: Iterator[Rule] = map.values.foldLeft(leaves.iterator)(_ ++ _.iterator)
-    val variables: Set[Variable] = {
-      val vs1 = leaves.flatMap(_.head.variables)
-      val vs2 = map.flatMap { case (l, t) => l.variables ++ t.variables }
-      vs1 ++ vs2
-    }
-
-    def +(rule: Rule): RuleTrie = {
-      def add(remainingLiterals: Seq[Literal], trie: RuleTrie): RuleTrie = {
-        if (remainingLiterals.isEmpty) new RuleTrie(trie.leaves + rule, trie.map)
-        else {
-          val litHead = remainingLiterals.head
-          val litRest = remainingLiterals.tail
-          val subTrie = trie.map.getOrElse(litHead, RuleTrie())
-          new RuleTrie(trie.leaves, trie.map + (litHead -> add(litRest, subTrie)))
-        }
-      }
-      add(rule.body.sortBy(_.toString), this)
-    }
-
-  }
-
-  object RuleTrie {
-    def apply(): RuleTrie = new RuleTrie(Set(), Map())
-    def apply(rules: Iterable[Rule]): RuleTrie = rules.foldLeft(RuleTrie())(_ + _)
   }
 
   case class State[T <: Value[T]](trie: RuleTrie, pos: Token => T, config: Config[T], changed: Boolean)
@@ -70,14 +32,14 @@ object TrieEvaluator extends Evaluator {
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
     implicit val vs: Semiring[T] = state.vs
-    immediateConsequence(state, state.trie, Seq(Assignment.Empty()))
+    immediateConsequence(state, state.trie, Vector(Assignment.Empty()))
   }
 
   // Applies a RuleTrie to a configuration
   def immediateConsequence[T <: Value[T]](
                                            state: State[T],
                                            trie: RuleTrie,
-                                           assignments: Seq[Assignment[T]]
+                                           assignments: IndexedSeq[Assignment[T]]
                                          ): State[T] = {
     // Step 0: Collapse assignments.
     // Elided because early experiments showed no reductions in number of assignments, and
@@ -85,8 +47,8 @@ object TrieEvaluator extends Evaluator {
     /* val ax0 = assignments
     val ax1 = ax0.map(_.project(trie.variables))
     val ax2 = ax1.groupBy(_.map)
-                 .mapValues(_.map(_.score).foldLeft(vs.Zero)(_ + _))
-                 .toSeq.map(mv => Assignment(mv._1, mv._2)) */
+                 .map({ case (m, as) => Assignment(m, as.map(_.score).foldLeft(vs.Zero: T)(_ + _)) })
+                 .toSeq */
     val ax2 = assignments
 
     var nextState = state
@@ -110,8 +72,8 @@ object TrieEvaluator extends Evaluator {
   def extendAssignments[T <: Value[T]](
                                         literal: Literal,
                                         config: Config[T],
-                                        assignments: Seq[Assignment[T]]
-                                      ): Seq[Assignment[T]] = {
+                                        assignments: IndexedSeq[Assignment[T]]
+                                      ): IndexedSeq[Assignment[T]] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

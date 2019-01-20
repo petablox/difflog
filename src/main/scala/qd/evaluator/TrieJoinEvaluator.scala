@@ -1,9 +1,7 @@
 package qd
 package evaluator
 
-import qd.evaluator.TrieEvaluator.RuleTrie
 import qd.instance.{AssignmentTrie, Config}
-import qd.util.Contract
 
 object TrieJoinEvaluator extends Evaluator {
 
@@ -22,12 +20,7 @@ object TrieJoinEvaluator extends Evaluator {
     }
 
     val trie = RuleTrie(rules)
-    val allLiterals = rules.flatMap(_.body).groupBy(_.relation)
-    val asgns = rules.flatMap(_.body)
-                     .map(literal => (literal, AssignmentTrie(edb(literal.relation).support, literal)))
-                     .toMap
-
-    var state = State(trie, pos, allLiterals, edb, asgns, changed = true)
+    var state = State(trie, pos, edb, changed = true)
     while (state.changed) { state = immediateConsequence(state.nextEpoch) }
     state.config
 
@@ -36,43 +29,38 @@ object TrieJoinEvaluator extends Evaluator {
   case class State[T <: Value[T]](
                                    trie: RuleTrie,
                                    pos: Token => T,
-                                   allLiterals: Map[Relation, Set[Literal]],
                                    config: Config[T],
-                                   assignments: Map[Literal, AssignmentTrie[T]],
                                    changed: Boolean
                                  )(implicit val ordering: Ordering[Variable], implicit val vs: Semiring[T]) {
+
+    private val _assignments = scala.collection.mutable.Map[Literal, AssignmentTrie[T]]()
+    def assignments(literal: Literal): AssignmentTrie[T] = {
+      if (!_assignments.contains(literal)) {
+        val ans = AssignmentTrie(config(literal.relation).support, literal)
+        _assignments.synchronized { _assignments(literal) = ans }
+      }
+      _assignments(literal)
+    }
 
     def addTuples(relation: Relation, newTuples: Seq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)
 
-      var newAssignments = assignments
-      for (literal <- allLiterals(relation)) {
-        val oldLas = newAssignments(literal)
-        val deltaLas = AssignmentTrie(newTuples, literal)
-        Contract.assert(deltaLas.signature == oldLas.signature)
-        val newLas = AssignmentTrie(oldLas.signature, oldLas.instance ++ deltaLas.instance)
-        newAssignments = newAssignments + (literal -> newLas)
-      }
-
       val newChanged = changed || newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
-      State(trie, pos, allLiterals, newConfig, newAssignments, newChanged)
+      State(trie, pos, newConfig, newChanged)
     }
 
-    def nextEpoch: State[T] = if (!changed) this else State(trie, pos, allLiterals, config, assignments, changed = false)
+    def nextEpoch: State[T] = if (!changed) this else State(trie, pos, config, changed = false)
 
     override def toString: String = {
       val n = System.lineSeparator()
       val buffer = new StringBuilder()
       buffer.append(s"===$n")
-      for ((relation, literals) <- allLiterals) {
+      for (relation <- config.map.keys) {
         buffer.append(s"---$n")
         buffer.append(s"Relation $relation$n")
-        buffer.append(s"  Instance: ${config(relation)}$n")
-        for (literal <- literals) {
-          buffer.append(s"  Literal $literal: ${assignments(literal)}$n")
-        }
+        buffer.append(s"  ${config(relation)}$n")
       }
       buffer.toString()
     }
@@ -100,8 +88,8 @@ object TrieJoinEvaluator extends Evaluator {
     /* val ax0 = assignments
     val ax1 = ax0.map(_.project(trie.variables))
     val ax2 = ax1.groupBy(_.map)
-                 .mapValues(_.map(_.score).foldLeft(vs.Zero)(_ + _))
-                 .toSeq.map(mv => Assignment(mv._1, mv._2)) */
+                 .map({ case (m, as) => Assignment(m, as.map(_.score).foldLeft(vs.Zero: T)(_ + _)) })
+                 .toSeq */
     val ax2 = assignments
 
     var nextState = state

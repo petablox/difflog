@@ -19,14 +19,14 @@ object Learner {
     reinterpretTrace.minBy(_.loss)
   }
 
-  def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Seq[State] = {
+  def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Vector[State] = {
     val random = new scala.util.Random()
 
     var currPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 0.5)).toMap)
     var currOut = evaluator(problem.rules, currPos, problem.edb)
     var currLoss = scorer.loss(currOut, problem.idb, problem.outputRels)
     var currState = State(currPos, currOut, currLoss)
-    var ans = Seq(currState)
+    var ans = Vector(currState)
 
     var grad = scorer.gradientLoss(currPos, currOut, problem.idb, problem.outputRels)
     var step = currPos
@@ -56,11 +56,11 @@ object Learner {
     ans
   }
 
-  def keepHighestTokens(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): Seq[State] = {
+  def keepHighestTokens(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): Vector[State] = {
     val sortedTokens = state.pos.toSeq.sortBy(-_._2).map(_._1)
 
     scribe.info("Keeping highest tokens")
-    for (k <- Range(1, sortedTokens.size + 1))
+    for (k <- Range(1, sortedTokens.size + 1).toVector)
     yield {
       val highTokens = sortedTokens.take(k).toSet
 
