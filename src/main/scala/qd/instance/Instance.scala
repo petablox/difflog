@@ -84,7 +84,27 @@ sealed abstract class Instance[T <: Value[T]](implicit vs: Semiring[T])
     case (_, _) => throw new IllegalArgumentException
   }
 
-  def ++(tvs: Map[DTuple, T]): Instance[T] = tvs.foldLeft(this)(_ + _)
+  def ++(tvs: IndexedSeq[(DTuple, T)]): Instance[T] = {
+    if (tvs.isEmpty) {
+      this
+    } else if (tvs.head._1.isEmpty) {
+      val InstanceBase(thisv) = this
+      Contract.require(tvs.forall(_._1.isEmpty))
+      val thatv = tvs.foldLeft(thisv) { case (v, (_, vp)) => v + vp }
+      InstanceBase(thatv)
+    } else {
+      val InstanceInd(domHead, domTail, map) = this
+      var ans = map
+      for ((cHead, subTvs) <- tvs.groupBy(_._1.head)) {
+        Contract.require(cHead.domain == domHead)
+        val subTvsTail = subTvs.map { case (t, v) => (t.tail, v) }
+        val newInstance = ans.getOrElse(cHead, Instance(domTail)) ++ subTvsTail
+        ans = ans + (cHead -> newInstance)
+      }
+      InstanceInd(domHead, domTail, ans)
+    }
+  }
+
   def +(tv: (DTuple, T)): Instance[T] = {
     val (t, v) = tv
     Contract.require(t.arity == this.arity)

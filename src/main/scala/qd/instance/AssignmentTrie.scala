@@ -4,7 +4,8 @@ package instance
 import qd.util.Contract
 
 case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instance: Instance[T])
-                                        (implicit ordering: Ordering[Variable]) {
+                                        (implicit vs: Semiring[T], ordering: Ordering[Variable]) {
+
   Contract.deepRequire(Range(0, signature.size - 1).forall(i => ordering.lt(signature(i), signature(i + 1))))
   Contract.deepRequire(signature.map(_.domain) == instance.signature)
   def *(t: T): AssignmentTrie[T] = AssignmentTrie(signature, instance * t)
@@ -13,7 +14,7 @@ case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instan
     def _support(_signature: IndexedSeq[Variable], _instance: Instance[T]): Vector[Assignment[T]] = {
       if (_signature.isEmpty) {
         val InstanceBase(value) = _instance
-        Vector(Assignment(Map(), value))
+        if (vs.nonZero(value)) Vector(Assignment(Map(), value)) else Vector()
       } else {
         val vHead = _signature.head
         val subSignature = _signature.tail
@@ -24,6 +25,59 @@ case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instan
     }
     _support(signature, instance)
   }
+
+  def toTuples(head: Literal): IndexedSeq[(DTuple, T)] = {
+    // We are going to recurse over the structure of the AssignmentTrie.
+    // At each level, we will encounter (variable -> constant) assignments.
+    // We need to know into which fields of the result to place this constant.
+
+    // val headIndexed = head.fields.zipWithIndex
+    // val plan = for (v <- signature) yield headIndexed.filter(_._1 == v).map(_._2)
+
+    val headIndexed = head.fields.zipWithIndex.groupBy(_._1)
+    val plan = for (v <- signature) yield headIndexed.getOrElse(v, Vector()).map(_._2)
+
+    // WARNING: RawTuples are mutable, and should not be exported outside this function.
+    type RawTuple = Array[Option[Constant]]
+    def rawToDTuple(t: RawTuple): DTuple = DTuple(t.map(_.get))
+    val seed = for (f <- head.fields)
+               yield f match {
+                 case c @ Constant(_, _) => Some(c)
+                 case Variable(_, _) => None
+               }
+
+    def _toTuples(
+                   _plan: IndexedSeq[IndexedSeq[Int]],
+                   _instance: Instance[T]
+                 ): IndexedSeq[(RawTuple, T)] = {
+      if (_plan.isEmpty) {
+        val InstanceBase(value) = _instance
+        if (vs.nonZero(value)) Vector((seed.toArray, value)) else Vector()
+      } else {
+        val pHead = _plan.head
+        val subPlan = _plan.tail
+        val InstanceInd(_, _, map) = _instance
+
+        // The tuple t is updated in place
+        def extendRawTuple(t: RawTuple, cHead: Constant): Unit = {
+          val scHead = Some(cHead)
+          for (index <- pHead) {
+            t(index) = scHead
+          }
+        }
+
+        for ((cHead, subInstance) <- map.toVector;
+             (t, v) <- _toTuples(subPlan, subInstance))
+        yield {
+          extendRawTuple(t, cHead)
+          (t, v)
+        }
+      }
+    }
+
+    _toTuples(plan, instance).map { case (t, v) => (rawToDTuple(t), v) }
+  }
+
 }
 
 object AssignmentTrie {
