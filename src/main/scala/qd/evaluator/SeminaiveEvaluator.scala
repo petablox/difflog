@@ -62,7 +62,7 @@ object SeminaiveEvaluator extends Evaluator {
 
     implicit val vs: Semiring[T] = state.vs
 
-    var assignments: IndexedSeq[Assignment[T]] = Vector(Assignment.Empty)
+    var assignments = Vector(Assignment.Empty)
     var remainingLits = rule.body
     for (literal <- rule.body) {
       assignments = if (literal == deltaLiteral) extendAssignments(literal, state.deltaCurr, assignments)
@@ -85,8 +85,8 @@ object SeminaiveEvaluator extends Evaluator {
   def extendAssignments[T <: Value[T]](
                                         literal: Literal,
                                         config: Config[T],
-                                        assignments: IndexedSeq[Assignment[T]]
-                                      ): IndexedSeq[Assignment[T]] = {
+                                        assignments: Vector[Assignment[T]]
+                                      ): Vector[Assignment[T]] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

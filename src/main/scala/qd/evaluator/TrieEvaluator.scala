@@ -39,7 +39,7 @@ object TrieEvaluator extends Evaluator {
   def immediateConsequence[T <: Value[T]](
                                            state: State[T],
                                            trie: RuleTrie,
-                                           assignments: IndexedSeq[Assignment[T]]
+                                           assignments: Vector[Assignment[T]]
                                          ): State[T] = {
     // Step 0: Collapse assignments.
     // Elided because early experiments showed no reductions in number of assignments, and
@@ -72,8 +72,8 @@ object TrieEvaluator extends Evaluator {
   def extendAssignments[T <: Value[T]](
                                         literal: Literal,
                                         config: Config[T],
-                                        assignments: IndexedSeq[Assignment[T]]
-                                      ): IndexedSeq[Assignment[T]] = {
+                                        assignments: Vector[Assignment[T]]
+                                      ): Vector[Assignment[T]] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

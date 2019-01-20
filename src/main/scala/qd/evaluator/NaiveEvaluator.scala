@@ -36,7 +36,7 @@ object NaiveEvaluator extends Evaluator {
   def ruleConsequence[T <: Value[T]](state: State[T], rule: Rule): State[T] = {
     implicit val vs: Semiring[T] = state.vs
 
-    var assignments: IndexedSeq[Assignment[T]] = Vector(Assignment.Empty)
+    var assignments = Vector(Assignment.Empty)
     var remainingLits = rule.body
     for (literal <- rule.body) {
       assignments = extendAssignments(literal, state.config, assignments)
@@ -57,8 +57,8 @@ object NaiveEvaluator extends Evaluator {
   def extendAssignments[T <: Value[T]](
                                         literal: Literal,
                                         config: Config[T],
-                                        assignments: IndexedSeq[Assignment[T]]
-                                      ): IndexedSeq[Assignment[T]] = {
+                                        assignments: Vector[Assignment[T]]
+                                      ): Vector[Assignment[T]] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);
