@@ -12,5 +12,6 @@ object Evaluator {
   val STD_EVALUATORS: Map[String, Evaluator] = Map("naive" -> NaiveEvaluator,
                                                    "seminaive" -> SeminaiveEvaluator,
                                                    "trie" -> TrieEvaluator,
-                                                   "trie-semi" -> TrieSemiEvaluator)
+                                                   "trie-semi" -> TrieSemiEvaluator,
+                                                   "trie-join" -> TrieJoinEvaluator)
 }

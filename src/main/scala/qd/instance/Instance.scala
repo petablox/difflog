@@ -23,12 +23,14 @@ sealed abstract class Instance[T <: Value[T]](implicit vs: Semiring[T])
 
   lazy val isEmpty: Boolean = !this.nonEmpty
 
-  lazy val support: Vector[(DTuple, T)] = this match {
-    case InstanceBase(value) => if (vs.nonZero(value)) Vector((DTuple(Vector()), value)) else Vector()
+  lazy val rawSupport: Vector[(Vector[Constant], T)] = this match {
+    case InstanceBase(value) => if (vs.nonZero(value)) Vector((Vector(), value)) else Vector()
     case InstanceInd(_, _, map) => for ((constant, mapA) <- map.toVector;
-                                        (tuple, value) <- mapA.support)
+                                        (tuple, value) <- mapA.rawSupport)
                                    yield (constant +: tuple) -> value
   }
+
+  lazy val support: Vector[(DTuple, T)] = rawSupport.map { case (cs, v) => (DTuple(cs), v) }
 
   override def apply(tuple: DTuple): T = {
     Contract.require(tuple.arity == this.arity)

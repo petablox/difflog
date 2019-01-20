@@ -37,7 +37,7 @@ case class DTuple(fields: IndexedSeq[Constant]) extends IndexedSeq[Constant] {
   def arity: Int = fields.length
 
   override def apply(index: Int): Constant = fields(index)
-  override val length: Int = fields.length
+  override def length: Int = fields.length
   override val hashCode: Int = fields.hashCode()
   override def head: Constant = fields.head
   override def tail: DTuple = DTuple(fields.tail)

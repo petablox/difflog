@@ -14,7 +14,7 @@ object TrieJoinEvaluator extends Evaluator {
       val allVariables: Set[Variable] = rules.flatMap(_.variables)
       val maxOccurrences: Map[Variable, Int] = (for (v <- allVariables)
                                                 yield v -> rules.map(_.body.map(_.fields.count(_ == v)).sum).max).toMap
-      val varSequence: Seq[Variable] = allVariables.toSeq.sortBy(v => -maxOccurrences(v))
+      val varSequence: Vector[Variable] = allVariables.toVector.sortBy(v => -maxOccurrences(v))
       val variableIndex: Map[Variable, Int] = varSequence.zipWithIndex.toMap
       override def compare(x: Variable, y: Variable): Int = variableIndex(x).compare(variableIndex(y))
     }
@@ -42,7 +42,7 @@ object TrieJoinEvaluator extends Evaluator {
       _assignments(literal)
     }
 
-    def addTuples(relation: Relation, newTuples: Seq[(DTuple, T)]): State[T] = {
+    def addTuples(relation: Relation, newTuples: IndexedSeq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
       val newConfig = config + (relation -> newInstance)

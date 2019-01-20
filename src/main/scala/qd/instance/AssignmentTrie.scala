@@ -8,7 +8,22 @@ case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instan
   Contract.deepRequire(Range(0, signature.size - 1).forall(i => ordering.lt(signature(i), signature(i + 1))))
   Contract.deepRequire(signature.map(_.domain) == instance.signature)
   def *(t: T): AssignmentTrie[T] = AssignmentTrie(signature, instance * t)
-  lazy val support: Seq[Assignment[T]] = for ((t, v) <- instance.support) yield Assignment(signature.zip(t).toMap, v)
+
+  lazy val support: Vector[Assignment[T]] = {
+    def _support(_signature: IndexedSeq[Variable], _instance: Instance[T]): Vector[Assignment[T]] = {
+      if (_signature.isEmpty) {
+        val InstanceBase(value) = _instance
+        Vector(Assignment(Map(), value))
+      } else {
+        val vHead = _signature.head
+        val subSignature = _signature.tail
+        val InstanceInd(_, _, map) = _instance
+        for ((cHead, subInstance) <- map.toVector; subAssignment <- _support(subSignature, subInstance))
+        yield subAssignment + (vHead -> cHead)
+      }
+    }
+    _support(signature, instance)
+  }
 }
 
 object AssignmentTrie {

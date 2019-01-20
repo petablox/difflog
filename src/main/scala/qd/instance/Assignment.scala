@@ -6,16 +6,17 @@ import qd.util.Contract
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Assignments
 
-case class Assignment[T <: Value[T]](map: Map[Variable, Constant], score: T) extends (Variable => Constant) {
-  Contract.require(map.forall { case (key, value) => key.domain == value.domain })
+case class Assignment[T <: Value[T]] private (map: Map[Variable, Constant], score: T) extends (Variable => Constant) {
+  Contract.deepRequire(map.forall { case (key, value) => key.domain == value.domain })
 
   override def apply(key: Variable): Constant = map(key)
   def get(key: Variable): Option[Constant] = map.get(key)
   def contains(key: Variable): Boolean = map.contains(key)
 
   def +(kv: (Variable, Constant)): Assignment[T] = {
-    val (key, _) = kv
+    val (key, value) = kv
     Contract.require(!map.contains(key))
+    Contract.require(key.domain == value.domain)
     Assignment(map + kv, score)
   }
   def *(coeff: T): Assignment[T] = Assignment(map, score * coeff)
