@@ -2,18 +2,14 @@ package qd
 
 import qd.util.Contract
 
-case class TokenVec(map: Map[Token, Double]) extends (Lineage => FValue) with Iterable[(Token, Double)] {
+case class TokenVec(map: Map[Token, Double]) extends (Token => FValue) with Iterable[(Token, Double)] {
 
   def get(key: Token): Option[Double] = map.get(key)
   def contains(token: Token): Boolean = map.contains(token)
   def keySet: Set[Token] = map.keySet
   override def iterator: Iterator[(Token, Double)] = map.iterator
 
-  override def apply(lineage: Lineage): FValue = lineage match {
-    case Empty => implicitly[Semiring[FValue]].One
-    case token @ Token(_) => FValue(map(token), token)
-    case And(l1, l2) => this(l1) * this(l2)
-  }
+  override def apply(token: Token): FValue = FValue(map(token), token)
 
   def +(tv: (Token, Double)): TokenVec = {
     val (token, value) = tv

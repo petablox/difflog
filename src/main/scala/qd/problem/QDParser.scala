@@ -70,7 +70,7 @@ class QDParser extends JavaTokenParsers {
 
   def edbBlock: Parser[Problem => Problem] = "EDB" ~ "{" ~> tupleList <~ "}" ^^ { f => problem =>
     val newEDBTuples = f.map(_(problem))
-    problem.addEDBTuples(newEDBTuples:_*)
+    problem.addEDBTuples(newEDBTuples)
   }
 
   def readEDBBlock: Parser[Problem => Problem] = "ReadEDB" ~ "(" ~> stringLiteral <~")" ^^ { f => problem =>
@@ -81,19 +81,17 @@ class QDParser extends JavaTokenParsers {
 
   def idbBlock: Parser[Problem => Problem] = "IDB" ~ "{" ~> tupleList <~ "}" ^^ { f => problem =>
     val newIDBTuples = f.map(_(problem))
-    problem.addIDBTuples(newIDBTuples:_*)
+    problem.addIDBTuples(newIDBTuples)
   }
 
-  def tupleList: Parser[Seq[Problem => (Relation, DTuple, Double)]] = {
+  def tupleList: Parser[List[Problem => (Relation, DTuple)]] = {
     (tupleDecl ~ ("," ~> tupleDecl).* ^^ mkList) |
     ("" ^^ (_ => List()))
   }
 
-  def tupleDecl: Parser[Problem => (Relation, DTuple, Double)] = {
-    ((decimalNumber ^^ (_.toDouble)) <~ ":" | "" ^^ (_ => 1.0)) ~
+  def tupleDecl: Parser[Problem => (Relation, DTuple)] = {
     ident ~ ("(" ~> identList <~ ")") ^^ { f => problem =>
-      val value = f._1._1
-      val relName = f._1._2
+      val relName = f._1
       val fieldNames = f._2
       val t = s"$relName(${fieldNames.mkString(", ")})"
 
@@ -103,7 +101,7 @@ class QDParser extends JavaTokenParsers {
 
       Contract.require(relation.arity == fieldNames.size, s"Arity mismatch between tuple $t and relation $relation")
       val fields = fieldNames.zip(relation.signature).map { case (c, d) => Constant(c, d) }
-      (relation, DTuple(fields), value)
+      (relation, DTuple(fields))
     }
   }
 

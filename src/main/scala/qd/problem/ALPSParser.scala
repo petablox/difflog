@@ -86,9 +86,9 @@ class ALPSParser {
         val t = DTuple(fields)
 
         if (isEDB) {
-          ans = ans.addEDBTuples((relation, t, 1.0))
+          ans = ans.addEDBTuples(Vector((relation, t)))
         } else {
-          ans = ans.addIDBTuples((relation, t, 1.0))
+          ans = ans.addIDBTuples(Vector((relation, t)))
         }
       }
 

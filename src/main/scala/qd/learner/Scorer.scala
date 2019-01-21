@@ -26,7 +26,7 @@ abstract class Scorer {
 
   def loss(cOut: Config[FValue], cRef: Config[FValue], rel: Relation): Double = {
     val allTuples = cOut(rel).support.map(_._1) ++ cRef(rel).support.map(_._1)
-    val allErrors = allTuples.toSeq.map(t => loss(cOut, cRef, rel, t))
+    val allErrors = allTuples.map(t => loss(cOut, cRef, rel, t))
     allErrors.sum
   }
 
@@ -39,7 +39,7 @@ abstract class Scorer {
   def gradientLoss(pos: TokenVec, cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation]): TokenVec = {
     val numeratorVecs = for (rel <- outputRels.toSeq;
                              allTuples = cOut(rel).support.map(_._1) ++ cRef(rel).support.map(_._1);
-                             t <- allTuples.toSeq)
+                             t <- allTuples)
                         yield gradientLoss(pos, cOut, cRef, rel, t)
     numeratorVecs.foldLeft(TokenVec.zero(pos.keySet))(_ + _)
   }
@@ -52,7 +52,7 @@ abstract class Scorer {
 
   def precision(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation], cutoff: Double): Double = {
     val ts = for (rel <- outputRels.toSeq;
-                  (t, v) <- cOut(rel).support.toSeq
+                  (t, v) <- cOut(rel).support
                   if v.v > cutoff)
              yield if (cRef(rel)(t).v > cutoff) 1.0 else 0.0
     ts.sum / ts.size
@@ -60,7 +60,7 @@ abstract class Scorer {
 
   def recall(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation], cutoff: Double): Double = {
     val ts = for (rel <- outputRels.toSeq;
-                  (t, v) <- cRef(rel).support.toSeq
+                  (t, v) <- cRef(rel).support
                   if v.v > cutoff)
              yield if (cOut(rel)(t).v > cutoff) 1.0 else 0.0
     ts.sum / ts.size
