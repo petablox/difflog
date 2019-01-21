@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 import data.graphs.{Graphs, Reachability}
 import qd.Semiring.FValueSemiringObj
 
-class EvaluatorReachabilitySpec(evaluator: Evaluator) extends FunSuite {
+class EvaluatorSpec(evaluator: Evaluator) extends FunSuite {
   for ((programName, rules) <- Reachability.Programs; graph <- Graphs.Graphs) {
     test(s"Applying evaluator $evaluator to program $programName and graph ${graph.name}") {
       val idb = evaluator(rules, _ => FValueSemiringObj.One, graph.edb)
@@ -17,8 +17,8 @@ class EvaluatorReachabilitySpec(evaluator: Evaluator) extends FunSuite {
   }
 }
 
-class NaiveEvaluatorSpec extends EvaluatorReachabilitySpec(NaiveEvaluator)
-class SeminaiveEvaluatorSpec extends EvaluatorReachabilitySpec(SeminaiveEvaluator)
-class TrieEvaluatorSpec extends EvaluatorReachabilitySpec(TrieEvaluator)
-class TrieSemiEvaluatorSpec extends EvaluatorReachabilitySpec(TrieSemiEvaluator)
-class TrieJoinEvaluatorSpec extends EvaluatorReachabilitySpec(TrieJoinEvaluator)
+class NaiveEvaluatorSpec extends EvaluatorSpec(NaiveEvaluator)
+class SeminaiveEvaluatorSpec extends EvaluatorSpec(SeminaiveEvaluator)
+class TrieEvaluatorSpec extends EvaluatorSpec(TrieEvaluator)
+class TrieSemiEvaluatorSpec extends EvaluatorSpec(TrieSemiEvaluator)
+class TrieJoinEvaluatorSpec extends EvaluatorSpec(TrieJoinEvaluator)

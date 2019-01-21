@@ -94,14 +94,14 @@ sealed abstract class Instance[T <: Value[T]](implicit vs: Semiring[T])
       InstanceBase(thatv)
     } else {
       val InstanceInd(domHead, domTail, map) = this
-      var ans = map
-      for ((cHead, subTvs) <- tvs.groupBy(_._1.head)) {
-        Contract.require(cHead.domain == domHead)
-        val subTvsTail = subTvs.map { case (t, v) => (t.tail, v) }
-        val newInstance = ans.getOrElse(cHead, Instance(domTail)) ++ subTvsTail
-        ans = ans + (cHead -> newInstance)
-      }
-      InstanceInd(domHead, domTail, ans)
+      val mapDelta = for ((cHead, subTvs) <- tvs.groupBy(_._1.head))
+                     yield cHead -> {
+                       Contract.require(cHead.domain == domHead)
+                       val subTvsTail = subTvs.map { case (t, v) => (t.tail, v) }
+                       map.getOrElse(cHead, Instance(domTail)) ++ subTvsTail
+                     }
+      val newMap = map ++ mapDelta
+      InstanceInd(domHead, domTail, newMap)
     }
   }
 

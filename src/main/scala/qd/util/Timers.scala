@@ -20,6 +20,6 @@ object Timers {
   }
 
   def getSnapshot: Map[Any, Long] = timers.toMap
-  def reset(): Unit = timers.clear()
+  def reset(): Unit = timers.synchronized { timers.clear() }
 
 }

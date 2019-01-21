@@ -46,7 +46,8 @@ object TrieJoinEvaluator extends Evaluator {
     def addTuples(relation: Relation, newTuples: IndexedSeq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = Timers("TrieJoinEvaluator.State.addTuple.instanceIncrementTime") {
-        newTuples.foldLeft(oldInstance)(_ + _)
+        oldInstance ++ newTuples
+        // newTuples.foldLeft(oldInstance)(_ + _)
       }
       val newConfig = config + (relation -> newInstance)
 

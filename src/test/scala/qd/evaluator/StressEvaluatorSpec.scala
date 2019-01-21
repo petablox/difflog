@@ -2,11 +2,11 @@ package qd
 package evaluator
 
 import org.scalatest.FunSuite
-import qd.Semiring.FValueSemiringObj
-import qd.data.graphs.{Graphs, Reachability}
-import qd.util.Timers
+import Semiring.FValueSemiringObj
+import data.graphs.{Graphs, Reachability}
+import util.Timers
 
-class StressEvaluatorReachabilitySpec extends FunSuite {
+class StressEvaluatorSpec extends FunSuite {
   val evaluator: Evaluator = TrieJoinEvaluator
   val (programName, rules): (String, Set[Rule]) = Reachability.PP
   val graph: Graphs.Graph = Graphs.erdosRenyi(50, 0.1, 0)
