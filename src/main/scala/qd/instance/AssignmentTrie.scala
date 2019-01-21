@@ -1,7 +1,7 @@
 package qd
 package instance
 
-import qd.util.Contract
+import qd.util.{Contract, Timers}
 
 case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instance: Instance[T])
                                         (implicit vs: Semiring[T], ordering: Ordering[Variable]) {
@@ -10,7 +10,7 @@ case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instan
   Contract.deepRequire(signature.map(_.domain) == instance.signature)
   def *(t: T): AssignmentTrie[T] = AssignmentTrie(signature, instance * t)
 
-  lazy val support: Vector[Assignment[T]] = {
+  lazy val support: Vector[Assignment[T]] = Timers("AssignmentTrie.support") {
     def _support(_signature: IndexedSeq[Variable], _instance: Instance[T]): Vector[Assignment[T]] = {
       if (_signature.isEmpty) {
         val InstanceBase(value) = _instance
@@ -26,7 +26,7 @@ case class AssignmentTrie[T <: Value[T]](signature: IndexedSeq[Variable], instan
     _support(signature, instance)
   }
 
-  def toTuples(head: Literal): IndexedSeq[(DTuple, T)] = {
+  def toTuples(head: Literal): IndexedSeq[(DTuple, T)] = Timers("AssignmentTrie.toTuples") {
     // We are going to recurse over the structure of the AssignmentTrie.
     // At each level, we will encounter (variable -> constant) assignments.
     // We need to know into which fields of the result to place this constant.
@@ -113,7 +113,7 @@ object AssignmentTrie {
   }
 
   def join[T <: Value[T]](at1: AssignmentTrie[T], at2: AssignmentTrie[T])
-                         (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = {
+                         (implicit ordering: Ordering[Variable], vs: Semiring[T]): AssignmentTrie[T] = Timers("AssignmentTrie.join") {
 
     def _join(sign1: IndexedSeq[Variable], inst1: Instance[T],
               sign2: IndexedSeq[Variable], inst2: Instance[T]): Instance[T] = {

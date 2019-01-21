@@ -1,7 +1,7 @@
 package qd
 package instance
 
-import qd.util.Contract
+import qd.util.{Contract, Timers}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Assignments
@@ -23,7 +23,7 @@ case class Assignment[T <: Value[T]] private (map: Map[Variable, Constant], scor
 
   def project(rvs: Set[Variable]): Assignment[T] = Assignment(map.filterKeys(rvs), score)
 
-  def toTuple(lit: Literal): (DTuple, T) = {
+  def toTuple(lit: Literal): (DTuple, T) = Timers("Assignment.toTuple") {
     val cs = lit.fields.map {
       case c @ Constant(_, _) => c
       case v @ Variable(_, _) => this(v)

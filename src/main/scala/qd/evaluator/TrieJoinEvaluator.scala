@@ -2,6 +2,7 @@ package qd
 package evaluator
 
 import qd.instance.{AssignmentTrie, Config}
+import qd.util.Timers
 
 object TrieJoinEvaluator extends Evaluator {
 
@@ -44,7 +45,9 @@ object TrieJoinEvaluator extends Evaluator {
 
     def addTuples(relation: Relation, newTuples: IndexedSeq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
-      val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
+      val newInstance = Timers("TrieJoinEvaluator.State.addTuple.instanceIncrementTime") {
+        newTuples.foldLeft(oldInstance)(_ + _)
+      }
       val newConfig = config + (relation -> newInstance)
 
       val newChanged = changed || newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
@@ -103,7 +106,12 @@ object TrieJoinEvaluator extends Evaluator {
     // Step 2: Process leaves
     for (rule <- trie.leaves) {
       val ax3 = ax2 * Value(rule.lineage, state.pos)
-      val newTuples = ax3.support.map(_.toTuple(rule.head))
+      // We directly convert the AssignmentTrie ax3 into the set of output tuples using AssignmentTrie.toTuples(...).
+      // An alternative is to extract the set of Assignments supporting ax3 using AssignmentTrie.support, and
+      // subsequently use Assignment.toTuple(...) to convert it into the set of output tuples, as follows:
+      // val newTuples = ax3.support.map(_.toTuple(rule.head))
+      // Early experiments indicate that our present choice is faster.
+      val newTuples = ax3.toTuples(rule.head)
       nextState = nextState.addTuples(rule.head.relation, newTuples)
     }
 
