@@ -4,6 +4,7 @@ package learner
 import qd.evaluator.Evaluator
 import qd.instance.Config
 import qd.problem.Problem
+import qd.tokenvec.TokenVec
 import qd.util.Contract
 
 object Learner {

@@ -1,4 +1,5 @@
 package qd
+package tokenvec
 
 import qd.util.Contract
 

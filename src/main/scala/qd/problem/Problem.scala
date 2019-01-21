@@ -3,6 +3,7 @@ package problem
 
 import qd.Semiring.FValueSemiringObj
 import qd.instance.{Config, Instance}
+import qd.tokenvec.TokenVec
 import util.Contract
 
 class Problem private (

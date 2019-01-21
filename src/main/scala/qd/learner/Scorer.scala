@@ -2,6 +2,7 @@ package qd
 package learner
 
 import qd.instance.Config
+import qd.tokenvec.TokenVec
 
 abstract class Scorer {
 
