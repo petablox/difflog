@@ -56,7 +56,7 @@ object Learner {
 
     // TODO: Separation points are not necessarily solution points! Increasing the weights of the useful tokens might
     // expose new, previously repressed derivations of unexpected tuples.
-    ???
+    // ???
   }
 
   def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Vector[State] = {
