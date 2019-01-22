@@ -5,7 +5,7 @@ import qd.util.Contract
 
 import scala.util.Random
 
-class ALPSParser {
+object ALPSParser {
 
   def parse(dataStr: String, templateStr: String): Problem = {
     var problem = Problem.Empty
@@ -128,7 +128,7 @@ class ALPSParser {
                                                                            problem.inventedRels)) {
         val token = nextToken()
         val rule = Rule(token, headLit, bodyLits.toVector).normalized
-        ans = ans.addRule(rule)
+        ans = ans.addToken(token, 1.0).addRule(rule)
       }
     }
 

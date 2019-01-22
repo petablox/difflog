@@ -105,6 +105,7 @@ class Problem private (
   def addRule(rule: Rule): Problem = {
     Contract.require(knownRelation(rule.head.relation))
     Contract.require(rule.body.forall(literal => knownRelation(literal.relation)))
+    Contract.require(rule.lineage.tokenSet.forall(token => pos.contains(token)))
     new Problem(inputRels, inventedRels, outputRels, discreteEDB, discreteIDB, pos, rules + rule)
   }
 

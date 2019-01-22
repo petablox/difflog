@@ -3,19 +3,17 @@ package learner
 
 import qd.Semiring.FValueSemiringObj
 import qd.evaluator.Evaluator
-import qd.learner.Learner.{State, keepHighestTokens, keepUsefulRules, reinterpret}
+import qd.learner.Learner.{State, reinterpret}
 import qd.problem.Problem
-import qd.tokenvec.TokenVec
+import qd.tokenvec.{Line, TokenVec}
+import qd.util.Contract
 
 object LineLearner {
 
   def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     val trace = descend(problem, evaluator, scorer, tgtLoss, maxIters)
     val bestState = trace.minBy(_.loss)
-    val highTrace = keepHighestTokens(problem, evaluator, scorer, bestState)
-    val usefulTrace = highTrace.map(state => keepUsefulRules(problem, evaluator, scorer, state))
-    val reinterpretTrace = usefulTrace.map(state => reinterpret(problem, evaluator, scorer, state))
-    reinterpretTrace.minBy(_.loss)
+    reinterpret(problem, bestState)
   }
 
   def simplifyIfSolutionPoint(problem: Problem, state: State): Option[TokenVec] = {
@@ -38,7 +36,7 @@ object LineLearner {
   def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Vector[State] = {
     val random = new scala.util.Random()
 
-    var currPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 0.5)).toMap)
+    var currPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 2)).toMap)
     var currOut = evaluator(problem.rules, currPos, problem.edb)
     var currLoss = scorer.loss(currOut, problem.idb, problem.outputRels)
     var currState = State(currPos, currOut, currLoss)
@@ -47,14 +45,42 @@ object LineLearner {
     var grad = scorer.gradientLoss(currPos, currOut, problem.idb, problem.outputRels)
     var step = currPos
 
+    val NUM_FWD_STEPS = 25
+    val NUM_BWD_STEPS = 5
+    val SQRT_NUM_DIMEN = Math.sqrt(problem.allTokens.size.toDouble)
+    val LEARNING_RATE = 0.01
+
+    implicit val vs: VecValueSemiring[FValue] = VecValueSemiring[FValue](NUM_FWD_STEPS + NUM_BWD_STEPS)
+    val vecEDB = problem.edb.map(v => VecValue(Vector.fill(NUM_FWD_STEPS + NUM_BWD_STEPS)(v)))
+
     val startTime = System.nanoTime()
     while (ans.size < maxIters && currLoss >= tgtLoss && grad.abs > 0 && step.abs > 0.0) {
-      val oldPos = currPos
+      val delta0 = grad * LEARNING_RATE
 
-      val delta = grad.unit * currLoss / grad.abs
-      currPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
-      currOut = evaluator(problem.rules, currPos, problem.edb)
-      currLoss = scorer.loss(currOut, problem.idb, problem.outputRels)
+      val tauFwd = Math.pow(SQRT_NUM_DIMEN / delta0.abs, 1.0 / NUM_FWD_STEPS)
+      val tauBwd = Math.pow(SQRT_NUM_DIMEN / delta0.abs, 1.0 / NUM_BWD_STEPS)
+      val fwdDeltas: IndexedSeq[TokenVec] = for (i <- Range(0, NUM_FWD_STEPS)) yield delta0 * Math.pow(tauFwd, i + 1.0)
+      val bwdDeltas: IndexedSeq[TokenVec] = for (i <- Range(0, NUM_BWD_STEPS)) yield delta0 * Math.pow(tauBwd, i + 1.0) * -1
+      val deltas = fwdDeltas ++ bwdDeltas
+      Contract.assert(deltas.length == NUM_FWD_STEPS + NUM_BWD_STEPS)
+
+      val line = deltas.map(delta => currPos - delta)
+      val clippedLine = line.map(_.clip(0.0, 1.0).clip(0.01, 0.99, currPos))
+
+      val cvf = evaluator[VecValue[FValue]](problem.rules, Line(clippedLine), vecEDB)
+      val configs = Line.invert(cvf)
+      Contract.assert(clippedLine.length == configs.length)
+      val lineOut = for (((pos, out), stepIndex) <- clippedLine.zip(configs).zipWithIndex)
+                    yield {
+                      val loss = scorer.loss(out, problem.idb, problem.outputRels)
+                      (stepIndex, pos, out, loss)
+                    }
+
+      val (stepIndex, nextPos, nextOut, nextLoss) = lineOut.minBy(_._4)
+      val oldPos = currPos
+      currPos = nextPos
+      currOut = nextOut
+      currLoss = nextLoss
       currState = State(currPos, currOut, currLoss)
 
       ans = ans :+ currState
@@ -62,7 +88,7 @@ object LineLearner {
       step = currPos - oldPos
 
       // scribe.debug(s"  grad: $grad")
-      scribe.info(s"  $currLoss, ${ans.map(_.loss).min}, ${currPos.abs}, ${grad.abs}, ${step.abs}")
+      scribe.info(s"  $currLoss, ${ans.map(_.loss).min}, ${currPos.abs}, ${grad.abs}, ${step.abs}, $stepIndex")
     }
     val endTime = System.nanoTime()
     val timePerIter = (endTime - startTime) / 1.0e9 / ans.size

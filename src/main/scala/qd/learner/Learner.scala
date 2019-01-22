@@ -5,19 +5,37 @@ import qd.evaluator.Evaluator
 import qd.instance.Config
 import qd.problem.Problem
 import qd.tokenvec.TokenVec
-import qd.util.Contract
+import qd.util.Timers
 
 object Learner {
 
   case class State(pos: TokenVec, cOut: Config[FValue], loss: Double)
 
   def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
-    val trace = descend(problem, evaluator, scorer, tgtLoss, maxIters)
-    val bestState = trace.minBy(_.loss)
-    val highTrace = keepHighestTokens(problem, evaluator, scorer, bestState)
-    val usefulTrace = highTrace.map(state => keepUsefulRules(problem, evaluator, scorer, state))
-    val reinterpretTrace = usefulTrace.map(state => reinterpret(problem, evaluator, scorer, state))
-    reinterpretTrace.minBy(_.loss)
+    Timers("Learner.learn") {
+      val trace = descend(problem, evaluator, scorer, tgtLoss, maxIters)
+      val bestState = trace.minBy(_.loss)
+      reinterpret(problem, bestState)
+    }
+  }
+
+  def reinterpret(problem: Problem, state: State): State = {
+    val usefulTokens = (for ((rel, refOut) <- problem.discreteIDB.toSeq;
+                             tuple <- refOut;
+                             token <- state.cOut(rel)(tuple).l.tokenSet)
+                        yield token).toSet
+    val grayTokens = (for ((rel, refOut) <- state.cOut.map if problem.outputRels.contains(rel);
+                           (tuple, value) <- refOut.support if !problem.discreteIDB(rel).contains(tuple);
+                           token <- value.l.tokenSet)
+                      yield token).toSet
+    val exclusivelyUsefulTokens = usefulTokens -- grayTokens
+
+    val State(pos, cOut, loss) = state
+    val newPos = TokenVec(problem.allTokens, token => if (exclusivelyUsefulTokens.contains(token)) 1.0
+                                                      else if (grayTokens.contains(token)) pos(token).v
+                                                      else 0.0)
+
+    State(newPos, cOut, loss)
   }
 
   def simplifyIfSolutionPoint(problem: Problem, state: State): Option[TokenVec] = {
@@ -77,57 +95,6 @@ object Learner {
     scribe.info(s"Time / iteration: $timePerIter seconds.")
 
     ans
-  }
-
-  def keepHighestTokens(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): Vector[State] = {
-    val sortedTokens = state.pos.toSeq.sortBy(-_._2).map(_._1)
-
-    var lastLoss = 1.0
-    scribe.info("Keeping highest tokens")
-    for (k <- Range(1, sortedTokens.size + 1).toVector if lastLoss > 0.0)
-    yield {
-      val highTokens = sortedTokens.take(k).toSet
-
-      val pos = TokenVec(problem.allTokens, t => if (highTokens.contains(t)) state.pos.map(t) else 0.0)
-      val cOut = evaluator(problem.rules, pos, problem.edb)
-      val loss = scorer.loss(cOut, problem.idb, problem.outputRels)
-      lastLoss = loss
-
-      scribe.info(s"$k ${highTokens.size} $loss")
-      State(pos, cOut, loss)
-    }
-  }
-
-  def keepUsefulRules(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): State = {
-    scribe.info("Preserving useful tokens")
-    val usefulTokens = for (rel <- problem.outputRels;
-                            (_, v) <- state.cOut(rel).support;
-                            token <- v.l.tokenSet)
-                       yield token
-
-    val pos = TokenVec(problem.allTokens, t => if (usefulTokens.contains(t)) state.pos.map(t) else 0.0)
-    val cOut = evaluator(problem.rules, pos, problem.edb)
-    val loss = scorer.loss(cOut, problem.idb, problem.outputRels)
-    Contract.assert((cOut.map.keySet ++ state.cOut.map.keySet).forall { rel =>
-      val sOut = cOut(rel).support.map({ case (t, v) => (t, v.v) }).toSet
-      val sRef = state.cOut(rel).support.map({ case (t, v) => (t, v.v) }).toSet
-      sOut == sRef
-    })
-    Contract.assert(loss == state.loss, s"Computed loss $loss. Expected ${state.loss}.")
-
-    scribe.info(s"P $loss ${usefulTokens.size}")
-    State(pos, cOut, loss)
-  }
-
-  def reinterpret(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): State = {
-    scribe.info("Reinterpreting program")
-
-    val pos = TokenVec(problem.allTokens, t => if (state.pos.map(t) > 0.0) 1.0 else 0.0)
-    val cOut = evaluator(problem.rules, pos, problem.edb)
-    val loss = scorer.loss(cOut, problem.idb, problem.outputRels)
-
-    scribe.info(s"R $loss")
-    State(pos, cOut, loss)
   }
 
 }

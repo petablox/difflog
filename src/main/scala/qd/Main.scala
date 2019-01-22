@@ -1,9 +1,10 @@
 package qd
 
+import qd.Semiring.FValueSemiringObj
 import qd.evaluator.Evaluator
 import qd.learner.{Learner, Scorer}
 import qd.problem.{ALPSParser, Problem, QDParser}
-import qd.util.Contract
+import qd.util.{Contract, Timers}
 
 import scala.io.Source
 
@@ -19,7 +20,7 @@ object Main extends App {
   def readALPSProblem(dataFilename: String, templateFilename: String): Problem = {
     val dataStr = Source.fromFile(dataFilename).mkString
     val templateStr = Source.fromFile(templateFilename).mkString
-    new ALPSParser().parse(dataStr, templateStr)
+    ALPSParser.parse(dataStr, templateStr)
   }
 
   args match {
@@ -60,8 +61,15 @@ object Main extends App {
       val maxIters = maxItersStr.toInt
       Contract.require(maxIters > 0)
 
-      Learner.learn(query, evaluator, scorer, tgtLoss, maxIters)
-      ???
+      val result = Learner.learn(query, evaluator, scorer, tgtLoss, maxIters)
+      println(s"// Achieved loss ${result.loss}")
+      val weightedRules = query.rules.map(rule => (Value(rule.lineage, result.pos), rule))
+      weightedRules.filter({ case (weight, _) => FValueSemiringObj.nonZero(weight) })
+                   .toVector
+                   .sortBy(-_._1.v)
+                   .map({ case (weight, rule) => s"$weight: $rule" })
+                   .foreach(println)
+      scribe.info(Timers.getSnapshot.toString())
 
     case Array("ntp-learn", _*) => ???
     case Array("ntp-query", _*)=> ???
