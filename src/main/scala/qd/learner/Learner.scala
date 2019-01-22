@@ -20,10 +20,27 @@ object Learner {
     reinterpretTrace.minBy(_.loss)
   }
 
+  def simplifyIfSolutionPoint(problem: Problem, state: State): Option[TokenVec] = {
+    val usefulTokens = (for ((rel, refOut) <- problem.discreteIDB.toSeq;
+                             tuple <- refOut;
+                             token <- state.cOut(rel)(tuple).l.tokenSet)
+                        yield token).toSet
+    val eliminableTokens = problem.allTokens -- usefulTokens
+
+    val isSolutionPoint = problem.outputRels.forall { relation =>
+      val expectedTuples = problem.discreteIDB(relation)
+      val unexpectedTuples = state.cOut(relation).support.filterNot { case (t, _) => expectedTuples.contains(t) }
+      unexpectedTuples.forall { case (_, FValue(_, l)) => (l.tokenSet & eliminableTokens).nonEmpty }
+    }
+
+    if (isSolutionPoint) Some(TokenVec(problem.allTokens, token => if (usefulTokens.contains(token)) 1.0 else 0.0))
+    else None
+  }
+
   def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Vector[State] = {
     val random = new scala.util.Random()
 
-    var currPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 0.5)).toMap)
+    var currPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 2)).toMap)
     var currOut = evaluator(problem.rules, currPos, problem.edb)
     var currLoss = scorer.loss(currOut, problem.idb, problem.outputRels)
     var currState = State(currPos, currOut, currLoss)
@@ -36,8 +53,13 @@ object Learner {
     while (ans.size < maxIters && currLoss >= tgtLoss && grad.abs > 0 && step.abs > 0.0) {
       val oldPos = currPos
 
-      val delta = grad.unit * currLoss / grad.abs
-      currPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
+      val solutionPointOpt = simplifyIfSolutionPoint(problem, currState)
+      if (solutionPointOpt.isEmpty) {
+        val delta = grad.unit * currLoss / grad.abs
+        currPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
+      } else {
+        currPos = solutionPointOpt.get
+      }
       currOut = evaluator(problem.rules, currPos, problem.edb)
       currLoss = scorer.loss(currOut, problem.idb, problem.outputRels)
       currState = State(currPos, currOut, currLoss)
@@ -60,14 +82,16 @@ object Learner {
   def keepHighestTokens(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): Vector[State] = {
     val sortedTokens = state.pos.toSeq.sortBy(-_._2).map(_._1)
 
+    var lastLoss = 1.0
     scribe.info("Keeping highest tokens")
-    for (k <- Range(1, sortedTokens.size + 1).toVector)
+    for (k <- Range(1, sortedTokens.size + 1).toVector if lastLoss > 0.0)
     yield {
       val highTokens = sortedTokens.take(k).toSet
 
       val pos = TokenVec(problem.allTokens, t => if (highTokens.contains(t)) state.pos.map(t) else 0.0)
       val cOut = evaluator(problem.rules, pos, problem.edb)
       val loss = scorer.loss(cOut, problem.idb, problem.outputRels)
+      lastLoss = loss
 
       scribe.info(s"$k ${highTokens.size} $loss")
       State(pos, cOut, loss)
@@ -84,7 +108,12 @@ object Learner {
     val pos = TokenVec(problem.allTokens, t => if (usefulTokens.contains(t)) state.pos.map(t) else 0.0)
     val cOut = evaluator(problem.rules, pos, problem.edb)
     val loss = scorer.loss(cOut, problem.idb, problem.outputRels)
-    Contract.assert(cOut == state.cOut && loss == state.loss)
+    Contract.assert((cOut.map.keySet ++ state.cOut.map.keySet).forall { rel =>
+      val sOut = cOut(rel).support.map({ case (t, v) => (t, v.v) }).toSet
+      val sRef = state.cOut(rel).support.map({ case (t, v) => (t, v.v) }).toSet
+      sOut == sRef
+    })
+    Contract.assert(loss == state.loss, s"Computed loss $loss. Expected ${state.loss}.")
 
     scribe.info(s"P $loss ${usefulTokens.size}")
     State(pos, cOut, loss)

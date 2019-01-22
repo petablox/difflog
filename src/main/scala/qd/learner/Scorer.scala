@@ -11,7 +11,7 @@ abstract class Scorer {
     val prov = cOut(rel)(t).l.toVector
     val freq = prov.groupBy(identity).map { case (token, value) => token -> value.size }
     val ans = pos.keySet.map { token =>
-      val dvtDtoken = freq(token) * vt / pos(token).v
+      val dvtDtoken = freq.getOrElse(token, 0) * vt / pos(token).v
       token -> (if (!dvtDtoken.isNaN) dvtDtoken else 0.0)
     }
     TokenVec(ans.toMap)

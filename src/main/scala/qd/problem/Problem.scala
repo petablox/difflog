@@ -77,7 +77,7 @@ class Problem private (
                        ): Map[Relation, Set[DTuple]] = {
     rts.foldLeft(config) { case (cfg, (rel, tuple)) =>
       Contract.require(config.contains(rel), s"Undeclared relation $rel")
-      cfg + (rel -> (config(rel) + tuple))
+      cfg + (rel -> (cfg(rel) + tuple))
     }
   }
 

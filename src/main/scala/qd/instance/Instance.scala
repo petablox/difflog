@@ -61,11 +61,13 @@ sealed abstract class Instance[T <: Value[T]](implicit vs: Semiring[T])
     }
   }
 
-  def *(t: T): Instance[T] = this match {
-    case InstanceBase(value) => InstanceBase(value * t)
+  def map[U <: Value[U]](f: T => U)(implicit us: Semiring[U]): Instance[U] = this match {
+    case InstanceBase(value) => InstanceBase(f(value))
     case InstanceInd(domHead, domTail, map) =>
-      InstanceInd(domHead, domTail, map.map { case (c, inst) => c -> inst * t })
+      InstanceInd(domHead, domTail, map.map { case (c, inst) => c -> inst.map(f) })
   }
+
+  def *(t: T): Instance[T] = this.map(_ * t)
 
   def ++(that: Instance[T]): Instance[T] = (this, that) match {
     case (InstanceBase(vthis), InstanceBase(vthat)) => InstanceBase(vthis + vthat)

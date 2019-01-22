@@ -17,6 +17,10 @@ extends (Relation => Instance[T]) {
     Config(map + (relation -> newInstance))
   }
 
+  def map[U <: Value[U]](f: T => U)(implicit us: Semiring[U]): Config[U] = {
+    Config(map.map { case (rel, inst) => rel -> inst.map(f) })
+  }
+
   def add(relation: Relation, tuple: DTuple, value: T): Config[T] = {
     val newInstance = this(relation) + (tuple -> value)
     Config(map + (relation -> newInstance))

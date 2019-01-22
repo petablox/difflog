@@ -126,7 +126,9 @@ class QDParser extends JavaTokenParsers {
         Contract.require(maxVars > 0, s"Expected strictly positive value for maxVars; instead found $maxVars")
 
         val rules = RuleEnumerator.enumerate(p0.inputRels, p0.inventedRels, p0.outputRels, maxLiterals, maxVars)
-        p0.addRules(rules)
+        var p = p0
+        for (rule <- rules; token <- rule.lineage.tokenSet) p = p.addToken(token, 1.0)
+        p.addRules(rules)
     }
   }
 
@@ -153,7 +155,9 @@ class QDParser extends JavaTokenParsers {
         val newRules = Random.shuffle(allNewRules.toSeq).take(maxRules - p0.rules.size).toSet
 
         scribe.info(s"Chose $numNewRules new rules from soup containing ${soup.size} rules.")
-        p0.addRules(newRules)
+        var p = p0
+        for (rule <- newRules; token <- rule.lineage.tokenSet) p = p.addToken(token, 1.0)
+        p.addRules(newRules)
     }
   }
 
