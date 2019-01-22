@@ -70,11 +70,12 @@ object ALPSParser {
       val domains = s2s.tail.map(d => domainNames(d)).toVector
       val relation = Relation(name, domains)
 
-      if (isEDB) {
-        ans = ans.addInputRel(relation)
-      } else {
-        ans = ans.addOutputRel(relation)
-      }
+      val isInventedRelation = name.startsWith("invent")
+      Contract.requireIf(isInventedRelation, !isEDB)
+
+      ans = if (isEDB) ans.addInputRel(relation)
+            else if (isInventedRelation) ans.addInventedRel(relation)
+            else ans.addOutputRel(relation)
 
       // 1b(ii). Parse tuples present in relation
       while (lines.head != ".") {
@@ -88,6 +89,7 @@ object ALPSParser {
         if (isEDB) {
           ans = ans.addEDBTuples(Vector((relation, t)))
         } else {
+          Contract.require(!isInventedRelation)
           ans = ans.addIDBTuples(Vector((relation, t)))
         }
       }

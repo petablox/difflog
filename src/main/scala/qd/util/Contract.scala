@@ -10,6 +10,9 @@ object Contract {
   def require(predicate: => Boolean): Unit = if (CHECK_CONTRACTS) Predef.require(predicate)
   def require(predicate: => Boolean, message: => Any): Unit = if (CHECK_CONTRACTS) Predef.require(predicate, message)
 
+  def requireIf(guard: => Boolean, predicate: => Boolean): Unit = require(!guard || predicate)
+  def requireIf(guard: => Boolean, predicate: => Boolean, message: => Any): Unit = require(!guard || predicate, message)
+
   def deepRequire(predicate: => Boolean): Unit = if (DEEP_CHECK_CONTRACTS) Predef.require(predicate )
   def deepRequire(predicate: => Boolean, message: => Any): Unit = if (DEEP_CHECK_CONTRACTS)
                                                                     Predef.require(predicate, message)
