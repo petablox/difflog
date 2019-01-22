@@ -69,7 +69,6 @@ object Main extends App {
                    .sortBy(-_._1.v)
                    .map({ case (weight, rule) => s"$weight: $rule" })
                    .foreach(println)
-      scribe.info(Timers.getSnapshot.toString())
 
     case Array("ntp-learn", _*) => ???
     case Array("ntp-query", _*)=> ???
@@ -105,5 +104,10 @@ object Main extends App {
           |     Runs Difflog in the ALPS setting
         """.stripMargin)
   }
+
+  for ((name, time) <- Timers.getSnapshot) {
+    scribe.info(s"$name: ${time / 1.0e9} seconds")
+  }
+  scribe.info("Bye!")
 
 }

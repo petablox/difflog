@@ -53,6 +53,10 @@ object Learner {
 
     if (isSolutionPoint) Some(TokenVec(problem.allTokens, token => if (usefulTokens.contains(token)) 1.0 else 0.0))
     else None
+
+    // TODO: Separation points are not necessarily solution points! Increasing the weights of the useful tokens might
+    // expose new, previously repressed derivations of unexpected tuples.
+    ???
   }
 
   def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Vector[State] = {
@@ -78,7 +82,7 @@ object Learner {
       } else {
         currPos = solutionPointOpt.get
       }
-      currOut = evaluator(problem.rules, currPos, problem.edb)
+      currOut = Timers("Learner.descend: evaluator") { evaluator(problem.rules, currPos, problem.edb) }
       currLoss = scorer.loss(currOut, problem.idb, problem.outputRels)
       currState = State(currPos, currOut, currLoss)
 
