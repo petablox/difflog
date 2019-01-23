@@ -38,25 +38,32 @@ object Learner {
     State(newPos, cOut, loss)
   }
 
-  def simplifyIfSolutionPoint(problem: Problem, state: State): Option[TokenVec] = {
+  def simplifyIfSolutionPoint(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): Option[State] = {
     val usefulTokens = (for ((rel, refOut) <- problem.discreteIDB.toSeq;
                              tuple <- refOut;
                              token <- state.cOut(rel)(tuple).l.tokenSet)
                         yield token).toSet
     val eliminableTokens = problem.allTokens -- usefulTokens
 
-    val isSolutionPoint = problem.outputRels.forall { relation =>
+    val isSeparable = problem.outputRels.forall { relation =>
       val expectedTuples = problem.discreteIDB(relation)
       val unexpectedTuples = state.cOut(relation).support.filterNot { case (t, _) => expectedTuples.contains(t) }
       unexpectedTuples.forall { case (_, FValue(_, l)) => (l.tokenSet & eliminableTokens).nonEmpty }
     }
 
-    if (isSolutionPoint) Some(TokenVec(problem.allTokens, token => if (usefulTokens.contains(token)) 1.0 else 0.0))
-    else None
-
-    // TODO: Separation points are not necessarily solution points! Increasing the weights of the useful tokens might
-    // expose new, previously repressed derivations of unexpected tuples.
-    // ???
+    if (isSeparable) {
+      scribe.info("Current position is separable...")
+      val newPos = TokenVec(problem.allTokens, token => if (usefulTokens.contains(token)) 1.0 else 0.0)
+      val newOut = Timers("Learner.descend: evaluator") { evaluator(problem.rules, newPos, problem.edb) }
+      val newLoss = scorer.loss(newOut, problem.idb, problem.outputRels)
+      if (newLoss <= 0.0) {
+        scribe.info("... and also a solution point.")
+        Some(State(newPos, newOut, newLoss))
+      } else {
+        scribe.info(s"... but not a solution point (newLoss = $newLoss). Not terminating!")
+        None
+      }
+    } else None
   }
 
   def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Vector[State] = {
@@ -71,20 +78,22 @@ object Learner {
     var grad = scorer.gradientLoss(currPos, currOut, problem.idb, problem.outputRels)
     var step = currPos
 
-    val startTime = System.nanoTime()
     while (ans.size < maxIters && currLoss >= tgtLoss && grad.abs > 0 && step.abs > 0.0) {
       val oldPos = currPos
 
-      val solutionPointOpt = simplifyIfSolutionPoint(problem, currState)
-      if (solutionPointOpt.isEmpty) {
+      val solutionPointOpt = simplifyIfSolutionPoint(problem, evaluator, scorer, currState)
+      if (solutionPointOpt.nonEmpty) {
+        currState = solutionPointOpt.get
+        currPos = currState.pos
+        currOut = currState.cOut
+        currLoss = currState.loss
+      } else {
         val delta = grad.unit * currLoss / grad.abs
         currPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
-      } else {
-        currPos = solutionPointOpt.get
+        currOut = Timers("Learner.descend: evaluator") { evaluator(problem.rules, currPos, problem.edb) }
+        currLoss = scorer.loss(currOut, problem.idb, problem.outputRels)
+        currState = State(currPos, currOut, currLoss)
       }
-      currOut = Timers("Learner.descend: evaluator") { evaluator(problem.rules, currPos, problem.edb) }
-      currLoss = scorer.loss(currOut, problem.idb, problem.outputRels)
-      currState = State(currPos, currOut, currLoss)
 
       ans = ans :+ currState
       grad = scorer.gradientLoss(currPos, currOut, problem.idb, problem.outputRels)
@@ -93,10 +102,7 @@ object Learner {
       // scribe.debug(s"  grad: $grad")
       scribe.info(s"  $currLoss, ${ans.map(_.loss).min}, ${currPos.abs}, ${grad.abs}, ${step.abs}")
     }
-    val endTime = System.nanoTime()
-    val timePerIter = (endTime - startTime) / 1.0e9 / ans.size
     scribe.info(s"#Iterations: ${ans.size}.")
-    scribe.info(s"Time / iteration: $timePerIter seconds.")
 
     ans
   }

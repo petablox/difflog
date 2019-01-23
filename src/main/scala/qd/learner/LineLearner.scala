@@ -53,7 +53,6 @@ object LineLearner {
     implicit val vs: VecValueSemiring[FValue] = VecValueSemiring[FValue](NUM_FWD_STEPS + NUM_BWD_STEPS)
     val vecEDB = problem.edb.map(v => VecValue(Vector.fill(NUM_FWD_STEPS + NUM_BWD_STEPS)(v)))
 
-    val startTime = System.nanoTime()
     while (ans.size < maxIters && currLoss >= tgtLoss && grad.abs > 0 && step.abs > 0.0) {
       val delta0 = grad * LEARNING_RATE
 
@@ -90,10 +89,7 @@ object LineLearner {
       // scribe.debug(s"  grad: $grad")
       scribe.info(s"  $currLoss, ${ans.map(_.loss).min}, ${currPos.abs}, ${grad.abs}, ${step.abs}, $stepIndex")
     }
-    val endTime = System.nanoTime()
-    val timePerIter = (endTime - startTime) / 1.0e9 / ans.size
     scribe.info(s"#Iterations: ${ans.size}.")
-    scribe.info(s"Time / iteration: $timePerIter seconds.")
 
     ans
   }
