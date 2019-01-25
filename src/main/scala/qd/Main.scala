@@ -4,6 +4,7 @@ import qd.Semiring.FValueSemiringObj
 import qd.evaluator.Evaluator
 import qd.learner.{Learner, Scorer}
 import qd.problem.{ALPSParser, Problem, QDParser}
+import qd.util.Timers.Timer
 import qd.util.{Contract, Timers}
 
 import scala.io.Source
@@ -67,10 +68,10 @@ object Main extends App {
         println(s"// Achieved loss ${result.loss}")
         val weightedRules = query.rules.map(rule => (Value(rule.lineage, result.pos), rule))
         weightedRules.filter({ case (weight, _) => FValueSemiringObj.nonZero(weight) })
-          .toVector
-          .sortBy(-_._1.v)
-          .map({ case (weight, rule) => s"$weight: $rule" })
-          .foreach(println)
+                     .toVector
+                     .sortBy(-_._1.v)
+                     .map({ case (weight, rule) => s"$weight: $rule" })
+                     .foreach(println)
 
       case Array("ntp-learn", _*) => ???
       case Array("ntp-query", _*)=> ???
@@ -109,8 +110,8 @@ object Main extends App {
 
   }
 
-  for ((name, time) <- Timers.getSnapshot.toVector.sortBy(-_._2)) {
-    scribe.info(s"$name: ${time / 1.0e9} seconds")
+  for ((name, Timer(duration, invocations)) <- Timers.getSnapshot.toVector.sortBy(-_._2.duration)) {
+    scribe.info(s"$name: ${duration / 1.0e9} seconds, $invocations invocations.")
   }
   scribe.info("Bye!")
 

@@ -4,6 +4,7 @@ package evaluator
 import org.scalatest.FunSuite
 import Semiring.FValueSemiringObj
 import data.graphs.{Graphs, Reachability}
+import qd.util.Timers.Timer
 import util.Timers
 
 class StressEvaluatorSpec extends FunSuite {
@@ -23,9 +24,9 @@ class StressEvaluatorSpec extends FunSuite {
       assert(produced.support.forall(_._2.v >= 1.0))
 
       val timersSnapshot = Timers.getSnapshot
-      val totalTime = timersSnapshot("TotalTime")
-      val fractions = timersSnapshot.toVector.sortBy(-_._2)
-                                    .map({ case (name, time) => name -> (time.toDouble / totalTime) })
+      val totalTime = timersSnapshot("TotalTime").duration
+      val fractions = timersSnapshot.toVector.sortBy(-_._2.duration)
+                                    .map({ case (name, Timer(duration, _)) => name -> (duration.toDouble / totalTime) })
                                     .map({ case (name, frac) => s"$name: $frac" })
                                     .mkString("[", ", ", "]")
       Timers.reset()
