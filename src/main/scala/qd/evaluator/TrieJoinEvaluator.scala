@@ -72,9 +72,11 @@ object TrieJoinEvaluator extends Evaluator {
   }
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
-    implicit val ordering: Ordering[Variable] = state.ordering
-    implicit val vs: Semiring[T] = state.vs
-    immediateConsequence(state, state.trie, AssignmentTrie())
+    Timers("TrieJoinEvaluator.immediateConsequence(State)") {
+      implicit val ordering: Ordering[Variable] = state.ordering
+      implicit val vs: Semiring[T] = state.vs
+      immediateConsequence(state, state.trie, AssignmentTrie())
+    }
   }
 
   // Applies a RuleTrie to a configuration

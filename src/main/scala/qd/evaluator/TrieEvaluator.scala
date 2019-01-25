@@ -2,6 +2,7 @@ package qd
 package evaluator
 
 import qd.instance.{Assignment, Config}
+import qd.util.Timers
 
 object TrieEvaluator extends Evaluator {
 
@@ -31,8 +32,10 @@ object TrieEvaluator extends Evaluator {
   }
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
-    implicit val vs: Semiring[T] = state.vs
-    immediateConsequence(state, state.trie, Vector(Assignment.Empty()))
+    Timers("TrieEvaluator.immediateConsequence(State)") {
+      implicit val vs: Semiring[T] = state.vs
+      immediateConsequence(state, state.trie, Vector(Assignment.Empty()))
+    }
   }
 
   // Applies a RuleTrie to a configuration

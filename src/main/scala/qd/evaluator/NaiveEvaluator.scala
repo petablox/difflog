@@ -2,6 +2,7 @@ package qd
 package evaluator
 
 import qd.instance.{Assignment, Config}
+import qd.util.Timers
 
 object NaiveEvaluator extends Evaluator {
 
@@ -30,7 +31,9 @@ object NaiveEvaluator extends Evaluator {
   }
 
   def immediateConsequence[T <: Value[T]](state: State[T]): State[T] = {
-    state.rules.foldLeft(state)((nextState, rule) => ruleConsequence(nextState, rule))
+    Timers("NaiveEvaluator.immediateConsequence(State)") {
+      state.rules.foldLeft(state)((nextState, rule) => ruleConsequence(nextState, rule))
+    }
   }
 
   def ruleConsequence[T <: Value[T]](state: State[T], rule: Rule): State[T] = {
