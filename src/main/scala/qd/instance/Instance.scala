@@ -6,8 +6,7 @@ import qd.util.Contract
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Instances
 
-sealed abstract class Instance[T <: Value[T]](implicit vs: Semiring[T])
-  extends (DTuple => T) {
+sealed abstract class Instance[T <: Value[T]](implicit vs: Semiring[T]) extends (DTuple => T) {
 
   lazy val signature: IndexedSeq[Domain] = this match {
     case InstanceBase(_) => Vector()
@@ -111,13 +110,15 @@ sealed abstract class Instance[T <: Value[T]](implicit vs: Semiring[T])
     val (t, v) = tv
     Contract.require(t.arity == this.arity)
     this match {
-      case InstanceBase(value) => InstanceBase(value + v)
+      case InstanceBase(value) =>
+        val vv = value + v
+        if (vv > value) InstanceBase(vv) else this
       case InstanceInd(domHead, domTail, map) =>
         val chead = t.head
         Contract.require(chead.domain == domHead)
         val mapA = map.getOrElse(chead, Instance(domTail))
         val newMapA = mapA + (t.tail -> v)
-        InstanceInd(domHead, domTail, map + (chead -> newMapA))
+        if (newMapA ne mapA) InstanceInd(domHead, domTail, map + (chead -> newMapA)) else this
     }
   }
 

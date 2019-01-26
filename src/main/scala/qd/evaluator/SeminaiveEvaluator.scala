@@ -28,17 +28,17 @@ object SeminaiveEvaluator extends Evaluator {
     def addTuples(relation: Relation, newTuples: Seq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
-      val newConfig = config + (relation -> newInstance)
+      val newConfig = Config(config.map + (relation -> newInstance))
 
       val deltaTuples = newTuples.filter { case (tuple, value) => value > oldInstance(tuple) }
 
       val dcr = deltaCurr(relation)
       val ndcr = deltaTuples.foldLeft(dcr)(_ + _)
-      val newDeltaCurr = deltaCurr + (relation -> ndcr)
+      val newDeltaCurr = Config(deltaCurr.map + (relation -> ndcr))
 
       val dnr = deltaNext(relation)
       val ndnr = deltaTuples.foldLeft(dnr)(_ + _)
-      val newDeltaNext = deltaNext + (relation -> ndnr)
+      val newDeltaNext = Config(deltaNext.map + (relation -> ndnr))
 
       val ans = State(rules, pos, newConfig, newDeltaCurr, newDeltaNext)
       Contract.assert(if (changed) ans.changed else true)

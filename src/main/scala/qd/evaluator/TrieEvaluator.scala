@@ -19,10 +19,10 @@ object TrieEvaluator extends Evaluator {
   case class State[T <: Value[T]](trie: RuleTrie, pos: Token => T, config: Config[T], changed: Boolean)
                                  (implicit val vs: Semiring[T]) {
 
-    def addTuples(relation: Relation, newTuples: Seq[(DTuple, T)]): State[T] = {
+    def addTuples(relation: Relation, newTuples: IndexedSeq[(DTuple, T)]): State[T] = {
       val oldInstance = config(relation)
       val newInstance = newTuples.foldLeft(oldInstance)(_ + _)
-      val newConfig = config + (relation -> newInstance)
+      val newConfig = Config(config.map + (relation -> newInstance))
       val newChanged = changed || newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
       State(trie, pos, newConfig, newChanged)
     }
@@ -77,7 +77,7 @@ object TrieEvaluator extends Evaluator {
                                         literal: Literal,
                                         config: Config[T],
                                         assignments: Vector[Assignment[T]]
-                                      ): Vector[Assignment[T]] = {
+                                      ): Vector[Assignment[T]] = Timers("TrieEvaluator.extendAssignments") {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
          (tuple, score) <- config(literal.relation).filter(f);

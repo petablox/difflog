@@ -5,7 +5,7 @@ import qd.evaluator.Evaluator
 import qd.learner.{Learner, Scorer}
 import qd.problem.{ALPSParser, Problem, QDParser}
 import qd.util.Timers.Timer
-import qd.util.{Contract, Timers}
+import qd.util.{Contract, Counters, Timers}
 
 import scala.io.Source
 
@@ -110,8 +110,16 @@ object Main extends App {
 
   }
 
-  for ((name, Timer(duration, invocations)) <- Timers.getSnapshot.toVector.sortBy(-_._2.duration)) {
-    scribe.info(s"$name: ${duration / 1.0e9} seconds, $invocations invocations.")
+  scribe.info {
+    val strs = for ((name, Timer(duration, invocations)) <- Timers.getSnapshot.toVector.sortBy(-_._2.duration))
+               yield s"$name: ${duration / 1.0e9} seconds, $invocations invocations."
+    if (strs.nonEmpty) "Timers:" + System.lineSeparator() + strs.mkString(System.lineSeparator())
+    else "No timers enabled"
+  }
+  scribe.info {
+    val strs = for ((name, count) <- Counters.getSnapshot.toVector.sortBy(-_._2)) yield s"$name: $count"
+    if (strs.nonEmpty) "Counters:" + System.lineSeparator() + strs.mkString(System.lineSeparator())
+    else "No counters enabled"
   }
   scribe.info("Bye!")
 

@@ -31,15 +31,15 @@ object TrieSemiEvaluator extends Evaluator {
       val ntp = newTuples.filter { case (tuple, value) => value > oldInstance(tuple) }
 
       val newInstance = ntp.foldLeft(oldInstance)(_ + _)
-      val newConfig = config + (relation -> newInstance)
+      val newConfig = Config(config.map + (relation -> newInstance))
 
       val oldDCInstance = deltaCurr(relation)
       val newDCInstance = ntp.foldLeft(oldDCInstance)(_ + _)
-      val newDeltaCurr = deltaCurr + (relation -> newDCInstance)
+      val newDeltaCurr = Config(deltaCurr.map + (relation -> newDCInstance))
 
       val oldDNInstance = deltaNext(relation)
       val newDNInstance = ntp.foldLeft(oldDNInstance)(_ + _)
-      val newDeltaNext = deltaNext + (relation -> newDNInstance)
+      val newDeltaNext = Config(deltaNext.map + (relation -> newDNInstance))
 
       State(trie, pos, newConfig, newDeltaCurr, newDeltaNext)
     }

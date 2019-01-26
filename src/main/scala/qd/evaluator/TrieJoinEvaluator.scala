@@ -49,7 +49,7 @@ object TrieJoinEvaluator extends Evaluator {
         oldInstance ++ newTuples
         // newTuples.foldLeft(oldInstance)(_ + _)
       }
-      val newConfig = config + (relation -> newInstance)
+      val newConfig = Config(config.map + (relation -> newInstance))
 
       val newChanged = changed || newTuples.exists { case (tuple, value) => value > oldInstance(tuple) }
       State(trie, pos, newConfig, newChanged)

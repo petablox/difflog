@@ -11,11 +11,6 @@ extends (Relation => Instance[T]) {
   Contract.require(map.forall { case (relation, instance) => relation.signature == instance.signature })
 
   override def apply(relation: Relation): Instance[T] = map.getOrElse(relation, Instance(relation))
-  def +(ri: (Relation, Instance[T])): Config[T] = {
-    val (relation, instance) = ri
-    val newInstance = this(relation) ++ instance
-    Config(map + (relation -> newInstance))
-  }
 
   def map[U <: Value[U]](f: T => U)(implicit us: Semiring[U]): Config[U] = {
     Config(map.map { case (rel, inst) => rel -> inst.map(f) })
