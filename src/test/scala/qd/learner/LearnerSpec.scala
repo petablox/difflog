@@ -3,10 +3,10 @@ package learner
 
 import org.scalatest.FunSuite
 import qd.data.graphs.Graphs
-import qd.evaluator.TrieEvaluator
+import qd.evaluator.TrieSemiEvaluator
 import qd.problem.{Problem, QDParser}
 
-class LearnerSpec extends FunSuite {
+class LearnerSpec(learner: Learner) extends FunSuite {
 
   val node: Domain = Graphs.node
   val edge: Relation = Graphs.edge
@@ -30,12 +30,14 @@ class LearnerSpec extends FunSuite {
                               |AllRules(2, 3)""".stripMargin
   val problem: Problem = new QDParser().parse(simpleInput)
 
-  test(s"Should be able to learn transitive closure from Line(5) and ${problem.rules.size} rules") {
+  test(s"$learner should be able to learn transitive closure from Line(5) and ${problem.rules.size} rules") {
     val tgtLoss = 0.1
     val maxIters = 100
-
-    val result = Learner.learn(problem, TrieEvaluator, L2Scorer, tgtLoss, maxIters)
+    val result = learner.learn(problem, TrieSemiEvaluator, L2Scorer, tgtLoss, maxIters)
     assert(result.loss < tgtLoss)
   }
 
 }
+
+class NewtonRootLearnerSpec extends LearnerSpec(NewtonRootLearner)
+// class LineLearnerSpec extends LearnerSpec(LineLearner)

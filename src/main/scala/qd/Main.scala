@@ -2,7 +2,7 @@ package qd
 
 import qd.Semiring.FValueSemiringObj
 import qd.evaluator.Evaluator
-import qd.learner.{Learner, Scorer}
+import qd.learner.{NewtonRootLearner, Scorer}
 import qd.problem.{ALPSParser, Problem, QDParser}
 import qd.util.Timers.Timer
 import qd.util.{Contract, Counters, Timers}
@@ -52,7 +52,7 @@ object Main extends App {
         val maxIters = maxItersStr.toInt
         Contract.require(maxIters > 0)
 
-        Learner.learn(queryTrain, evaluator, scorer, tgtLoss, maxIters)
+        NewtonRootLearner.learn(queryTrain, evaluator, scorer, tgtLoss, maxIters)
         ???
 
       case Array("tab2", _*) => ???
@@ -64,7 +64,7 @@ object Main extends App {
         val maxIters = maxItersStr.toInt
         Contract.require(maxIters > 0)
 
-        val result = Learner.learn(query, evaluator, scorer, tgtLoss, maxIters)
+        val result = NewtonRootLearner.learn(query, evaluator, scorer, tgtLoss, maxIters)
         println(s"// Achieved loss ${result.loss}")
         val weightedRules = query.rules.map(rule => (Value(rule.lineage, result.pos), rule))
         weightedRules.filter({ case (weight, _) => FValueSemiringObj.nonZero(weight) })
@@ -77,35 +77,35 @@ object Main extends App {
       case Array("ntp-query", _*)=> ???
       case _ =>
         println(
-          """Usage:
-            |
-            |  1. eval query.qd
-            |          [trie | trie-semi | naive | seminaive]
-            |     Evaluates the query query.qd using the specified evaluator
-            |
-            |  2. learn problem.qd
-            |           [trie | trie-semi | naive | seminaive]
-            |           [xentropy | l2]
-            |           tgtLoss
-            |           maxIters
-            |     Solves the query synthesis problem described in problem.qd
-            |
-            |  3. tab2 problem.qd
-            |          test.qd
-            |          [trie | trie-semi | naive | seminaive]
-            |          [xentropy | l2]
-            |          tgtLoss
-            |          maxIters
-            |     Produces the statistics needed for Table 2 of the Difflog paper
-            |
-            |  4. alps data.d
-            |          templates.tp
-            |          [trie | trie-semi | naive | seminaive]
-            |          [xentropy | l2]
-            |          tgtLoss
-            |          maxIters
-            |     Runs Difflog in the ALPS setting
-          """.stripMargin)
+          s"""Usage:
+             |
+             |  1. eval query.qd
+             |          [trie | trie-semi | naive | seminaive]
+             |     Evaluates the query query.qd using the specified evaluator
+             |
+             |  2. learn problem.qd
+             |           [trie | trie-semi | naive | seminaive]
+             |           [xentropy | l2]
+             |           tgtLoss
+             |           maxIters
+             |     Solves the query synthesis problem described in problem.qd
+             |
+             |  3. tab2 problem.qd
+             |          test.qd
+             |          [trie | trie-semi | naive | seminaive]
+             |          [xentropy | l2]
+             |          tgtLoss
+             |          maxIters
+             |     Produces the statistics needed for Table 2 of the Difflog paper
+             |
+             |  4. alps data.d
+             |          templates.tp
+             |          [trie | trie-semi | naive | seminaive]
+             |          [xentropy | l2]
+             |          tgtLoss
+             |          maxIters
+             |     Runs Difflog in the ALPS setting
+           """.stripMargin)
     }
 
   }

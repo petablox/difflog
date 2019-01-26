@@ -3,14 +3,15 @@ package learner
 
 import qd.Semiring.FValueSemiringObj
 import qd.evaluator.Evaluator
-import qd.learner.Learner.{State, reinterpret}
 import qd.problem.Problem
 import qd.tokenvec.{Line, TokenVec}
 import qd.util.Contract
 
-object LineLearner {
+object LineLearner extends Learner {
 
-  def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
+  override val toString: String = "LineLearner"
+
+  override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     val trace = descend(problem, evaluator, scorer, tgtLoss, maxIters)
     val bestState = trace.minBy(_.loss)
     reinterpret(problem, bestState)

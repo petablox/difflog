@@ -18,4 +18,6 @@ sbt-test qd.evaluator.TrieEvaluatorSpec
 sbt-test qd.evaluator.TrieSemiEvaluatorSpec
 sbt-test qd.evaluator.TrieJoinEvaluatorSpec
 
+sbt-test qd.learner.NewtonRootLearnerSpec
+
 echo "Done!"
