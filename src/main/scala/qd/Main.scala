@@ -77,6 +77,7 @@ object Main extends App {
       case Array("ntp-query", _*)=> ???
       case _ =>
         val stdEvaluatorsStr = Evaluator.STD_EVALUATORS.keys.mkString(" | ")
+        val stdScorersStr = Scorer.STD_SCORERS.keys.mkString(" | ")
         println(
           s"""Usage:
              |
@@ -86,7 +87,7 @@ object Main extends App {
              |
              |  2. learn problem.qd
              |           [ $stdEvaluatorsStr ]
-             |           [xentropy | l2]
+             |           [ $stdScorersStr ]
              |           tgtLoss
              |           maxIters
              |     Solves the query synthesis problem described in problem.qd
@@ -94,7 +95,7 @@ object Main extends App {
              |  3. tab2 problem.qd
              |          test.qd
              |          [ $stdEvaluatorsStr ]
-             |          [xentropy | l2]
+             |          [ $stdScorersStr ]
              |          tgtLoss
              |          maxIters
              |     Produces the statistics needed for Table 2 of the Difflog paper
@@ -102,7 +103,7 @@ object Main extends App {
              |  4. alps data.d
              |          templates.tp
              |          [ $stdEvaluatorsStr ]
-             |          [xentropy | l2]
+             |          [ $stdScorersStr ]
              |          tgtLoss
              |          maxIters
              |     Runs Difflog in the ALPS setting

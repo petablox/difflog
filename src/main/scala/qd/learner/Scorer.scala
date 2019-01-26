@@ -6,6 +6,8 @@ import qd.tokenvec.TokenVec
 
 abstract class Scorer {
 
+  override def toString: String
+
   def gradient(pos: TokenVec, cOut: Config[FValue], rel: Relation, t: DTuple): TokenVec = {
     val vt = cOut(rel)(t).v
     val prov = cOut(rel)(t).l.toVector
@@ -70,10 +72,12 @@ abstract class Scorer {
 }
 
 object Scorer {
-  val STD_SCORERS: Map[String, Scorer] = Map("l2" -> L2Scorer, "xentropy" -> XEntropyScorer)
+  val STD_SCORERS: Map[String, Scorer] = Set(L2Scorer, XEntropyScorer).map(scorer => scorer.toString -> scorer).toMap
 }
 
 object L2Scorer extends Scorer {
+
+  override def toString: String = "L2Scorer"
 
   override def loss(vOut: Double, vRef: Double): Double = (vOut - vRef) * (vOut - vRef)
 
@@ -90,6 +94,8 @@ object L2Scorer extends Scorer {
 }
 
 object XEntropyScorer extends Scorer {
+
+  override def toString: String = "XEntropyScorer"
 
   override def loss(vOut: Double, vRef: Double): Double = -(vRef * Math.log(vOut) + (1 - vRef) * Math.log(1 - vOut))
 
