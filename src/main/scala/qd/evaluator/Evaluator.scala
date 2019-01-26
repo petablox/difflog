@@ -9,9 +9,9 @@ abstract class Evaluator {
 }
 
 object Evaluator {
-  val STD_EVALUATORS: Map[String, Evaluator] = Map("naive" -> NaiveEvaluator,
-                                                   "seminaive" -> SeminaiveEvaluator,
-                                                   "trie" -> TrieEvaluator,
-                                                   "trie-semi" -> TrieSemiEvaluator,
-                                                   "trie-join" -> TrieJoinEvaluator)
+  val STD_EVALUATORS: Map[String, Evaluator] =
+    Set(NaiveEvaluator, SeminaiveEvaluator,
+        TrieEvaluator, TrieSemiEvaluator,
+        TrieJoinEvaluator).map(evaluator => evaluator.toString -> evaluator)
+                          .toMap
 }

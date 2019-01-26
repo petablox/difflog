@@ -65,5 +65,5 @@ abstract class Learner {
 }
 
 object Learner {
-  val STD_LEARNERS: Map[String, Learner] = Map("newton-root" -> NewtonRootLearner)
+  val STD_LEARNERS: Map[String, Learner] = Set(NewtonRootLearner).map(learner => learner.toString -> learner).toMap
 }

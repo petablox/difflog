@@ -76,15 +76,16 @@ object Main extends App {
       case Array("ntp-learn", _*) => ???
       case Array("ntp-query", _*)=> ???
       case _ =>
+        val stdEvaluatorsStr = Evaluator.STD_EVALUATORS.keys.mkString(" | ")
         println(
           s"""Usage:
              |
              |  1. eval query.qd
-             |          [trie | trie-semi | naive | seminaive]
+             |          [ $stdEvaluatorsStr ]
              |     Evaluates the query query.qd using the specified evaluator
              |
              |  2. learn problem.qd
-             |           [trie | trie-semi | naive | seminaive]
+             |           [ $stdEvaluatorsStr ]
              |           [xentropy | l2]
              |           tgtLoss
              |           maxIters
@@ -92,7 +93,7 @@ object Main extends App {
              |
              |  3. tab2 problem.qd
              |          test.qd
-             |          [trie | trie-semi | naive | seminaive]
+             |          [ $stdEvaluatorsStr ]
              |          [xentropy | l2]
              |          tgtLoss
              |          maxIters
@@ -100,7 +101,7 @@ object Main extends App {
              |
              |  4. alps data.d
              |          templates.tp
-             |          [trie | trie-semi | naive | seminaive]
+             |          [ $stdEvaluatorsStr ]
              |          [xentropy | l2]
              |          tgtLoss
              |          maxIters
