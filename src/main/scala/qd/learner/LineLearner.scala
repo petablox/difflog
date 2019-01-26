@@ -14,7 +14,7 @@ object LineLearner extends Learner {
   override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     val trace = descend(problem, evaluator, scorer, tgtLoss, maxIters)
     val bestState = trace.minBy(_.loss)
-    reinterpret(problem, bestState)
+    reinterpret(problem, evaluator, scorer, bestState)
   }
 
   def simplifyIfSolutionPoint(problem: Problem, state: State): Option[TokenVec] = {
@@ -39,11 +39,11 @@ object LineLearner extends Learner {
 
     var currPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 2)).toMap)
     var currOut = evaluator(problem.rules, currPos, problem.edb)
+    var grad = scorer.gradientLoss(currPos, currOut, problem.idb, problem.outputRels)
     var currLoss = scorer.loss(currOut, problem.idb, problem.outputRels)
-    var currState = State(currPos, currOut, currLoss)
+    var currState = State(currPos, currOut, grad, currLoss)
     var ans = Vector(currState)
 
-    var grad = scorer.gradientLoss(currPos, currOut, problem.idb, problem.outputRels)
     var step = currPos
 
     val NUM_FWD_STEPS = 25
@@ -80,11 +80,11 @@ object LineLearner extends Learner {
       val oldPos = currPos
       currPos = nextPos
       currOut = nextOut
+      grad = scorer.gradientLoss(currPos, currOut, problem.idb, problem.outputRels)
       currLoss = nextLoss
-      currState = State(currPos, currOut, currLoss)
+      currState = State(currPos, currOut, grad, currLoss)
 
       ans = ans :+ currState
-      grad = scorer.gradientLoss(currPos, currOut, problem.idb, problem.outputRels)
       step = currPos - oldPos
 
       // scribe.debug(s"  grad: $grad")
