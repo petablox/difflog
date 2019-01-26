@@ -49,7 +49,7 @@ object HybridAnnealingLearner extends Learner {
         val proposedState = sampleState(problem, evaluator, scorer, random)
         if (random.nextDouble() < probAccept(currState, proposedState, i)) {
           val oldState = currState
-          currState = nextState(problem, evaluator, scorer, currState)
+          currState = proposedState
           step = currState.pos - oldState.pos
           ans = ans :+ currState
           scribe.info("  Accepted MCMC sample")
