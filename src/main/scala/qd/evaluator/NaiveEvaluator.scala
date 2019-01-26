@@ -53,7 +53,8 @@ object NaiveEvaluator extends Evaluator {
                                .toVector
     }
 
-    val newTuples = assignments.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head))
+    val vrule = Value(rule.lineage, state.pos)
+    val newTuples = assignments.map(_ * vrule).map(_.toTuple(rule.head))
     state.addTuples(rule.head.relation, newTuples)
   }
 

@@ -65,7 +65,8 @@ object TrieEvaluator extends Evaluator {
     // Step 2: Process leaves
     for (rule <- trie.leaves) {
       implicit val vs: Semiring[T] = state.vs
-      val newTuples = ax2.map(_ * Value(rule.lineage, state.pos)).map(_.toTuple(rule.head))
+      val vrule = Value(rule.lineage, state.pos)
+      val newTuples = ax2.map(_ * vrule).map(_.toTuple(rule.head))
       nextState = nextState.addTuples(rule.head.relation, newTuples)
     }
 
