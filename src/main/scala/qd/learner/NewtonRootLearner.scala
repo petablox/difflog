@@ -6,12 +6,14 @@ import qd.problem.Problem
 import qd.tokenvec.TokenVec
 import qd.util.Timers
 
+import scala.util.Random
+
 object NewtonRootLearner extends Learner {
 
   override val toString: String = "NewtonRootLearner"
 
   override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
-    Timers("Learner.learn") {
+    Timers("NewtonRootLearner.learn") {
       val trace = descend(problem, evaluator, scorer, tgtLoss, maxIters)
       val bestState = trace.minBy(_.loss)
       reinterpret(problem, evaluator, scorer, bestState)
@@ -19,13 +21,7 @@ object NewtonRootLearner extends Learner {
   }
 
   def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Vector[State] = {
-    val random = new scala.util.Random()
-
-    var currState = {
-      val initialPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 2)).toMap)
-      State(problem, evaluator, scorer, initialPos)
-    }
-
+    var currState = sampleState(problem, evaluator, scorer, new Random())
     var ans = Vector(currState)
     var step = ans(0).pos
 
@@ -40,6 +36,11 @@ object NewtonRootLearner extends Learner {
     scribe.info(s"#Iterations: ${ans.size}.")
 
     ans
+  }
+
+  def sampleState(problem: Problem, evaluator: Evaluator, scorer: Scorer, random: Random): State = {
+    val initialPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 2)).toMap)
+    State(problem, evaluator, scorer, initialPos)
   }
 
   def nextState(problem: Problem, evaluator: Evaluator, scorer: Scorer, currState: State): State = {
