@@ -1,6 +1,7 @@
 package qd
 package learner
 
+import org.apache.commons.math3.random.RandomGenerator
 import qd.evaluator.Evaluator
 import qd.instance.Config
 import qd.problem.Problem
@@ -23,6 +24,11 @@ abstract class Learner {
   override def toString: String
 
   def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State
+
+  def sampleState(problem: Problem, evaluator: Evaluator, scorer: Scorer, random: RandomGenerator): State = {
+    val initialPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 2)).toMap)
+    State(problem, evaluator, scorer, initialPos)
+  }
 
   def simplifyIfSolutionPoint(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): Option[State] = {
     val usefulTokens = (for ((rel, refOut) <- problem.discreteIDB.toSeq;

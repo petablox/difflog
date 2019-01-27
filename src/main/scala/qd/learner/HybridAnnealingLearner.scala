@@ -1,12 +1,10 @@
 package qd
 package learner
 
+import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
 import qd.evaluator.Evaluator
-import qd.learner.NewtonRootLearner.{nextState, sampleState}
 import qd.problem.Problem
 import qd.util.Timers
-
-import scala.util.Random
 
 object HybridAnnealingLearner extends Learner {
 
@@ -14,68 +12,72 @@ object HybridAnnealingLearner extends Learner {
 
   override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     Timers("HybridAnnealingLearner.learn") {
-      val trace = descend(problem, evaluator, scorer, tgtLoss, maxIters)
+      val random = new MersenneTwister()
+
+      // 1. Start with a random initial state
+      var currState = sampleState(problem, evaluator, scorer, random)
+      var trace = Vector(currState)
+      var stepSize = 1.0
+
+      // 2. Repeatedly choose next state until solution is found
+      //    a. Once every MCMC_FREQ iterations, choose this next state by MCMC+SimulatedAnnealing criterion
+      //    b. Otherwise, choose next state by performing a conventional gradient descent step
+      val MCMC_FREQ = 20
+      var iteration = 0
+      while (trace.size < maxIters && currState.loss >= tgtLoss) {
+        if (iteration % MCMC_FREQ == 0) {
+          currState = nextStateMCMC(problem, evaluator, scorer, currState, random, iteration / MCMC_FREQ)
+          stepSize = 1.0
+        } else {
+          val oldState = currState
+          currState = NewtonRootLearner.nextState(problem, evaluator, scorer, currState)
+          stepSize = (currState.pos - oldState.pos).abs
+        }
+        trace = trace :+ currState
+        iteration = iteration + 1
+
+        // scribe.debug(s"  currState.grad: ${currState.grad}")
+        scribe.info(s"  ${currState.loss}, ${trace.map(_.loss).min}, ${currState.pos.abs}, " +
+                    s"${currState.grad.abs}, $stepSize")
+      }
+      scribe.info(s"#Iterations: ${trace.size}.")
+
       val bestState = trace.minBy(_.loss)
       reinterpret(problem, evaluator, scorer, bestState)
     }
   }
 
-  def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Vector[State] = {
-    val random = new Random()
+  def nextStateMCMC(
+                     problem: Problem,
+                     evaluator: Evaluator,
+                     scorer: Scorer,
+                     currState: State,
+                     random: RandomGenerator,
+                     iteration: Int
+                   ): State = {
+    require(iteration >= 0)
+    val solutionPointOpt = simplifyIfSolutionPoint(problem, evaluator, scorer, currState)
+    solutionPointOpt.getOrElse {
+      val proposedState = sampleState(problem, evaluator, scorer, random)
 
-    // Start with a random initial state
-    var currState = sampleState(problem, evaluator, scorer, random)
-    var ans = Vector(currState)
-    var step = ans(0).pos
+      val c = 3.0
+      val k0 = 5.0
+      val temperature = 1.0 / (c * Math.log(k0 + iteration))
+      def pi(negativeLoss: Double): Double = Math.exp(negativeLoss / temperature)
+      val piCurr = pi(-currState.loss)
+      val piProposed = pi(-proposedState.loss)
+      val probAccept = Math.min(1.0, piProposed / piCurr)
+      scribe.info(s"  c: $c, k0: $k0, iteration: $iteration, temperature: $temperature, " +
+                  s"piCurr: $piCurr, piNext: $piProposed, probAccept: $probAccept")
 
-    var i = 0
-    // Repeat until solution found
-    while (ans.size < maxIters && currState.loss >= tgtLoss) {
-      // 1. Perform conventional gradient descent for k = 20 steps
-      for (j <- Range(0, 20) if ans.size < maxIters &&
-                                currState.loss >= tgtLoss &&
-                                currState.grad.abs > 0 &&
-                                step.abs > 0.0) {
-        val oldState = currState
-        currState = nextState(problem, evaluator, scorer, currState)
-        step = currState.pos - oldState.pos
-        ans = ans :+ currState
-        // scribe.debug(s"  currState.grad: ${currState.grad}")
-        scribe.info(s"  ${currState.loss}, ${ans.map(_.loss).min}, ${currState.pos.abs}, ${currState.grad.abs}, ${step.abs}")
-      }
-
-      // 2. Sample a new state, and accept based on the MCMC transition probability
-      if (ans.size < maxIters && currState.loss >= tgtLoss) {
-        val proposedState = sampleState(problem, evaluator, scorer, random)
-        if (random.nextDouble() < probAccept(currState, proposedState, i)) {
-          val oldState = currState
-          currState = proposedState
-          step = currState.pos - oldState.pos
-          ans = ans :+ currState
-          scribe.info("  Accepted MCMC sample")
-          // scribe.debug(s"  currState.grad: ${currState.grad}")
-          scribe.info(s"  ${currState.loss}, ${ans.map(_.loss).min}, ${currState.pos.abs}, ${currState.grad.abs}, ${step.abs}")
-        } else {
-          scribe.info("  Rejected MCMC sample")
-        }
-        i = i + 1
+      if (random.nextDouble() < probAccept) {
+        scribe.info("  Accepted MCMC sample")
+        proposedState
+      } else {
+        scribe.info("  Rejected MCMC sample")
+        currState
       }
     }
-    scribe.info(s"#Iterations: ${ans.size}.")
-
-    ans
-  }
-
-  def probAccept(currState: State, nextState: State, iteration: Int): Double = {
-    val C = 3.0
-    val k0 = 5.0
-    val temperature = 1.0 / C / Math.log(k0 + iteration)
-    def pi(negativeLoss: Double): Double = Math.exp(negativeLoss / temperature)
-    val piCurr = pi(-currState.loss)
-    val piNext = pi(-nextState.loss)
-    val ans = Math.min(1.0, piNext / piCurr)
-    scribe.info(s"  C: $C, k0: $k0, iteration: $iteration, temperature: $temperature, piCurr: $piCurr, piNext: $piNext, ans: $ans")
-    ans
   }
 
 }

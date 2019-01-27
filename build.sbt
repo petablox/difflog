@@ -9,6 +9,7 @@ lazy val root = (project in file(".")).
     )),
     name := "QD",
 
+    libraryDependencies += "org.apache.commons" % "commons-math3" % "3.6.1",
     libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
     libraryDependencies += "com.outr" %% "scribe" % "2.6.0",
 

@@ -1,12 +1,10 @@
 package qd
 package learner
 
+import org.apache.commons.math3.random.MersenneTwister
 import qd.evaluator.Evaluator
 import qd.problem.Problem
-import qd.tokenvec.TokenVec
 import qd.util.Timers
-
-import scala.util.Random
 
 object NewtonRootLearner extends Learner {
 
@@ -14,39 +12,30 @@ object NewtonRootLearner extends Learner {
 
   override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     Timers("NewtonRootLearner.learn") {
-      val trace = descend(problem, evaluator, scorer, tgtLoss, maxIters)
+      var currState = sampleState(problem, evaluator, scorer, new MersenneTwister())
+      var trace = Vector(currState)
+      var stepSize = 1.0
+
+      while (trace.size < maxIters && currState.loss >= tgtLoss && currState.grad.abs > 0 && stepSize > 0.0) {
+        val oldState = currState
+        currState = nextState(problem, evaluator, scorer, currState)
+        stepSize = (currState.pos - oldState.pos).abs
+        trace = trace :+ currState
+        // scribe.debug(s"  currState.grad: ${currState.grad}")
+        scribe.info(s"  ${currState.loss}, ${trace.map(_.loss).min}, ${currState.pos.abs}, " +
+                    s"${currState.grad.abs}, $stepSize")
+      }
+      scribe.info(s"#Iterations: ${trace.size}.")
+
       val bestState = trace.minBy(_.loss)
       reinterpret(problem, evaluator, scorer, bestState)
     }
   }
 
-  def descend(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): Vector[State] = {
-    var currState = sampleState(problem, evaluator, scorer, new Random())
-    var ans = Vector(currState)
-    var step = ans(0).pos
-
-    while (ans.size < maxIters && currState.loss >= tgtLoss && currState.grad.abs > 0 && step.abs > 0.0) {
-      val oldState = currState
-      currState = nextState(problem, evaluator, scorer, currState)
-      step = currState.pos - oldState.pos
-      ans = ans :+ currState
-      // scribe.debug(s"  currState.grad: ${currState.grad}")
-      scribe.info(s"  ${currState.loss}, ${ans.map(_.loss).min}, ${currState.pos.abs}, ${currState.grad.abs}, ${step.abs}")
-    }
-    scribe.info(s"#Iterations: ${ans.size}.")
-
-    ans
-  }
-
-  def sampleState(problem: Problem, evaluator: Evaluator, scorer: Scorer, random: Random): State = {
-    val initialPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 2)).toMap)
-    State(problem, evaluator, scorer, initialPos)
-  }
-
   def nextState(problem: Problem, evaluator: Evaluator, scorer: Scorer, currState: State): State = {
-    val State(currPos, _, currGrad, currLoss) = currState
     val solutionPointOpt = simplifyIfSolutionPoint(problem, evaluator, scorer, currState)
     solutionPointOpt.getOrElse {
+      val State(currPos, _, currGrad, currLoss) = currState
       val delta = currGrad.unit * currLoss / currGrad.abs
       val nextPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
       State(problem, evaluator, scorer, nextPos)
