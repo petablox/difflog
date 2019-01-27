@@ -8,16 +8,16 @@ import scala.util.Random
 object ALPSParser {
 
   def parse(dataStr: String, templateStr: String): Problem = {
-    var problem = Problem.Empty
-    problem = parseDataStr(problem, dataStr)
-    problem = parseTemplateStr(problem, templateStr)
+    val p0 = Problem.Empty
+    val p1 = parseDataStr(p0, dataStr)
+    val p2 = parseTemplateStr(p1, templateStr)
 
-    scribe.info(s"Input relations: ${problem.inputRels.size}")
-    scribe.info(s"Invented relations: ${problem.inventedRels.size}")
-    scribe.info(s"Output relations: ${problem.outputRels.size}")
-    scribe.info(s"Rules: ${problem.rules.size}")
+    scribe.info(s"Input relations: ${p2.inputRels.size}")
+    scribe.info(s"Invented relations: ${p2.inventedRels.size}")
+    scribe.info(s"Output relations: ${p2.outputRels.size}")
+    scribe.info(s"Rules: ${p2.rules.size}")
 
-    problem
+    p2
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,7 +130,10 @@ object ALPSParser {
                                                                            problem.inventedRels)) {
         val token = nextToken()
         val rule = Rule(token, headLit, bodyLits.toVector).normalized
-        ans = ans.addToken(token, 1.0).addRule(rule)
+        if (ans.rules.forall(rulePrime => rulePrime.head != rule.head || rulePrime.body != rule.body) &&
+            !rule.body.contains(rule.head)) {
+          ans = ans.addToken(token, 1.0).addRule(rule)
+        }
       }
     }
 
