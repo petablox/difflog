@@ -2,7 +2,7 @@ package qd
 
 import qd.Semiring.FValueSemiringObj
 import qd.evaluator.Evaluator
-import qd.learner.{NewtonRootLearner, Scorer}
+import qd.learner.{Learner, Scorer}
 import qd.problem.{ALPSParser, Problem, QDParser}
 import qd.util.Timers.Timer
 import qd.util.{Contract, Counters, Timers}
@@ -44,27 +44,31 @@ object Main extends App {
           }
         }
 
-      case Array("learn", queryFilenameTrain, evaluatorName, scorerName, tgtLossStr, maxItersStr) =>
+      case Array("learn", queryFilenameTrain, learnerName, evaluatorName, scorerName, tgtLossStr, maxItersStr) =>
         val queryTrain = readQDProblem(queryFilenameTrain)
+        val learner = Learner.STD_LEARNERS(learnerName)
         val evaluator = Evaluator.STD_EVALUATORS(evaluatorName)
         val scorer = Scorer.STD_SCORERS(scorerName)
         val tgtLoss = tgtLossStr.toDouble
         val maxIters = maxItersStr.toInt
         Contract.require(maxIters > 0)
 
-        NewtonRootLearner.learn(queryTrain, evaluator, scorer, tgtLoss, maxIters)
+        learner.learn(queryTrain, evaluator, scorer, tgtLoss, maxIters)
         ???
 
       case Array("tab2", _*) => ???
-      case Array("alps", dataFilename, templateFilename, evaluatorName, scorerName, tgtLossStr, maxItersStr) =>
+      case Array("alps", dataFilename, templateFilename,
+                         learnerName, evaluatorName, scorerName,
+                         tgtLossStr, maxItersStr) =>
         val query = readALPSProblem(dataFilename, templateFilename)
+        val learner = Learner.STD_LEARNERS(learnerName)
         val evaluator = Evaluator.STD_EVALUATORS(evaluatorName)
         val scorer = Scorer.STD_SCORERS(scorerName)
         val tgtLoss = tgtLossStr.toDouble
         val maxIters = maxItersStr.toInt
         Contract.require(maxIters > 0)
 
-        val result = NewtonRootLearner.learn(query, evaluator, scorer, tgtLoss, maxIters)
+        val result = learner.learn(query, evaluator, scorer, tgtLoss, maxIters)
         println(s"// Achieved loss ${result.loss}")
         val weightedRules = query.rules.map(rule => (Value(rule.lineage, result.pos), rule))
         weightedRules.filter({ case (weight, _) => FValueSemiringObj.nonZero(weight) })
@@ -76,6 +80,7 @@ object Main extends App {
       case Array("ntp-learn", _*) => ???
       case Array("ntp-query", _*)=> ???
       case _ =>
+        val stdLearnersStr = Learner.STD_LEARNERS.keys.mkString(" | ")
         val stdEvaluatorsStr = Evaluator.STD_EVALUATORS.keys.mkString(" | ")
         val stdScorersStr = Scorer.STD_SCORERS.keys.mkString(" | ")
         println(
@@ -86,6 +91,7 @@ object Main extends App {
              |     Evaluates the query query.qd using the specified evaluator
              |
              |  2. learn problem.qd
+             |           [ $stdLearnersStr ]
              |           [ $stdEvaluatorsStr ]
              |           [ $stdScorersStr ]
              |           tgtLoss
@@ -102,6 +108,7 @@ object Main extends App {
              |
              |  4. alps data.d
              |          templates.tp
+             |          [ $stdLearnersStr ]
              |          [ $stdEvaluatorsStr ]
              |          [ $stdScorersStr ]
              |          tgtLoss
