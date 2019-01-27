@@ -8,7 +8,7 @@ import qd.util.Timers
 
 object HybridAnnealingLearner extends Learner {
 
-  override val toString: String = "HybridAnnealing"
+  override val toString: String = "HybridAnnealingLearner"
 
   override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     Timers("HybridAnnealingLearner.learn") {
@@ -60,17 +60,22 @@ object HybridAnnealingLearner extends Learner {
     solutionPointOpt.getOrElse {
       val proposedState = sampleState(problem, evaluator, scorer, random)
 
-      val c = 3.0
+      val c = 1.0e-2
       val k0 = 5.0
       val temperature = 1.0 / (c * Math.log(k0 + iteration))
       def pi(negativeLoss: Double): Double = Math.exp(negativeLoss / temperature)
+
       val piCurr = pi(-currState.loss)
       val piProposed = pi(-proposedState.loss)
       val probAccept = Math.min(1.0, piProposed / piCurr)
-      scribe.info(s"  c: $c, k0: $k0, iteration: $iteration, temperature: $temperature, " +
-                  s"piCurr: $piCurr, piNext: $piProposed, probAccept: $probAccept")
+      val coin = random.nextDouble()
 
-      if (random.nextDouble() < probAccept) {
+      scribe.info(s"  c: $c, k0: $k0, iteration: $iteration, temperature: $temperature")
+      scribe.info(s"  currState.loss: ${currState.loss}, piCurr: $piCurr")
+      scribe.info(s"  proposedState.loss: ${proposedState.loss}, piProposed: $piProposed")
+      scribe.info(s"  probAccept: $probAccept, coin: $coin")
+
+      if (coin < probAccept) {
         scribe.info("  Accepted MCMC sample")
         proposedState
       } else {

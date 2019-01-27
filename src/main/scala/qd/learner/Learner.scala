@@ -77,5 +77,6 @@ abstract class Learner {
 }
 
 object Learner {
-  val STD_LEARNERS: Map[String, Learner] = Set(NewtonRootLearner).map(learner => learner.toString -> learner).toMap
+  val STD_LEARNERS: Map[String, Learner] =
+    Set(NewtonRootLearner, HybridAnnealingLearner).map(learner => learner.toString -> learner).toMap
 }

@@ -40,4 +40,5 @@ class LearnerSpec(learner: Learner) extends FunSuite {
 }
 
 class NewtonRootLearnerSpec extends LearnerSpec(NewtonRootLearner)
+class HybridAnnealingLearnerSpec extends LearnerSpec(HybridAnnealingLearner)
 // class LineLearnerSpec extends LearnerSpec(LineLearner)
