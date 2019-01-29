@@ -16,7 +16,7 @@ object HybridAnnealingLearner extends Learner {
 
       // 1. Start with a random initial state
       var currState = sampleState(problem, evaluator, scorer, random)
-      var trace = Vector(currState)
+      var bestState = currState
       var stepSize = 1.0
 
       // 2. Repeatedly choose next state until solution is found
@@ -24,7 +24,7 @@ object HybridAnnealingLearner extends Learner {
       //    b. Otherwise, choose next state by performing a conventional gradient descent step
       val MCMC_FREQ = 20
       var iteration = 0
-      while (trace.size < maxIters && currState.loss >= tgtLoss) {
+      while (iteration < maxIters && currState.loss >= tgtLoss) {
         if (iteration % MCMC_FREQ == 0) {
           currState = nextStateMCMC(problem, evaluator, scorer, currState, random, iteration / MCMC_FREQ)
           stepSize = 1.0
@@ -33,16 +33,17 @@ object HybridAnnealingLearner extends Learner {
           currState = NewtonRootLearner.nextState(problem, evaluator, scorer, currState)
           stepSize = (currState.pos - oldState.pos).abs
         }
-        trace = trace :+ currState
+
+        if (currState.loss < bestState.loss)
+          bestState = currState
         iteration = iteration + 1
 
         // scribe.debug(s"  currState.grad: ${currState.grad}")
-        scribe.info(s"  ${currState.loss}, ${trace.map(_.loss).min}, ${currState.pos.abs}, " +
+        scribe.info(s"  ${currState.loss}, ${bestState.loss}, ${currState.pos.abs}, " +
                     s"${currState.grad.abs}, $stepSize")
       }
-      scribe.info(s"#Iterations: ${trace.size}.")
+      scribe.info(s"#Iterations: $iteration.")
 
-      val bestState = trace.minBy(_.loss)
       reinterpret(problem, evaluator, scorer, bestState)
     }
   }
