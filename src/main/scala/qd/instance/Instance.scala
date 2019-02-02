@@ -135,6 +135,10 @@ object Instance {
     else InstanceInd(signature.head, signature.tail, Map())
   }
   def apply[T <: Value[T]](relation: Relation)(implicit vs: Semiring[T]): Instance[T] = Instance(relation.signature)
+
+  def reposition(instance: Instance[FValue], newPos: Token => FValue): Instance[FValue] = {
+    instance.map(v => Value(v.l, newPos))
+  }
 }
 
 private[instance] case class InstanceBase[T <: Value[T]](value: T)(implicit vs: Semiring[T]) extends Instance[T]

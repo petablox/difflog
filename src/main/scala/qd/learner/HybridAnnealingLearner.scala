@@ -60,7 +60,7 @@ object HybridAnnealingLearner extends Learner {
     require(iteration >= 0)
     val solutionPointOpt = simplifyIfSolutionPoint(problem, evaluator, scorer, currState)
     solutionPointOpt.getOrElse {
-      val proposedState = sampleState(problem, evaluator, scorer, random)
+      val proposedState = sampleState(problem, evaluator, scorer, random, currState.cOut)
 
       val c = 1.0e-2
       val k0 = 5.0

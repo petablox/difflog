@@ -58,7 +58,7 @@ object NewtonRootLearner extends Learner {
 
       val delta = currGrad.unit * currLoss / currGrad.abs
       val nextPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
-      State(problem, evaluator, scorer, nextPos)
+      State(problem, evaluator, scorer, nextPos, currState.cOut)
     }
   }
 

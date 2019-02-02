@@ -12,7 +12,14 @@ case class State(pos: TokenVec, cOut: Config[FValue], grad: TokenVec, loss: Doub
 
 object State {
   def apply(problem: Problem, evaluator: Evaluator, scorer: Scorer, pos: TokenVec): State = {
-    val cOut = Timers("Learner.descend: evaluator") { evaluator(problem.rules, pos, problem.edb) }
+    State(problem, evaluator, scorer, pos, problem.edb)
+  }
+
+  def apply(problem: Problem, evaluator: Evaluator, scorer: Scorer, pos: TokenVec, oldCOut: Config[FValue]): State = {
+    val cOut = Timers("State.apply: evaluator") {
+      val repositionedIDB = Config.reposition(oldCOut, pos)
+      evaluator(problem.rules, pos, repositionedIDB)
+    }
     val grad = scorer.gradientLoss(pos, cOut, problem.idb, problem.outputRels)
     val loss = scorer.loss(cOut, problem.idb, problem.outputRels)
     State(pos, cOut, grad, loss)
@@ -25,9 +32,19 @@ abstract class Learner {
 
   def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State
 
-  def sampleState(problem: Problem, evaluator: Evaluator, scorer: Scorer, random: RandomGenerator): State = {
+  def sampleState(
+                   problem: Problem,
+                   evaluator: Evaluator,
+                   scorer: Scorer,
+                   random: RandomGenerator,
+                   oldCOut: Config[FValue]
+                 ): State = {
     val initialPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 2)).toMap)
-    State(problem, evaluator, scorer, initialPos)
+    State(problem, evaluator, scorer, initialPos, oldCOut)
+  }
+
+  def sampleState(problem: Problem, evaluator: Evaluator, scorer: Scorer, random: RandomGenerator): State = {
+    sampleState(problem, evaluator, scorer, random, problem.edb)
   }
 
   def simplifyIfSolutionPoint(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): Option[State] = {
@@ -46,7 +63,7 @@ abstract class Learner {
     if (isSeparable) {
       scribe.info("Current position is separable...")
       val newPos = TokenVec(problem.allTokens, token => if (usefulTokens.contains(token)) 1.0 else 0.0)
-      val newState = State(problem, evaluator, scorer, newPos)
+      val newState = State(problem, evaluator, scorer, newPos, state.cOut)
       if (newState.loss <= 0.0) {
         scribe.info("... and also a solution point.")
         Some(newState)
@@ -71,7 +88,7 @@ abstract class Learner {
     val newPos = TokenVec(problem.allTokens, token => if (exclusivelyUsefulTokens.contains(token)) 1.0
                                                       else if (grayTokens.contains(token)) state.pos(token).v
                                                       else 0.0)
-    State(problem, evaluator, scorer, newPos)
+    State(problem, evaluator, scorer, newPos, state.cOut)
   }
 
 }

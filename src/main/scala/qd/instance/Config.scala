@@ -30,4 +30,8 @@ object Config {
     Config((firstPair +: remainingPairs).toMap)
   }
   def apply[T <: Value[T]]()(implicit vs: Semiring[T]): Config[T] = Config[T](Map[Relation, Instance[T]]())
+
+  def reposition(config: Config[FValue], newPos: Token => FValue): Config[FValue] = {
+    Config(config.map.map { case (rel, instance) => rel -> Instance.reposition(instance, newPos) })
+  }
 }
