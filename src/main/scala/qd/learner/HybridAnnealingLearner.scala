@@ -23,10 +23,10 @@ object HybridAnnealingLearner extends Learner {
       //    a. Once every MCMC_FREQ iterations, choose this next state by MCMC+SimulatedAnnealing criterion
       //    b. Otherwise, choose next state by performing a conventional gradient descent step
       val MCMC_FREQ = 20
-      var iteration = 0
-      while (iteration < maxIters && currState.loss >= tgtLoss) {
-        if (iteration % MCMC_FREQ == 0) {
-          currState = nextStateMCMC(problem, evaluator, scorer, currState, random, iteration / MCMC_FREQ)
+      var numIters = 0
+      while (numIters < maxIters && currState.loss >= tgtLoss) {
+        if (numIters % MCMC_FREQ == 0) {
+          currState = nextStateMCMC(problem, evaluator, scorer, currState, random, numIters / MCMC_FREQ)
           stepSize = 1.0
         } else {
           val oldState = currState
@@ -34,15 +34,16 @@ object HybridAnnealingLearner extends Learner {
           stepSize = (currState.pos - oldState.pos).abs
         }
 
-        if (currState.loss < bestState.loss)
+        if (currState.loss < bestState.loss) {
           bestState = currState
-        iteration = iteration + 1
+        }
+        numIters = numIters + 1
 
         // scribe.debug(s"  currState.grad: ${currState.grad}")
         scribe.info(s"  ${currState.loss}, ${bestState.loss}, ${currState.pos.abs}, " +
                     s"${currState.grad.abs}, $stepSize")
       }
-      scribe.info(s"#Iterations: $iteration.")
+      scribe.info(s"#Iterations: $numIters.")
 
       reinterpret(problem, evaluator, scorer, bestState)
     }
