@@ -4,6 +4,7 @@ package learner
 import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
 import qd.evaluator.Evaluator
 import qd.problem.Problem
+import qd.tokenvec.TokenVec
 import qd.util.Timers
 
 object HybridAnnealingLearner extends Learner {
@@ -15,6 +16,7 @@ object HybridAnnealingLearner extends Learner {
       val random = new MersenneTwister()
 
       // 1. Start with a random initial state
+      var forbiddenTokens: Set[Token] = Set()
       var currState = sampleState(problem, evaluator, scorer, random)
       var bestState = currState
       var stepSize = 1.0
@@ -25,8 +27,17 @@ object HybridAnnealingLearner extends Learner {
       val MCMC_FREQ = 20
       var numIters = 0
       while (numIters < maxIters && currState.loss >= tgtLoss) {
+        val newlyForbiddenTokens = findForbiddenTokens(problem, currState)
+        if (newlyForbiddenTokens.nonEmpty) {
+          forbiddenTokens = forbiddenTokens ++ newlyForbiddenTokens
+          val currPos = currState.pos
+          val simplPos = TokenVec(problem.allTokens,
+                                  token => if (!forbiddenTokens.contains(token)) currPos(token).v else 0.0)
+          currState = State(problem, evaluator, scorer, simplPos, currState.cOut)
+        }
+
         if (numIters % MCMC_FREQ == 0) {
-          currState = nextStateMCMC(problem, evaluator, scorer, currState, random, numIters / MCMC_FREQ)
+          currState = nextStateMCMC(problem, evaluator, scorer, currState, forbiddenTokens, random, numIters / MCMC_FREQ)
           stepSize = 1.0
         } else {
           val oldState = currState
@@ -49,18 +60,30 @@ object HybridAnnealingLearner extends Learner {
     }
   }
 
+  def findForbiddenTokens(problem: Problem, currState: State): Set[Token] = {
+    val ans = for (rel <- problem.outputRels;
+                   (t, v) <- currState.cOut(rel).support if !problem.discreteIDB(rel).contains(t);
+                   tokenSet = v.l.tokenSet if tokenSet.size == 1)
+              yield tokenSet.head
+    scribe.info(s"  Found forbidden tokens: ${ans.mkString(", ")}")
+    ans
+  }
+
   def nextStateMCMC(
                      problem: Problem,
                      evaluator: Evaluator,
                      scorer: Scorer,
                      currState: State,
+                     forbiddenTokens: Set[Token],
                      random: RandomGenerator,
                      iteration: Int
                    ): State = {
     require(iteration >= 0)
     val solutionPointOpt = simplifyIfSolutionPoint(problem, evaluator, scorer, currState)
     solutionPointOpt.getOrElse {
-      val proposedState = sampleState(problem, evaluator, scorer, random, currState.cOut)
+      val newPos = TokenVec(problem.allTokens,
+                            token => if (!forbiddenTokens.contains(token)) random.nextDouble() else 0.0)
+      val proposedState = State(problem, evaluator, scorer, newPos, currState.cOut)
 
       val c = 1.0e-2
       val k0 = 5.0
