@@ -9,7 +9,7 @@ import qd.util.Timers
 
 object HybridAnnealingLearner extends Learner {
 
-  var debug = false
+  var debug = true
 
   override val toString: String = "HybridAnnealingLearner"
 
@@ -29,7 +29,7 @@ object HybridAnnealingLearner extends Learner {
       val MCMC_FREQ = 30
       var numIters = 0
       if (debug) {
-        scribe.debug(s" ${problem.rules}")
+        scribe.info(s" ${problem.rules}")
       }
       while (numIters < maxIters && currState.loss >= tgtLoss) {
         val newlyForbiddenTokens = findForbiddenTokens(problem, currState)
