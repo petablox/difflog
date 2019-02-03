@@ -4,7 +4,7 @@ object Contract {
   // By factoring out calls to Predef.require(...) and Predef.assert(...), we can turn them off and on to determine
   // performance penalties
 
-  val CHECK_CONTRACTS: Boolean = true
+  val CHECK_CONTRACTS: Boolean = false
   val DEEP_CHECK_CONTRACTS: Boolean = false
 
   def require(predicate: => Boolean): Unit = if (CHECK_CONTRACTS) Predef.require(predicate)

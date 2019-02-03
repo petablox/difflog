@@ -1,9 +1,12 @@
 package qd
 package learner
 
+import scala.math.{min, max}
+import scala.util.Random
 import org.apache.commons.math3.random.MersenneTwister
 import qd.evaluator.Evaluator
 import qd.problem.Problem
+import qd.tokenvec.TokenVec
 import qd.util.Timers
 
 object NewtonRootLearner extends Learner {
@@ -19,7 +22,7 @@ object NewtonRootLearner extends Learner {
       var numIters = 0
       while (numIters < maxIters && currState.loss >= tgtLoss && currState.grad.abs > 0 && stepSize > 0.0) {
         val oldState = currState
-        currState = nextState(problem, evaluator, scorer, currState)
+        currState = nextState(problem, evaluator, scorer, currState, Set())
         stepSize = (currState.pos - oldState.pos).abs
 
         if (currState.loss < bestState.loss) {
@@ -37,7 +40,7 @@ object NewtonRootLearner extends Learner {
     }
   }
 
-  def nextState(problem: Problem, evaluator: Evaluator, scorer: Scorer, currState: State): State = {
+  def nextState(problem: Problem, evaluator: Evaluator, scorer: Scorer, currState: State, forbiddenTokens: Set[Token]): State = {
     val solutionPointOpt = simplifyIfSolutionPoint(problem, evaluator, scorer, currState)
     solutionPointOpt.getOrElse {
       val State(currPos, _, currGrad, currLoss) = currState
@@ -58,7 +61,12 @@ object NewtonRootLearner extends Learner {
 
       val delta = currGrad.unit * currLoss / currGrad.abs
       val nextPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
-      State(problem, evaluator, scorer, nextPos, currState.cOut)
+      val visibleTokens = (for (rel <- problem.outputRels; (t, v) <- currState.cOut(rel).support; token <- v.l.toVector) yield token).toSet
+      val newPos = TokenVec(problem.pos.keySet, token =>
+          if (forbiddenTokens.contains(token)) 0.0
+          else if (visibleTokens.contains(token)) nextPos(token).v
+          else max(min (nextPos(token).v + (new Random).nextDouble() / 10 - 0.04, 0.99), 0.01))
+      State(problem, evaluator, scorer, newPos, currState.cOut)
     }
   }
 
