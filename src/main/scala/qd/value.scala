@@ -1,6 +1,6 @@
 package qd
 
-import qd.util.Contract
+import qd.util.{Contract, Random}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Values
@@ -74,7 +74,12 @@ class BValueSemiring extends Semiring[BValue] {
 
 case class FValue(v: Double, l: Lineage) extends Value[FValue] {
   Contract.require(0.0 <= v && v <= 1.0, s"Initializing FValue with value $v")
-  override def +(that: FValue): FValue = if (this <~ that) that else this
+  override def +(that: FValue): FValue = (this <~ that, that <~ this) match {
+    case (true, true) => if (Random.nextDouble() < 0.5) this else that
+    case (true, false) => that
+    case (false, true) => this
+    case (false, false) => throw new AssertionError()
+  }
   override def *(that: FValue): FValue = FValue(this.v * that.v, this.l * that.l)
   override def <~(that: FValue): Boolean = this.v <= that.v
   override def unwrap: FValue = this
