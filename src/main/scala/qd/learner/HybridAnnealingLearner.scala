@@ -52,6 +52,10 @@ object HybridAnnealingLearner extends Learner {
         scribe.info(s"  ${currState.loss}, ${bestState.loss}, ${currState.pos.abs}, " +
                     s"${currState.grad.abs}, $stepSize")
         if (debug) {
+          for ((token, value) <- currState.pos.toVector.sortBy(_._1.toString)) {
+            scribe.info(s"  $token: $value")
+          }
+
           for (rel <- problem.outputRels; (t, v) <- currState.cOut(rel).support) {
             if (problem.discreteIDB(rel).contains(t)) {
               scribe.info(s"$t: ${v.l} (Desired)")
@@ -59,7 +63,6 @@ object HybridAnnealingLearner extends Learner {
               scribe.info(s"$t: ${v.l} (Undesired)")
             }
           }
-          scribe.info(s" ${currState.pos.to}")
         }
       }
       scribe.info(s"#Iterations: $numIters.")
