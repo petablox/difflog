@@ -3,6 +3,7 @@ package learner
 
 import qd.instance.Config
 import qd.tokenvec.TokenVec
+import qd.util.Contract
 
 abstract class Scorer {
 
@@ -97,7 +98,11 @@ object XEntropyScorer extends Scorer {
 
   override def toString: String = "XEntropyScorer"
 
-  override def loss(vOut: Double, vRef: Double): Double = -(vRef * Math.log(vOut) + (1 - vRef) * Math.log(1 - vOut))
+  override def loss(vOut: Double, vRef: Double): Double = {
+    if (vRef == 0) -Math.log(1 - vOut)
+    else if (vRef == 1) -Math.log(vOut)
+    else -(vRef * Math.log(vOut) + (1 - vRef) * Math.log(1 - vOut))
+  }
 
   override def gradientLoss(
                              pos: TokenVec,
@@ -109,7 +114,9 @@ object XEntropyScorer extends Scorer {
     val vt = cOut(rel)(t).v
     val lt = cRef(rel)(t).v
     val gradv = gradient(pos, cOut, rel, t)
-    gradv * (vt - lt) / vt / (1 - vt)
+    val ans = gradv * (vt - lt) / vt / (1 - vt)
+    Contract.assert(ans.forall(v => java.lang.Double.isFinite(v._2)))
+    ans
   }
 
 }
