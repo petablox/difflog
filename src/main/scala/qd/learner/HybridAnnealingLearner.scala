@@ -26,7 +26,9 @@ object HybridAnnealingLearner extends Learner {
       val MCMC_FREQ = 30
       var numIters = 0
       if (debug) {
-        scribe.info(s" ${problem.rules}")
+        scribe.info(problem.rules.toVector.sortBy(_.lineage.toString)
+                           .map(rule => s"  $rule")
+                           .mkString(System.lineSeparator(), System.lineSeparator(), ""))
       }
       while (numIters < maxIters && currState.loss >= tgtLoss) {
         val newlyForbiddenTokens = findForbiddenTokens(problem, currState)
