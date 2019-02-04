@@ -1,11 +1,10 @@
 package qd
 package learner
 
-import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
 import qd.evaluator.Evaluator
 import qd.problem.Problem
 import qd.tokenvec.TokenVec
-import qd.util.Timers
+import qd.util.{Random, Timers}
 
 object HybridAnnealingLearner extends Learner {
 
@@ -15,11 +14,9 @@ object HybridAnnealingLearner extends Learner {
 
   override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     Timers("HybridAnnealingLearner.learn") {
-      val random = new MersenneTwister()
-
       // 1. Start with a random initial state
       var forbiddenTokens: Set[Token] = Set()
-      var currState = sampleState(problem, evaluator, scorer, random)
+      var currState = sampleState(problem, evaluator, scorer)
       var bestState = currState
       var stepSize = 1.0
 
@@ -38,7 +35,7 @@ object HybridAnnealingLearner extends Learner {
         }
 
         if (numIters % MCMC_FREQ == 0) {
-          currState = nextStateMCMC(problem, evaluator, scorer, currState, forbiddenTokens, random, numIters / MCMC_FREQ)
+          currState = nextStateMCMC(problem, evaluator, scorer, currState, forbiddenTokens, numIters / MCMC_FREQ)
           stepSize = 1.0
         } else {
           val oldState = currState
@@ -88,14 +85,13 @@ object HybridAnnealingLearner extends Learner {
                      scorer: Scorer,
                      currState: State,
                      forbiddenTokens: Set[Token],
-                     random: RandomGenerator,
                      iteration: Int
                    ): State = {
     require(iteration >= 0)
     val solutionPointOpt = simplifyIfSolutionPoint(problem, evaluator, scorer, currState)
     solutionPointOpt.getOrElse {
       val newPos = TokenVec(problem.allTokens,
-                            token => if (!forbiddenTokens.contains(token)) random.nextDouble() else 0.0)
+                            token => if (!forbiddenTokens.contains(token)) Random.nextDouble() else 0.0)
       val proposedState = State(problem, evaluator, scorer, newPos, currState.cOut)
 
       val c = 1.0e-3
@@ -106,7 +102,7 @@ object HybridAnnealingLearner extends Learner {
       val piCurr = pi(-currState.loss)
       val piProposed = pi(-proposedState.loss)
       val probAccept = Math.min(1.0, piProposed / piCurr)
-      val coin = random.nextDouble()
+      val coin = Random.nextDouble()
 
       scribe.info(s"  c: $c, k0: $k0, iteration: $iteration, temperature: $temperature")
       scribe.info(s"  currState.loss: ${currState.loss}, piCurr: $piCurr")

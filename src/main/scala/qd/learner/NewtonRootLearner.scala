@@ -3,7 +3,6 @@ package learner
 
 import scala.math.{min, max}
 import scala.util.Random
-import org.apache.commons.math3.random.MersenneTwister
 import qd.evaluator.Evaluator
 import qd.problem.Problem
 import qd.tokenvec.TokenVec
@@ -15,7 +14,7 @@ object NewtonRootLearner extends Learner {
 
   override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     Timers("NewtonRootLearner.learn") {
-      var currState = sampleState(problem, evaluator, scorer, new MersenneTwister())
+      var currState = sampleState(problem, evaluator, scorer)
       var bestState = currState
       var stepSize = 1.0
 
@@ -61,7 +60,8 @@ object NewtonRootLearner extends Learner {
 
       val delta = currGrad.unit * currLoss / currGrad.abs
       val nextPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
-      val visibleTokens = (for (rel <- problem.outputRels; (t, v) <- currState.cOut(rel).support; token <- v.l.toVector) yield token).toSet
+      val visibleTokens = for (rel <- problem.outputRels; (_, v) <- currState.cOut(rel).support; token <- v.l.toVector)
+                          yield token
       val newPos = TokenVec(problem.pos.keySet, token =>
           if (forbiddenTokens.contains(token)) 0.0
           else if (visibleTokens.contains(token)) nextPos(token).v

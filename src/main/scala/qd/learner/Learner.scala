@@ -1,12 +1,11 @@
 package qd
 package learner
 
-import org.apache.commons.math3.random.RandomGenerator
 import qd.evaluator.Evaluator
 import qd.instance.Config
 import qd.problem.Problem
 import qd.tokenvec.TokenVec
-import qd.util.Timers
+import qd.util.{Random, Timers}
 
 case class State(pos: TokenVec, cOut: Config[FValue], grad: TokenVec, loss: Double)
 
@@ -36,15 +35,14 @@ abstract class Learner {
                    problem: Problem,
                    evaluator: Evaluator,
                    scorer: Scorer,
-                   random: RandomGenerator,
                    oldCOut: Config[FValue]
                  ): State = {
-    val initialPos = TokenVec(problem.allTokens.map(token => token -> (0.25 + random.nextDouble() / 2)).toMap)
+    val initialPos = TokenVec(problem.allTokens.map(token => token -> Random.nextDouble(0.25, 0.75)).toMap)
     State(problem, evaluator, scorer, initialPos, oldCOut)
   }
 
-  def sampleState(problem: Problem, evaluator: Evaluator, scorer: Scorer, random: RandomGenerator): State = {
-    sampleState(problem, evaluator, scorer, random, problem.edb)
+  def sampleState(problem: Problem, evaluator: Evaluator, scorer: Scorer): State = {
+    sampleState(problem, evaluator, scorer, problem.edb)
   }
 
   def simplifyIfSolutionPoint(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): Option[State] = {
