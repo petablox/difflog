@@ -8,7 +8,7 @@ import qd.util.{Random, Timers}
 
 object HybridAnnealingLearner extends Learner {
 
-  var debug = true
+  var debug = false
 
   override val toString: String = "HybridAnnealingLearner"
 
