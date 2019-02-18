@@ -28,7 +28,7 @@ object NaiveExtractor extends Extractor {
   case class State(rules: Set[Rule], graph: DGraph, changed: Boolean) {
 
     def addTuples(relation: Relation, newClauses: Seq[Clause]): State = {
-      val oldInstance = graph(relation)
+      val oldInstance = graph.getOrElse(relation, Map())
       var newInstance = oldInstance
       var newChanged = changed
       for (clause <- newClauses) {
@@ -71,7 +71,8 @@ object NaiveExtractor extends Extractor {
   def extendAssignments(literal: Literal, graph: DGraph, assignments: Vector[FatAssignment]): Vector[FatAssignment] = {
     for (assignment <- assignments;
          f = assignment.toFilter(literal);
-         (tuple, _) <- graph(literal.relation).filterKeys(tuple => isConsistent(tuple, f));
+         instance = graph.getOrElse(literal.relation, Map());
+         (tuple, _) <- instance.filterKeys(tuple => isConsistent(tuple, f));
          newAssignment <- extendAssignment(literal, tuple, assignment))
       yield newAssignment
   }

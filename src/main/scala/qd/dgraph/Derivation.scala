@@ -17,4 +17,5 @@ case class Clause(conclusion: DTuple, rule: Rule, antecedents: IndexedSeq[DTuple
 
 object Derivation {
   type DGraph = Map[Relation, Map[DTuple, Set[Derivation]]]
+  def apply(conclusion: DTuple): Derivation = EDB(conclusion)
 }

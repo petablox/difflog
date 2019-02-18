@@ -1,6 +1,7 @@
 package qd
 
 import qd.Semiring.FValueSemiringObj
+import qd.dgraph.{Derivation, Extractor}
 import qd.evaluator.Evaluator
 import qd.learner.{Learner, Scorer}
 import qd.problem.{ALPSParser, Problem, QDParser}
@@ -77,11 +78,35 @@ object Main extends App {
                      .map({ case (weight, rule) => s"$weight: $rule" })
                      .foreach(println)
 
+      case Array("alps-2", dataFilename, templateFilename,
+                          learnerName, extractorName, scorerName,
+                          tgtLossStr, maxItersStr) =>
+        val query = readALPSProblem(dataFilename, templateFilename)
+        val learner = Learner.STD_LEARNERS(learnerName)
+        val extractor = Extractor.STD_EXTRACTORS(extractorName)
+        val scorer = Scorer.STD_SCORERS(scorerName)
+        val tgtLoss = tgtLossStr.toDouble
+        val maxIters = maxItersStr.toInt
+        Contract.require(maxIters > 0)
+
+        val edbGraph = query.discreteEDB.transform({ case (_, tuples) =>
+          tuples.map(t => t -> Set(Derivation(t))).toMap
+        })
+        val idbGraph = extractor.apply(query.rules, edbGraph)
+        for ((relation, instance) <- idbGraph) {
+          println(s"--- $relation ---")
+          for ((tuple, derivations) <- instance) {
+            println(s"$tuple: {")
+            println(derivations.mkString("  ", System.lineSeparator() + "  ", System.lineSeparator() + "}"))
+          }
+        }
+
       case Array("ntp-learn", _*) => ???
       case Array("ntp-query", _*)=> ???
       case _ =>
         val stdLearnersStr = Learner.STD_LEARNERS.keys.mkString(" | ")
         val stdEvaluatorsStr = Evaluator.STD_EVALUATORS.keys.mkString(" | ")
+        val stdExtractorsStr = Extractor.STD_EXTRACTORS.keys.mkString(" | ")
         val stdScorersStr = Scorer.STD_SCORERS.keys.mkString(" | ")
         println(
           s"""Usage:
@@ -114,6 +139,15 @@ object Main extends App {
              |          tgtLoss
              |          maxIters
              |     Runs Difflog in the ALPS setting
+             |
+             |  5. alps-2 data.d
+             |            templates.tp
+             |            [ $stdLearnersStr ]
+             |            [ $stdExtractorsStr ]
+             |            [ $stdScorersStr ]
+             |            tgtLoss
+             |            maxIters
+             |     Runs Difflog with probabilistic sampling of derivation graphs
            """.stripMargin)
     }
 
