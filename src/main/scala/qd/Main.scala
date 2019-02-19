@@ -96,8 +96,10 @@ object Main extends App {
 
         for (relation <- query.outputRels) {
           for ((tuple, _) <- idbGraph(relation)) {
-            val lineage = Derivation.sample(idbGraph, relation, tuple, query.pos)
-            println(s"${relation.name}$tuple: $lineage")
+            /* val lineage = Derivation.sample(idbGraph, relation, tuple, query.pos)
+            println(s"${relation.name}$tuple: $lineage") */
+            val sp = Derivation.samplePath(idbGraph, relation, tuple, query.pos)
+            println(s"${relation.name}$tuple: $sp")
           }
         }
 

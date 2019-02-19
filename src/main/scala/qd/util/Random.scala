@@ -13,4 +13,8 @@ object Random {
     Contract.assert(lo <= ans && ans <= hi)
     ans
   }
+  def nextInt(lo: Int, hi: Int): Int = {
+    Contract.require(lo <= hi)
+    this.synchronized { random.nextInt(hi - lo) + lo }
+  }
 }

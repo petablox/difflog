@@ -73,11 +73,13 @@ object Derivation {
           val hi = weightedClauses.map(_._2).sum
           val coin = Random.nextDouble(lo = 0, hi)
 
-          var remainingClauses = weightedClauses.toVector
-          while (coin > remainingClauses.head._2) {
-            remainingClauses = remainingClauses.tail
+          val chosenClause = {
+            var remainingClauses = weightedClauses.toVector
+            while (coin > remainingClauses.head._2) {
+              remainingClauses = remainingClauses.tail
+            }
+            remainingClauses.head._1
           }
-          val chosenClause = remainingClauses.head._1
 
           var success = true
           var ansl = chosenClause.rule.lineage
@@ -89,13 +91,62 @@ object Derivation {
                 ansj = jt
               case None =>
                 success = false
+                remainingDerivations = remainingDerivations - chosenClause
             }
           }
-          if (success) {
-            return Some((ansl, ansj))
-          } else {
-            remainingDerivations = remainingDerivations - chosenClause
+          if (success) return Some((ansl, ansj))
+        }
+        None
+      }
+    }
+  }
+
+  def samplePath(graph: DGraph, relation: Relation, tuple: DTuple, pos: TokenVec): Vector[Clause] = {
+    samplePath(graph, relation, tuple, Set(), pos).get
+  }
+
+  def samplePath(
+                  graph: DGraph,
+                  relation: Relation,
+                  tuple: DTuple,
+                  stack: Set[(Relation, DTuple)],
+                  pos: TokenVec
+                ): Option[Vector[Clause]] = {
+    if (stack.contains((relation, tuple))) {
+      None
+    } else {
+      val derivations = graph(relation)(tuple)
+      if (derivations.size == 1 && derivations.head.isInstanceOf[EDB]) {
+        Some(Vector())
+      } else {
+        var remainingDerivations = derivations
+        val sj = stack + ((relation, tuple))
+        while (remainingDerivations.nonEmpty) {
+          val clauses = remainingDerivations.map(_.asInstanceOf[Clause])
+          val weightedClauses = clauses.map(clause => (clause, Value(clause.rule.lineage, pos).v))
+          val hi = weightedClauses.map(_._2).sum
+          val coin = Random.nextDouble(lo = 0, hi)
+
+          val chosenClause = {
+            var remainingClauses = weightedClauses.toVector
+            while (coin > remainingClauses.head._2) {
+              remainingClauses = remainingClauses.tail
+            }
+            remainingClauses.head._1
           }
+
+          var remainingHypotheses = chosenClause.rule.body.map(_.relation).zip(chosenClause.antecedents).filterNot(stack)
+          while (remainingHypotheses.nonEmpty) {
+            val chosenHypothesisIndex = Random.nextInt(lo = 0, remainingHypotheses.size)
+            val chosenHypothesis = remainingHypotheses(chosenHypothesisIndex)
+            samplePath(graph, chosenHypothesis._1, chosenHypothesis._2, sj, pos) match {
+              case Some(cl) => return Some(cl :+ chosenClause)
+              case None =>
+                remainingHypotheses = remainingHypotheses.filterNot(_ == chosenHypothesis)
+            }
+          }
+
+          remainingDerivations = remainingDerivations - chosenClause
         }
         None
       }
