@@ -93,11 +93,11 @@ object Main extends App {
           tuples.map(t => t -> Set(Derivation(t))).toMap
         })
         val idbGraph = extractor.apply(query.rules, edbGraph)
-        for ((relation, instance) <- idbGraph) {
-          println(s"--- $relation ---")
-          for ((tuple, derivations) <- instance) {
-            println(s"$tuple: {")
-            println(derivations.mkString("  ", System.lineSeparator() + "  ", System.lineSeparator() + "}"))
+
+        for (relation <- query.outputRels) {
+          for ((tuple, _) <- idbGraph(relation)) {
+            val lineage = Derivation.sample(idbGraph, relation, tuple, query.pos)
+            println(s"${relation.name}$tuple: $lineage")
           }
         }
 
