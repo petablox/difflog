@@ -14,7 +14,7 @@ object LineLearner extends Learner {
   override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     val trace = descend(problem, evaluator, scorer, tgtLoss, maxIters)
     val bestState = trace.minBy(_.loss)
-    reinterpret(problem, evaluator, scorer, bestState)
+    Learner.reinterpret(problem, evaluator, scorer, bestState)
   }
 
   def simplifyIfSolutionPoint(problem: Problem, state: State): Option[TokenVec] = {

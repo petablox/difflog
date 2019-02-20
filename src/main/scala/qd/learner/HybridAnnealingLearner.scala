@@ -16,7 +16,7 @@ object HybridAnnealingLearner extends Learner {
     Timers("HybridAnnealingLearner.learn") {
       // 1. Start with a random initial state
       var forbiddenTokens: Set[Token] = Set()
-      var currState = sampleState(problem, evaluator, scorer)
+      var currState = Learner.sampleState(problem, evaluator, scorer)
       var bestState = currState
       var stepSize = 1.0
 
@@ -31,7 +31,7 @@ object HybridAnnealingLearner extends Learner {
                            .mkString(System.lineSeparator(), System.lineSeparator(), ""))
       }
       while (numIters < maxIters && currState.loss >= tgtLoss) {
-        val newlyForbiddenTokens = findForbiddenTokens(problem, currState)
+        val newlyForbiddenTokens = Learner.findForbiddenTokens(problem, currState.cOut)
         if (newlyForbiddenTokens.nonEmpty) {
           forbiddenTokens = forbiddenTokens ++ newlyForbiddenTokens
         }
@@ -69,19 +69,8 @@ object HybridAnnealingLearner extends Learner {
       }
       scribe.info(s"#Iterations: $numIters.")
 
-      reinterpret(problem, evaluator, scorer, bestState)
+      Learner.reinterpret(problem, evaluator, scorer, bestState)
     }
-  }
-
-  def findForbiddenTokens(problem: Problem, currState: State): Set[Token] = {
-    val ans = for (rel <- problem.outputRels;
-                   (t, v) <- currState.cOut(rel).support if !problem.discreteIDB(rel).contains(t);
-                   tokenSet = v.l.tokenSet if tokenSet.size == 1)
-              yield tokenSet.head
-    if (debug) {
-      scribe.info(s"  Found forbidden tokens: ${ans.mkString(", ")}")
-    }
-    ans
   }
 
   def nextStateMCMC(
@@ -93,7 +82,7 @@ object HybridAnnealingLearner extends Learner {
                      iteration: Int
                    ): State = {
     require(iteration >= 0)
-    val solutionPointOpt = simplifyIfSolutionPoint(problem, evaluator, scorer, currState)
+    val solutionPointOpt = Learner.simplifyIfSolutionPoint(problem, evaluator, scorer, currState.cOut)
     solutionPointOpt.getOrElse {
       val newPos = TokenVec(problem.allTokens,
                             token => if (!forbiddenTokens.contains(token)) Random.nextDouble() else 0.0)

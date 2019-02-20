@@ -3,6 +3,7 @@ package learner
 
 import qd.evaluator.Evaluator
 import qd.instance.Config
+import qd.learner.HybridAnnealingLearner.debug
 import qd.problem.Problem
 import qd.tokenvec.TokenVec
 import qd.util.{Random, Timers}
@@ -26,10 +27,14 @@ object State {
 }
 
 abstract class Learner {
-
   override def toString: String
-
   def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State
+}
+
+object Learner {
+
+  val STD_LEARNERS: Map[String, Learner] =
+    Set(NewtonRootLearner, HybridAnnealingLearner).map(learner => learner.toString -> learner).toMap
 
   def sampleState(
                    problem: Problem,
@@ -45,23 +50,23 @@ abstract class Learner {
     sampleState(problem, evaluator, scorer, problem.edb)
   }
 
-  def simplifyIfSolutionPoint(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): Option[State] = {
+  def simplifyIfSolutionPoint(problem: Problem, evaluator: Evaluator, scorer: Scorer, cOut: Config[FValue]): Option[State] = {
     val usefulTokens = (for ((rel, refOut) <- problem.discreteIDB.toSeq;
                              tuple <- refOut;
-                             token <- state.cOut(rel)(tuple).l.tokenSet)
-                        yield token).toSet
+                             token <- cOut(rel)(tuple).l.tokenSet)
+      yield token).toSet
     val eliminableTokens = problem.allTokens -- usefulTokens
 
     val isSeparable = problem.outputRels.forall { relation =>
       val expectedTuples = problem.discreteIDB(relation)
-      val unexpectedTuples = state.cOut(relation).support.filterNot { case (t, _) => expectedTuples.contains(t) }
+      val unexpectedTuples = cOut(relation).support.filterNot { case (t, _) => expectedTuples.contains(t) }
       unexpectedTuples.forall { case (_, FValue(_, l)) => (l.tokenSet & eliminableTokens).nonEmpty }
     }
 
     if (isSeparable) {
       scribe.info("Current position is separable...")
       val newPos = TokenVec(problem.allTokens, token => if (usefulTokens.contains(token)) 1.0 else 0.0)
-      val newState = State(problem, evaluator, scorer, newPos, state.cOut)
+      val newState = State(problem, evaluator, scorer, newPos, cOut)
       if (newState.loss <= 0.0) {
         scribe.info("... and also a solution point.")
         Some(newState)
@@ -72,26 +77,32 @@ abstract class Learner {
     } else None
   }
 
+  def findForbiddenTokens(problem: Problem, cOut: Config[FValue]): Set[Token] = {
+    val ans = for (rel <- problem.outputRels;
+                   (t, v) <- cOut(rel).support if !problem.discreteIDB(rel).contains(t);
+                   tokenSet = v.l.tokenSet if tokenSet.size == 1)
+              yield tokenSet.head
+    if (debug) {
+      scribe.info(s"  Found forbidden tokens: ${ans.mkString(", ")}")
+    }
+    ans
+  }
+
   def reinterpret(problem: Problem, evaluator: Evaluator, scorer: Scorer, state: State): State = {
     val usefulTokens = (for ((rel, refOut) <- problem.discreteIDB.toSeq;
                              tuple <- refOut;
                              token <- state.cOut(rel)(tuple).l.tokenSet)
-                        yield token).toSet
+      yield token).toSet
     val grayTokens = (for ((rel, refOut) <- state.cOut.map if problem.outputRels.contains(rel);
                            (tuple, value) <- refOut.support if !problem.discreteIDB(rel).contains(tuple);
                            token <- value.l.tokenSet)
-                      yield token).toSet
+      yield token).toSet
     val exclusivelyUsefulTokens = usefulTokens -- grayTokens
 
     val newPos = TokenVec(problem.allTokens, token => if (exclusivelyUsefulTokens.contains(token)) 1.0
-                                                      else if (grayTokens.contains(token)) state.pos(token).v
-                                                      else 0.0)
+    else if (grayTokens.contains(token)) state.pos(token).v
+    else 0.0)
     State(problem, evaluator, scorer, newPos, state.cOut)
   }
 
-}
-
-object Learner {
-  val STD_LEARNERS: Map[String, Learner] =
-    Set(NewtonRootLearner, HybridAnnealingLearner).map(learner => learner.toString -> learner).toMap
 }

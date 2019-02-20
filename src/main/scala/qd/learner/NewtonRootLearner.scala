@@ -12,7 +12,7 @@ object NewtonRootLearner extends Learner {
 
   override def learn(problem: Problem, evaluator: Evaluator, scorer: Scorer, tgtLoss: Double, maxIters: Int): State = {
     Timers("NewtonRootLearner.learn") {
-      var currState = sampleState(problem, evaluator, scorer)
+      var currState = Learner.sampleState(problem, evaluator, scorer)
       var bestState = currState
       var stepSize = 1.0
 
@@ -33,12 +33,12 @@ object NewtonRootLearner extends Learner {
       }
       scribe.info(s"#Iterations: $numIters.")
 
-      reinterpret(problem, evaluator, scorer, bestState)
+      Learner.reinterpret(problem, evaluator, scorer, bestState)
     }
   }
 
   def nextState(problem: Problem, evaluator: Evaluator, scorer: Scorer, currState: State, forbiddenTokens: Set[Token]): State = {
-    val solutionPointOpt = simplifyIfSolutionPoint(problem, evaluator, scorer, currState)
+    val solutionPointOpt = Learner.simplifyIfSolutionPoint(problem, evaluator, scorer, currState.cOut)
     solutionPointOpt.getOrElse {
       val State(currPos, _, currGrad, currLoss) = currState
 
