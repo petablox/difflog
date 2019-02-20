@@ -1,51 +1,62 @@
 package qd
 package learner
 
+import qd.Semiring.FValueSemiringObj
+import qd.dgraph.Derivation.StochasticConfig
 import qd.instance.Config
 import qd.tokenvec.TokenVec
 import qd.util.Contract
 
-abstract class Scorer {
+abstract class StochasticScorer {
 
   override def toString: String
 
-  def gradient(pos: TokenVec, cOut: Config[FValue], rel: Relation, t: DTuple): TokenVec = {
-    val vlineage: FValue = cOut(rel)(t)
-    val vt = vlineage.v
-    val prov = vlineage.l.toVector
-    val freq = prov.groupBy(identity).map { case (token, value) => token -> value.size }
-    val ans = pos.keySet.map { token =>
-      val dvtDtoken = freq.getOrElse(token, 0) * vt / pos(token).v
-      token -> (if (!dvtDtoken.isNaN) dvtDtoken else 0.0)
-    }
-    TokenVec(ans.toMap)
+  def gradient(pos: TokenVec, cOut: StochasticConfig, relation: Relation, tuple: DTuple): TokenVec = {
+    val pathSamples = cOut(relation)(tuple)
+
+    val gradients = pathSamples.map(path => {
+      val pathValues = path.map(clause => Value(clause.rule.lineage, pos))
+      val pathValue = pathValues.foldLeft(FValueSemiringObj.One)(_ * _)
+
+      val vt = pathValue.v
+      val prov = pathValue.l.toVector
+      val freq = prov.groupBy(identity).map { case (token, value) => token -> value.size }
+      val ans = pos.keySet.map { token =>
+        val dvtDtoken = freq.getOrElse(token, 0) * vt / pos(token).v
+        token -> (if (!dvtDtoken.isNaN) dvtDtoken else 0.0)
+      }
+      TokenVec(ans.toMap)
+    })
+    val totalGradient = gradients.foldLeft(TokenVec(pos.keySet, _ => 0))(_ + _)
+    val ans = totalGradient * 1.0 / pathSamples.size
+    ans
   }
 
   def loss(vOut: Double, vRef: Double): Double
 
-  def loss(cOut: Config[FValue], cRef: Config[FValue], rel: Relation, t: DTuple): Double = {
+  def loss(cOut: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): Double = {
     val vOut = cOut(rel)(t).v
     val vRef = cRef(rel)(t).v
     loss(vOut, vRef)
   }
 
-  def loss(cOut: Config[FValue], cRef: Config[FValue], rel: Relation): Double = {
+  def loss(cOut: StochasticConfig, cRef: Config[FValue], rel: Relation): Double = {
     val allTuples = cOut(rel).support.map(_._1) ++ cRef(rel).support.map(_._1)
     val allErrors = allTuples.map(t => loss(cOut, cRef, rel, t))
     allErrors.sum
   }
 
-  def loss(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation]): Double = {
+  def loss(cOut: StochasticConfig, cRef: Config[FValue], outputRels: Set[Relation]): Double = {
     outputRels.map(rel => loss(cOut, cRef, rel)).sum
   }
 
-  def gradientLoss(pos: TokenVec, cOut: Config[FValue], cRef: Config[FValue], rel: Relation, t: DTuple): TokenVec
+  def gradientLoss(pos: TokenVec, cOut: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): TokenVec
 
-  def gradientLoss(pos: TokenVec, cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation]): TokenVec = {
+  def gradientLoss(pos: TokenVec, cOut: StochasticConfig, cRef: Config[FValue], outputRels: Set[Relation]): TokenVec = {
     val numeratorVecs = for (rel <- outputRels.toSeq;
                              allTuples = cOut(rel).support.map(_._1) ++ cRef(rel).support.map(_._1);
                              t <- allTuples)
-                        yield gradientLoss(pos, cOut, cRef, rel, t)
+      yield gradientLoss(pos, cOut, cRef, rel, t)
     numeratorVecs.foldLeft(TokenVec.zero(pos.keySet))(_ + _)
   }
 
@@ -59,7 +70,7 @@ abstract class Scorer {
     val ts = for (rel <- outputRels.toSeq;
                   (t, v) <- cOut(rel).support
                   if v.v > cutoff)
-             yield if (cRef(rel)(t).v > cutoff) 1.0 else 0.0
+      yield if (cRef(rel)(t).v > cutoff) 1.0 else 0.0
     ts.sum / ts.size
   }
 
@@ -67,35 +78,40 @@ abstract class Scorer {
     val ts = for (rel <- outputRels.toSeq;
                   (t, v) <- cRef(rel).support
                   if v.v > cutoff)
-             yield if (cOut(rel)(t).v > cutoff) 1.0 else 0.0
+      yield if (cOut(rel)(t).v > cutoff) 1.0 else 0.0
     ts.sum / ts.size
   }
 
 }
 
-object Scorer {
+object StochasticScorer {
   val STD_SCORERS: Map[String, Scorer] = Set(L2Scorer, XEntropyScorer).map(scorer => scorer.toString -> scorer).toMap
 }
 
-object L2Scorer extends Scorer {
+object StochasticL2Scorer extends StochasticScorer {
 
-  override def toString: String = "L2Scorer"
+  override def toString: String = "StochasticL2Scorer"
 
   override def loss(vOut: Double, vRef: Double): Double = (vOut - vRef) * (vOut - vRef)
 
   override def gradientLoss(
                              pos: TokenVec,
-                             cOut: Config[FValue],
+                             cOut: StochasticConfig,
                              cRef: Config[FValue],
                              rel: Relation,
-                             t: DTuple
+                             tuple: DTuple
                            ): TokenVec = {
-    gradient(pos, cOut, rel, t) * (cOut(rel)(t).v - cRef(rel)(t).v) * 2
+    val pathSamples = cOut(rel)(tuple)
+    val pathValues = pathSamples.map(path => {
+      path.map(clause => Value(clause.rule.lineage, pos)).foldLeft(FValueSemiringObj.One)(_ * _).v
+    })
+    val avgPathValue = pathValues.sum / pathValues.size
+    gradient(pos, cOut, rel, tuple) * (avgPathValue - cRef(rel)(tuple).v) * 2
   }
 
 }
 
-object XEntropyScorer extends Scorer {
+object XEntropyScorer extends StochasticScorer {
 
   override def toString: String = "XEntropyScorer"
 

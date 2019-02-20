@@ -65,10 +65,10 @@ object Derivation {
       if (derivations.size == 1 && derivations.head.isInstanceOf[EDB]) {
         Some((Empty, justified + ((relation, tuple))))
       } else {
-        var remainingDerivations = derivations
+        var remainingDerivations = derivations.map(_.asInstanceOf[Clause])
         val sj = stack + ((relation, tuple))
         while (remainingDerivations.nonEmpty) {
-          val clauses = remainingDerivations.map(_.asInstanceOf[Clause])
+          val clauses = remainingDerivations
           val weightedClauses = clauses.map(clause => (clause, Value(clause.rule.lineage, pos).v))
           val hi = weightedClauses.map(_._2).sum
           val coin = Random.nextDouble(lo = 0, hi)
@@ -117,12 +117,16 @@ object Derivation {
     } else {
       val derivations = graph(relation)(tuple)
       if (derivations.size == 1 && derivations.head.isInstanceOf[EDB]) {
+        // the current tuple is an EDB, then job is done
         Some(Vector())
       } else {
-        var remainingDerivations = derivations
+        var remainingDerivations = derivations.map(_.asInstanceOf[Clause])
         val sj = stack + ((relation, tuple))
+        // repeat sampling until a success
         while (remainingDerivations.nonEmpty) {
-          val clauses = remainingDerivations.map(_.asInstanceOf[Clause])
+
+          // randomly sample a derivation
+          val clauses = remainingDerivations
           val weightedClauses = clauses.map(clause => (clause, Value(clause.rule.lineage, pos).v))
           val hi = weightedClauses.map(_._2).sum
           val coin = Random.nextDouble(lo = 0, hi)
@@ -135,6 +139,7 @@ object Derivation {
             remainingClauses.head._1
           }
 
+          // randomly sample one hypothese from the sampled derivation
           var remainingHypotheses = chosenClause.rule.body.map(_.relation).zip(chosenClause.antecedents).filterNot(stack)
           while (remainingHypotheses.nonEmpty) {
             val chosenHypothesisIndex = Random.nextInt(lo = 0, remainingHypotheses.size)
@@ -151,5 +156,16 @@ object Derivation {
         None
       }
     }
+  }
+
+  type StochasticConfig = Map[Relation, Map[DTuple, Vector[Vector[Clause]]]]
+
+  def samplePaths(k: Int, graph: DGraph, outputRels: Set[Relation], pos: TokenVec): StochasticConfig = {
+    (for (relation <- outputRels)
+     yield relation -> {
+       (for (tuple <- graph(relation).keys)
+        yield tuple -> Range(0, k).map(_ => samplePath(graph, relation, tuple, pos)).toVector).toMap
+       // TODO: consider reuse path
+     }).toMap
   }
 }
