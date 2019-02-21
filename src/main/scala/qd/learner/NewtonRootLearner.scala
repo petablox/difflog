@@ -58,9 +58,10 @@ object NewtonRootLearner extends Learner {
 
       val delta = currGrad.unit * currLoss / currGrad.abs
       val nextPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
-      val newPos = TokenVec(problem.pos.keySet, token =>
-          if (forbiddenTokens.contains(token)) 0.0
-          else nextPos(token).v)
+      val newPos = TokenVec(problem.pos.keySet, token => {
+        if (forbiddenTokens.contains(token)) 0.0
+        else nextPos(token).v
+      })
       State(problem, evaluator, scorer, newPos, currState.cOut)
     }
   }

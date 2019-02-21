@@ -158,14 +158,4 @@ object Derivation {
     }
   }
 
-  type StochasticConfig = Map[Relation, Map[DTuple, Vector[Vector[Clause]]]]
-
-  def samplePaths(k: Int, graph: DGraph, outputRels: Set[Relation], pos: TokenVec): StochasticConfig = {
-    (for (relation <- outputRels)
-     yield relation -> {
-       (for (tuple <- graph(relation).keys)
-        yield tuple -> Range(0, k).map(_ => samplePath(graph, relation, tuple, pos)).toVector).toMap
-       // TODO: consider reuse path
-     }).toMap
-  }
 }

@@ -1,23 +1,22 @@
-package qd
-package learner
+package qd.stochasticlearner
 
 import qd.Semiring.FValueSemiringObj
-import qd.dgraph.Derivation.StochasticConfig
+import qd.dgraph.Derivation.DGraph
 import qd.instance.Config
+import qd.learner.{L2Scorer, Scorer}
+import qd.stochasticlearner.StochasticLearner.StochasticConfig
 import qd.tokenvec.TokenVec
-import qd.util.Contract
+import qd.{DTuple, FValue, Relation}
 
 abstract class StochasticScorer {
 
   override def toString: String
+  val baseScorer: Scorer
 
   def gradient(pos: TokenVec, cOut: StochasticConfig, relation: Relation, tuple: DTuple): TokenVec = {
     val pathSamples = cOut(relation)(tuple)
 
-    val gradients = pathSamples.map(path => {
-      val pathValues = path.map(clause => Value(clause.rule.lineage, pos))
-      val pathValue = pathValues.foldLeft(FValueSemiringObj.One)(_ * _)
-
+    val gradients = pathSamples.map { case (pathValue, _) =>
       val vt = pathValue.v
       val prov = pathValue.l.toVector
       val freq = prov.groupBy(identity).map { case (token, value) => token -> value.size }
@@ -26,114 +25,66 @@ abstract class StochasticScorer {
         token -> (if (!dvtDtoken.isNaN) dvtDtoken else 0.0)
       }
       TokenVec(ans.toMap)
-    })
+    }
     val totalGradient = gradients.foldLeft(TokenVec(pos.keySet, _ => 0))(_ + _)
-    val ans = totalGradient * 1.0 / pathSamples.size
+    val ans = totalGradient * 1.0 / pathSamples.size.toDouble
     ans
   }
 
-  def loss(vOut: Double, vRef: Double): Double
+  def loss(sconfig: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): Double
 
-  def loss(cOut: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): Double = {
-    val vOut = cOut(rel)(t).v
-    val vRef = cRef(rel)(t).v
-    loss(vOut, vRef)
+  def loss(dgraph: DGraph, outputRels: Set[Relation], sconfig: StochasticConfig, cRef: Config[FValue]): Double = {
+    val twiseLoss = for (relation <- outputRels.toVector; tuple <- dgraph(relation).keys)
+                    yield loss(sconfig, cRef, relation, tuple)
+    twiseLoss.sum
   }
 
-  def loss(cOut: StochasticConfig, cRef: Config[FValue], rel: Relation): Double = {
-    val allTuples = cOut(rel).support.map(_._1) ++ cRef(rel).support.map(_._1)
-    val allErrors = allTuples.map(t => loss(cOut, cRef, rel, t))
-    allErrors.sum
-  }
+  def gradientLoss(pos: TokenVec, sconfig: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): TokenVec
 
-  def loss(cOut: StochasticConfig, cRef: Config[FValue], outputRels: Set[Relation]): Double = {
-    outputRels.map(rel => loss(cOut, cRef, rel)).sum
-  }
-
-  def gradientLoss(pos: TokenVec, cOut: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): TokenVec
-
-  def gradientLoss(pos: TokenVec, cOut: StochasticConfig, cRef: Config[FValue], outputRels: Set[Relation]): TokenVec = {
-    val numeratorVecs = for (rel <- outputRels.toSeq;
-                             allTuples = cOut(rel).support.map(_._1) ++ cRef(rel).support.map(_._1);
-                             t <- allTuples)
-      yield gradientLoss(pos, cOut, cRef, rel, t)
-    numeratorVecs.foldLeft(TokenVec.zero(pos.keySet))(_ + _)
-  }
-
-  def f1(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation], cutoff: Double): Double = {
-    val p = precision(cOut, cRef, outputRels, cutoff)
-    val r = recall(cOut, cRef, outputRels, cutoff)
-    2 * p * r / (p + r)
-  }
-
-  def precision(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation], cutoff: Double): Double = {
-    val ts = for (rel <- outputRels.toSeq;
-                  (t, v) <- cOut(rel).support
-                  if v.v > cutoff)
-      yield if (cRef(rel)(t).v > cutoff) 1.0 else 0.0
-    ts.sum / ts.size
-  }
-
-  def recall(cOut: Config[FValue], cRef: Config[FValue], outputRels: Set[Relation], cutoff: Double): Double = {
-    val ts = for (rel <- outputRels.toSeq;
-                  (t, v) <- cRef(rel).support
-                  if v.v > cutoff)
-      yield if (cOut(rel)(t).v > cutoff) 1.0 else 0.0
-    ts.sum / ts.size
+  def gradientLoss(
+                    dgraph: DGraph,
+                    outputRels: Set[Relation],
+                    pos: TokenVec,
+                    sconfig: StochasticConfig,
+                    cRef: Config[FValue]
+                  ): TokenVec = {
+    val twiseGradientLoss = for (relation <- outputRels.toVector; tuple <- dgraph(relation).keys)
+                            yield gradientLoss(pos, sconfig, cRef, relation, tuple)
+    val zero = TokenVec(pos.keySet, _ => 0)
+    twiseGradientLoss.foldLeft(zero)(_ + _)
   }
 
 }
 
 object StochasticScorer {
-  val STD_SCORERS: Map[String, Scorer] = Set(L2Scorer, XEntropyScorer).map(scorer => scorer.toString -> scorer).toMap
+  val STD_SCORERS: Map[String, StochasticScorer] =
+    Set(StochasticL2Scorer).map(scorer => scorer.toString -> scorer).toMap
 }
 
 object StochasticL2Scorer extends StochasticScorer {
 
   override def toString: String = "StochasticL2Scorer"
 
-  override def loss(vOut: Double, vRef: Double): Double = (vOut - vRef) * (vOut - vRef)
+  override val baseScorer: Scorer = L2Scorer
+
+  def loss(sconfig: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): Double = {
+    val samples = sconfig(rel)(t)
+    val vOut = samples.map(_._1).foldLeft(FValueSemiringObj.Zero)(_ + _).v / samples.size
+    val vRef = cRef(rel)(t).v
+    (vOut - vRef) * (vOut - vRef)
+  }
 
   override def gradientLoss(
                              pos: TokenVec,
-                             cOut: StochasticConfig,
+                             sconfig: StochasticConfig,
                              cRef: Config[FValue],
                              rel: Relation,
                              tuple: DTuple
                            ): TokenVec = {
-    val pathSamples = cOut(rel)(tuple)
-    val pathValues = pathSamples.map(path => {
-      path.map(clause => Value(clause.rule.lineage, pos)).foldLeft(FValueSemiringObj.One)(_ * _).v
-    })
+    val pathSamples = sconfig(rel)(tuple)
+    val pathValues = pathSamples.map(_._1.v)
     val avgPathValue = pathValues.sum / pathValues.size
-    gradient(pos, cOut, rel, tuple) * (avgPathValue - cRef(rel)(tuple).v) * 2
-  }
-
-}
-
-object XEntropyScorer extends StochasticScorer {
-
-  override def toString: String = "XEntropyScorer"
-
-  override def loss(vOut: Double, vRef: Double): Double = {
-    if (vRef == 0) -Math.log(1 - vOut)
-    else if (vRef == 1) -Math.log(vOut)
-    else -(vRef * Math.log(vOut) + (1 - vRef) * Math.log(1 - vOut))
-  }
-
-  override def gradientLoss(
-                             pos: TokenVec,
-                             cOut: Config[FValue],
-                             cRef: Config[FValue],
-                             rel: Relation,
-                             t: DTuple
-                           ): TokenVec = {
-    val vt = cOut(rel)(t).v
-    val lt = cRef(rel)(t).v
-    val gradv = gradient(pos, cOut, rel, t)
-    val ans = gradv * (vt - lt) / vt / (1 - vt)
-    Contract.assert(ans.forall(v => java.lang.Double.isFinite(v._2)))
-    ans
+    gradient(pos, sconfig, rel, tuple) * (avgPathValue - cRef(rel)(tuple).v) * 2
   }
 
 }

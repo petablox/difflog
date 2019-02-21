@@ -1,10 +1,11 @@
 package qd
 
 import qd.Semiring.FValueSemiringObj
-import qd.dgraph.{Derivation, Extractor}
+import qd.dgraph.Extractor
 import qd.evaluator.Evaluator
 import qd.learner.{Learner, Scorer}
 import qd.problem.{ALPSParser, Problem, QDParser}
+import qd.stochasticlearner.{StochasticLearner, StochasticScorer}
 import qd.util.Timers.Timer
 import qd.util.{Contract, Counters, Timers}
 
@@ -79,34 +80,32 @@ object Main extends App {
                      .foreach(println)
 
       case Array("alps-2", dataFilename, templateFilename,
-                          learnerName, extractorName, scorerName,
-                          tgtLossStr, maxItersStr) =>
+                           learnerName, extractorName, evaluatorName, scorerName,
+                           nsamplesStr, tgtLossStr, maxItersStr) =>
         val query = readALPSProblem(dataFilename, templateFilename)
-        val learner = Learner.STD_LEARNERS(learnerName)
+        val learner = StochasticLearner.STD_STOCHASTIC_LEARNERS(learnerName)
         val extractor = Extractor.STD_EXTRACTORS(extractorName)
-        val scorer = Scorer.STD_SCORERS(scorerName)
+        val evaluator = Evaluator.STD_EVALUATORS(evaluatorName)
+        val scorer = StochasticScorer.STD_SCORERS(scorerName)
+        val nsamples = nsamplesStr.toInt
         val tgtLoss = tgtLossStr.toDouble
         val maxIters = maxItersStr.toInt
         Contract.require(maxIters > 0)
 
-        val edbGraph = query.discreteEDB.transform({ case (_, tuples) =>
-          tuples.map(t => t -> Set(Derivation(t))).toMap
-        })
-        val idbGraph = extractor.apply(query.rules, edbGraph)
-
-        for (relation <- query.outputRels) {
-          for ((tuple, _) <- idbGraph(relation)) {
-            /* val lineage = Derivation.sample(idbGraph, relation, tuple, query.pos)
-            println(s"${relation.name}$tuple: $lineage") */
-            val sp = Derivation.samplePath(idbGraph, relation, tuple, query.pos)
-            println(s"${relation.name}$tuple: $sp")
-          }
-        }
+        val result = learner.learn(query, extractor, evaluator, scorer, nsamples, tgtLoss, maxIters)
+        println(s"// Achieved loss ${result.loss}")
+        val weightedRules = query.rules.map(rule => (Value(rule.lineage, result.pos), rule))
+        weightedRules.filter({ case (weight, _) => FValueSemiringObj.nonZero(weight) })
+          .toVector
+          .sortBy(-_._1.v)
+          .map({ case (weight, rule) => s"$weight: $rule" })
+          .foreach(println)
 
       case Array("ntp-learn", _*) => ???
       case Array("ntp-query", _*)=> ???
       case _ =>
         val stdLearnersStr = Learner.STD_LEARNERS.keys.mkString(" | ")
+        val stdStochasticLearnersStr = StochasticLearner.STD_STOCHASTIC_LEARNERS.mkString(" | ")
         val stdEvaluatorsStr = Evaluator.STD_EVALUATORS.keys.mkString(" | ")
         val stdExtractorsStr = Extractor.STD_EXTRACTORS.keys.mkString(" | ")
         val stdScorersStr = Scorer.STD_SCORERS.keys.mkString(" | ")
@@ -144,9 +143,11 @@ object Main extends App {
              |
              |  5. alps-2 data.d
              |            templates.tp
-             |            [ $stdLearnersStr ]
+             |            [ $stdStochasticLearnersStr ]
              |            [ $stdExtractorsStr ]
+             |            [ $stdEvaluatorsStr ]
              |            [ $stdScorersStr ]
+             |            nsamples
              |            tgtLoss
              |            maxIters
              |     Runs Difflog with probabilistic sampling of derivation graphs
