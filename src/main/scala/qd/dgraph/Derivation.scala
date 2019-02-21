@@ -2,7 +2,7 @@ package qd
 package dgraph
 
 import qd.tokenvec.TokenVec
-import qd.util.{Contract, Random}
+import qd.util.{Contract, Random, Timers}
 
 sealed abstract class Derivation {
   def conclusion: DTuple
@@ -102,7 +102,9 @@ object Derivation {
   }
 
   def samplePath(graph: DGraph, relation: Relation, tuple: DTuple, pos: TokenVec): Vector[Clause] = {
-    samplePath(graph, relation, tuple, Set(), pos).get
+    Timers("Derivation.samplePath") {
+      samplePath(graph, relation, tuple, Set(), pos).get
+    }
   }
 
   def samplePath(
@@ -125,21 +127,21 @@ object Derivation {
         // repeat sampling until a success
         while (remainingDerivations.nonEmpty) {
 
-          // randomly sample a derivation
-          val clauses = remainingDerivations
-          val weightedClauses = clauses.map(clause => (clause, Value(clause.rule.lineage, pos).v))
-          val hi = weightedClauses.map(_._2).sum
-          val coin = Random.nextDouble(lo = 0, hi)
-
+          // 1. Randomly sample a derivation
           val chosenClause = {
+            val clauses = remainingDerivations
+            val weightedClauses = clauses.map(clause => (clause, Value(clause.rule.lineage, pos).v))
+            val hi = weightedClauses.map(_._2).sum
+            var coin = Random.nextDouble(lo = 0, hi)
             var remainingClauses = weightedClauses.toVector
             while (coin > remainingClauses.head._2) {
+              coin = coin - remainingClauses.head._2
               remainingClauses = remainingClauses.tail
             }
             remainingClauses.head._1
           }
 
-          // randomly sample one hypothese from the sampled derivation
+          // 2. Randomly sample one hypothesis from the chosen derivation
           var remainingHypotheses = chosenClause.rule.body.map(_.relation).zip(chosenClause.antecedents).filterNot(stack)
           while (remainingHypotheses.nonEmpty) {
             val chosenHypothesisIndex = Random.nextInt(lo = 0, remainingHypotheses.size)

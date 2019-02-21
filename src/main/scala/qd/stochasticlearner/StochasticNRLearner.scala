@@ -11,7 +11,7 @@ import qd.util.{Contract, Timers}
 
 object StochasticNRLearner extends StochasticLearner {
 
-  override def toString: String = "NewtonRootLearner"
+  override def toString: String = "StochasticNewtonRootLearner"
 
   def learn(
              problem: Problem,

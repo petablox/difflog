@@ -69,18 +69,18 @@ object StochasticLearner {
   def samplePaths(graph: DGraph, outputRels: Set[Relation], pos: TokenVec, nsamples: Int): StochasticConfig = {
     // TODO: Consider reusing paths
     val ans = for (relation <- outputRels)
-      yield relation -> {
-        val ansRel = for (tuple <- graph(relation).keys)
-          yield tuple -> {
-            Range(0, nsamples).map({ _ =>
-              val path = samplePath(graph, relation, tuple, pos)
-              val pathValues = path.map(clause => Value(clause.rule.lineage, pos))
-              val pathValue = pathValues.foldLeft(FValueSemiringObj.One)(_ * _)
-              (pathValue, path)
-            }).toVector
-          }
-        ansRel.toMap
-      }
+              yield relation -> {
+                val ansRel = for (tuple <- graph(relation).keys)
+                             yield tuple -> {
+                               Range(0, nsamples).map({ _ =>
+                                 val path = samplePath(graph, relation, tuple, pos)
+                                 val pathValues = path.map(clause => Value(clause.rule.lineage, pos))
+                                 val pathValue = pathValues.foldLeft(FValueSemiringObj.One)(_ * _)
+                                 (pathValue, path)
+                               }).toVector
+                             }
+                ansRel.toMap
+              }
     ans.toMap
   }
 
