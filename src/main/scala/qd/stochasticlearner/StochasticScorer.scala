@@ -14,7 +14,7 @@ abstract class StochasticScorer {
   val baseScorer: Scorer
 
   def gradient(pos: TokenVec, cOut: StochasticConfig, relation: Relation, tuple: DTuple): TokenVec = {
-    val pathSamples = cOut(relation)(tuple)
+    val pathSamples = cOut.map(_(relation)(tuple))
 
     val gradients = pathSamples.map { case (pathValue, _) =>
       val vt = pathValue.v
@@ -68,7 +68,7 @@ object StochasticL2Scorer extends StochasticScorer {
   override val baseScorer: Scorer = L2Scorer
 
   def loss(sconfig: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): Double = {
-    val samples = sconfig(rel)(t)
+    val samples = sconfig.map(_(rel)(t))
     val vOut = samples.map(_._1).foldLeft(FValueSemiringObj.Zero)(_ + _).v / samples.size
     val vRef = cRef(rel)(t).v
     (vOut - vRef) * (vOut - vRef)
@@ -81,7 +81,7 @@ object StochasticL2Scorer extends StochasticScorer {
                              rel: Relation,
                              tuple: DTuple
                            ): TokenVec = {
-    val pathSamples = sconfig(rel)(tuple)
+    val pathSamples = sconfig.map(_(rel)(tuple))
     val pathValues = pathSamples.map(_._1.v)
     val avgPathValue = pathValues.sum / pathValues.size
     gradient(pos, sconfig, rel, tuple) * (avgPathValue - cRef(rel)(tuple).v) * 2
