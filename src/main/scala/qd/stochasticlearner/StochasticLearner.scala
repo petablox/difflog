@@ -64,23 +64,17 @@ object StochasticLearner {
     sampleState(problem, evaluator, scorer, problem.edb)
   }
 
-  type StochasticConfig = Vector[Map[Relation, Map[DTuple, (FValue, Vector[Clause])]]]
+  type StochasticConfig = Map[Relation, Map[DTuple, (FValue, Vector[Clause])]]
+  type StochasticConfigs = Vector[StochasticConfig]
 
-  def samplePaths(graph: DGraph, outputRels: Set[Relation], pos: TokenVec, nsamples: Int): StochasticConfig = {
+  def samplePaths(graph: DGraph, outputRels: Set[Relation], pos: TokenVec, nsamples: Int): StochasticConfigs = {
     // TODO: Consider reusing paths
     Range(0, nsamples).map({ _ =>
-      val ans = for (relation <- outputRels)
-                yield relation -> {
-                  val ansRel = for (tuple <- graph(relation).keys)
-                               yield tuple -> {
-                                 val path = samplePath(graph, relation, tuple, pos)
-                                 val pathValues = path.map(clause => Value(clause.rule.lineage, pos))
-                                 val pathValue = pathValues.foldLeft(FValueSemiringObj.One)(_ * _)
-                                 (pathValue, path)
-                               }
-                  ansRel.toMap
-                }
-      ans.toMap
+      var ans: StochasticConfig = Map()
+      for (relation <- outputRels; tuple <- graph(relation).keys) {
+        ans = samplePath(graph, pos, relation, tuple, ans)
+      }
+      ans
     }).toVector
   }
 

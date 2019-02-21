@@ -1,6 +1,8 @@
 package qd
 package dgraph
 
+import qd.Semiring.FValueSemiringObj
+import qd.stochasticlearner.StochasticLearner.StochasticConfig
 import qd.tokenvec.TokenVec
 import qd.util.{Contract, Random, Timers}
 
@@ -17,116 +19,44 @@ case class Clause(conclusion: DTuple, rule: Rule, antecedents: IndexedSeq[DTuple
 }
 
 object Derivation {
+
   type DGraph = Map[Relation, Map[DTuple, Set[Derivation]]]
   def apply(conclusion: DTuple): Derivation = EDB(conclusion)
 
-  /* def sample(graph: DGraph, relation: Relation, tuple: DTuple, pos: TokenVec): Lineage = {
-    val derivations = graph(relation)(tuple)
-    if (derivations.size == 1 && derivations.head.isInstanceOf[EDB]) {
-      Empty
-    } else {
-      val clauses = derivations.map(_.asInstanceOf[Clause])
-      val weightedClauses = clauses.map(clause => (clause, Value(clause.rule.lineage, pos).v))
-      val hi = weightedClauses.map(_._2).sum
-      val coin = Random.nextDouble(lo = 0, hi)
-
-      var remainingClauses = weightedClauses.toVector
-      while (coin > remainingClauses.head._2) {
-        remainingClauses = remainingClauses.tail
-      }
-      val chosenClause = remainingClauses.head._1
-
-      var ans = chosenClause.rule.lineage
-      for (i <- chosenClause.rule.body.indices) {
-        ans = ans * sample(graph, chosenClause.rule.body(i).relation, chosenClause.antecedents(i), pos)
-      }
-      ans
-    }
-  } */
-
-  def sample(graph: DGraph, relation: Relation, tuple: DTuple, pos: TokenVec): Lineage = {
-    sample(graph, relation, tuple, Set(), Set(), pos).get._1
-  }
-
-  def sample(
-              graph: DGraph,
-              relation: Relation,
-              tuple: DTuple,
-              justified: Set[(Relation, DTuple)],
-              stack: Set[(Relation, DTuple)],
-              pos: TokenVec
-            ): Option[(Lineage, Set[(Relation, DTuple)])] = {
-    if (justified.contains((relation, tuple))) {
-      Some((Empty, justified))
-    } else if (stack.contains((relation, tuple))) {
-      None
-    } else {
-      val derivations = graph(relation)(tuple)
-      if (derivations.size == 1 && derivations.head.isInstanceOf[EDB]) {
-        Some((Empty, justified + ((relation, tuple))))
-      } else {
-        var remainingDerivations = derivations.map(_.asInstanceOf[Clause])
-        val sj = stack + ((relation, tuple))
-        while (remainingDerivations.nonEmpty) {
-          val clauses = remainingDerivations
-          val weightedClauses = clauses.map(clause => (clause, Value(clause.rule.lineage, pos).v))
-          val hi = weightedClauses.map(_._2).sum
-          val coin = Random.nextDouble(lo = 0, hi)
-
-          val chosenClause = {
-            var remainingClauses = weightedClauses.toVector
-            while (coin > remainingClauses.head._2) {
-              remainingClauses = remainingClauses.tail
-            }
-            remainingClauses.head._1
-          }
-
-          var success = true
-          var ansl = chosenClause.rule.lineage
-          var ansj = justified
-          for (i <- chosenClause.rule.body.indices if success) {
-            sample(graph, chosenClause.rule.body(i).relation, chosenClause.antecedents(i), ansj, sj, pos) match {
-              case Some((lt, jt)) =>
-                ansl = ansl * lt
-                ansj = jt
-              case None =>
-                success = false
-                remainingDerivations = remainingDerivations - chosenClause
-            }
-          }
-          if (success) return Some((ansl, ansj))
-        }
-        None
-      }
-    }
-  }
-
-  def samplePath(graph: DGraph, relation: Relation, tuple: DTuple, pos: TokenVec): Vector[Clause] = {
-    Timers("Derivation.samplePath") {
-      samplePath(graph, relation, tuple, Set(), pos).get
-    }
+  def samplePath(
+                  graph: DGraph,
+                  pos: TokenVec,
+                  relation: Relation,
+                  tuple: DTuple,
+                  memo: StochasticConfig
+                ): StochasticConfig = Timers("Derivation.samplePath") {
+    samplePath(graph, pos, relation, tuple, memo, Set()).get
   }
 
   def samplePath(
                   graph: DGraph,
+                  pos: TokenVec,
                   relation: Relation,
                   tuple: DTuple,
-                  stack: Set[(Relation, DTuple)],
-                  pos: TokenVec
-                ): Option[Vector[Clause]] = {
+                  memo: StochasticConfig,
+                  stack: Set[(Relation, DTuple)]
+                ): Option[StochasticConfig] = {
     if (stack.contains((relation, tuple))) {
       None
+    } else if (memo.contains(relation) && memo(relation).contains(tuple)) {
+      Some(memo)
     } else {
       val derivations = graph(relation)(tuple)
       if (derivations.size == 1 && derivations.head.isInstanceOf[EDB]) {
         // the current tuple is an EDB, then job is done
-        Some(Vector())
+        val ans = (FValueSemiringObj.One, Vector())
+        val memoRel = memo.getOrElse(relation, Map())
+        Some(memo + (relation -> (memoRel + (tuple -> ans))))
       } else {
         var remainingDerivations = derivations.map(_.asInstanceOf[Clause])
         val sj = stack + ((relation, tuple))
         // repeat sampling until a success
         while (remainingDerivations.nonEmpty) {
-
           // 1. Randomly sample a derivation
           val chosenClause = {
             val clauses = remainingDerivations
@@ -146,8 +76,16 @@ object Derivation {
           while (remainingHypotheses.nonEmpty) {
             val chosenHypothesisIndex = Random.nextInt(lo = 0, remainingHypotheses.size)
             val chosenHypothesis = remainingHypotheses(chosenHypothesisIndex)
-            samplePath(graph, chosenHypothesis._1, chosenHypothesis._2, sj, pos) match {
-              case Some(cl) => return Some(cl :+ chosenClause)
+            val relPrime = chosenHypothesis._1
+            val tuplePrime = chosenHypothesis._2
+            samplePath(graph, pos, relPrime, tuplePrime, memo, sj) match {
+              case Some(memoPrime) =>
+                val vPathPrime = memoPrime(relPrime)(tuplePrime)
+                val ansValue = vPathPrime._1 * Value(chosenClause.rule.lineage, pos)
+                val ansPath = vPathPrime._2 :+ chosenClause
+                val ans = (ansValue, ansPath)
+                val memoRel = memoPrime.getOrElse(relation, Map())
+                return Some(memoPrime + (relation -> (memoRel + (tuple -> ans))))
               case None =>
                 remainingHypotheses = remainingHypotheses.filterNot(_ == chosenHypothesis)
             }

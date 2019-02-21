@@ -4,7 +4,7 @@ import qd.Semiring.FValueSemiringObj
 import qd.dgraph.Derivation.DGraph
 import qd.instance.Config
 import qd.learner.{L2Scorer, Scorer}
-import qd.stochasticlearner.StochasticLearner.StochasticConfig
+import qd.stochasticlearner.StochasticLearner.StochasticConfigs
 import qd.tokenvec.TokenVec
 import qd.{DTuple, FValue, Relation}
 
@@ -13,7 +13,7 @@ abstract class StochasticScorer {
   override def toString: String
   val baseScorer: Scorer
 
-  def gradient(pos: TokenVec, cOut: StochasticConfig, relation: Relation, tuple: DTuple): TokenVec = {
+  def gradient(pos: TokenVec, cOut: StochasticConfigs, relation: Relation, tuple: DTuple): TokenVec = {
     val pathSamples = cOut.map(_(relation)(tuple))
 
     val gradients = pathSamples.map { case (pathValue, _) =>
@@ -31,21 +31,21 @@ abstract class StochasticScorer {
     ans
   }
 
-  def loss(sconfig: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): Double
+  def loss(sconfig: StochasticConfigs, cRef: Config[FValue], rel: Relation, t: DTuple): Double
 
-  def loss(dgraph: DGraph, outputRels: Set[Relation], sconfig: StochasticConfig, cRef: Config[FValue]): Double = {
+  def loss(dgraph: DGraph, outputRels: Set[Relation], sconfig: StochasticConfigs, cRef: Config[FValue]): Double = {
     val twiseLoss = for (relation <- outputRels.toVector; tuple <- dgraph(relation).keys)
                     yield loss(sconfig, cRef, relation, tuple)
     twiseLoss.sum
   }
 
-  def gradientLoss(pos: TokenVec, sconfig: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): TokenVec
+  def gradientLoss(pos: TokenVec, sconfig: StochasticConfigs, cRef: Config[FValue], rel: Relation, t: DTuple): TokenVec
 
   def gradientLoss(
                     dgraph: DGraph,
                     outputRels: Set[Relation],
                     pos: TokenVec,
-                    sconfig: StochasticConfig,
+                    sconfig: StochasticConfigs,
                     cRef: Config[FValue]
                   ): TokenVec = {
     val twiseGradientLoss = for (relation <- outputRels.toVector; tuple <- dgraph(relation).keys)
@@ -67,7 +67,7 @@ object StochasticL2Scorer extends StochasticScorer {
 
   override val baseScorer: Scorer = L2Scorer
 
-  def loss(sconfig: StochasticConfig, cRef: Config[FValue], rel: Relation, t: DTuple): Double = {
+  def loss(sconfig: StochasticConfigs, cRef: Config[FValue], rel: Relation, t: DTuple): Double = {
     val samples = sconfig.map(_(rel)(t))
     val vOut = samples.map(_._1).foldLeft(FValueSemiringObj.Zero)(_ + _).v / samples.size
     val vRef = cRef(rel)(t).v
@@ -76,7 +76,7 @@ object StochasticL2Scorer extends StochasticScorer {
 
   override def gradientLoss(
                              pos: TokenVec,
-                             sconfig: StochasticConfig,
+                             sconfig: StochasticConfigs,
                              cRef: Config[FValue],
                              rel: Relation,
                              tuple: DTuple
