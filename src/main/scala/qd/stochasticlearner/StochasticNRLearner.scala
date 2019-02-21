@@ -1,11 +1,13 @@
 package qd
 package stochasticlearner
 
+import qd.Semiring.FValueSemiringObj
 import qd.dgraph.Derivation.DGraph
 import qd.dgraph.{Derivation, Extractor}
 import qd.evaluator.Evaluator
 import qd.learner.Learner
 import qd.problem.Problem
+import qd.stochasticlearner.StochasticLearner.StochasticConfigs
 import qd.tokenvec.TokenVec
 import qd.util.{Contract, Timers}
 
@@ -81,14 +83,26 @@ object StochasticNRLearner extends StochasticLearner {
       val sconfig = StochasticLearner.samplePaths(dgraph, problem.outputRels, currPos, nsamples)
 
       val sampleLoss = scorer.loss(dgraph, problem.outputRels, sconfig, problem.idb)
-      val gradientLoss: TokenVec = scorer.gradientLoss(dgraph, problem.outputRels, currPos, sconfig, problem.idb)
-      val delta: TokenVec = gradientLoss.unit * sampleLoss / gradientLoss.abs
+      val gradientLoss = scorer.gradientLoss(dgraph, problem.outputRels, currPos, sconfig, problem.idb)
+      val delta = gradientLoss.unit * sampleLoss / gradientLoss.abs
+      // val delta = gradientLoss * 0.02
       val nextPos = (currPos - delta).clip(0.0, 1.0).clip(0.01, 0.99, currPos)
       val newPos = TokenVec(problem.pos.keySet, token => {
         if (forbiddenTokens.contains(token)) 0.0
         else nextPos(token).v
       })
-      StochasticState(problem, evaluator, scorer, newPos, currState.cOut)
+      val ans = StochasticState(problem, evaluator, scorer, newPos, currState.cOut)
+
+      val sconfigPrime: StochasticConfigs = sconfig.map(sc => sc.map { case (rel, scRel) =>
+        rel -> scRel.map { case (tuple, scRelTuple) =>
+          val newVal = scRelTuple._2.map(clause => Value(clause.rule.lineage, nextPos)).foldLeft(FValueSemiringObj.One)(_ * _)
+          tuple -> (newVal, scRelTuple._2)
+        }
+      })
+      val newSampleLoss = scorer.loss(dgraph, problem.outputRels, sconfigPrime, problem.idb)
+      scribe.info(s"  $sampleLoss, $newSampleLoss")
+
+      ans
     }
   }
 

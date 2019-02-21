@@ -58,7 +58,7 @@ object Derivation {
         // repeat sampling until a success
         while (remainingDerivations.nonEmpty) {
           // 1. Randomly sample a derivation
-          val chosenClause = {
+          /* val chosenClause = {
             val clauses = remainingDerivations
             val weightedClauses = clauses.map(clause => (clause, Value(clause.rule.lineage, pos).v))
             val hi = weightedClauses.map(_._2).sum
@@ -69,7 +69,8 @@ object Derivation {
               remainingClauses = remainingClauses.tail
             }
             remainingClauses.head._1
-          }
+          } */
+          val chosenClause = remainingDerivations.toVector(Random.nextInt(0, remainingDerivations.size))
 
           // 2. Randomly sample one hypothesis from the chosen derivation
           var remainingHypotheses = chosenClause.rule.body.map(_.relation).zip(chosenClause.antecedents).filterNot(stack)
