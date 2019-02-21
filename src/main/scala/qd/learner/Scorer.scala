@@ -74,7 +74,27 @@ abstract class Scorer {
 }
 
 object Scorer {
-  val STD_SCORERS: Map[String, Scorer] = Set(L2Scorer, XEntropyScorer).map(scorer => scorer.toString -> scorer).toMap
+  val STD_SCORERS: Map[String, Scorer] =
+    Set(L1Scorer, L2Scorer, XEntropyScorer).map(scorer => scorer.toString -> scorer).toMap
+}
+
+object L1Scorer extends Scorer {
+
+  override def toString: String = "L1Scorer"
+
+  override def loss(vOut: Double, vRef: Double): Double = (vOut - vRef).abs
+
+  override def gradientLoss(
+                             pos: TokenVec,
+                             cOut: Config[FValue],
+                             cRef: Config[FValue],
+                             rel: Relation,
+                             t: DTuple
+                           ): TokenVec = {
+    if (cOut(rel)(t).v > cRef(rel)(t).v) gradient(pos, cOut, rel, t)
+    else gradient(pos, cOut, rel, t) * -1
+  }
+
 }
 
 object L2Scorer extends Scorer {
