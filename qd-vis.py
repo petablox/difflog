@@ -21,6 +21,7 @@ logFileNames = sys.argv[2:]
 # 1b. Parse log files
 
 def parseLogFile(fname):
+    logging.info('Parsing {}'.format(fname))
     lines = [ line for line in open(fname) if positionPattern in line ]
     if not lines: logging.warning('No position vectors found in file {}'.format(fname))
     lines = [ line[line.find(positionPattern):] for line in lines ]
@@ -40,7 +41,7 @@ logs = [ parseLogFile(fname) for fname in logFileNames ]
 # 2a. Combine points into single list, and reduce
 
 combinedPositions = np.concatenate([ log['positions'] for log in logs ])
-combinedPositionsReduced = hyp.reduce(combinedPositions, ndims=2)
+combinedPositionsReduced = hyp.reduce(combinedPositions, ndims=2, reduce='PCA')
 
 # 2b. Separate combined points
 
@@ -54,55 +55,26 @@ for log in logs:
     logging.info(spa.shape)
     separatedPositions.append({ 'name': log['name'], 'prl': spa })
 
+# 2c. Only keep large log files, and only after they stabilize
+
+large = 200
+separatedPositions = [ sp for sp in separatedPositions if len(sp['prl']) > large ]
+def stabilize(sp):
+    name = sp['name']
+    prl = sp['prl']
+    return { 'name': name, 'prl': prl[large:] }
+separatedPositions = [ stabilize(sp) for sp in separatedPositions ]
+logging.info('Preserved {} traces'.format(len(separatedPositions)))
+
 ########################################################################################################################
 # 3. Draw scatter plot
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
 for reducedLog in separatedPositions:
-    # ax.scatter(reducedLog[:, 0], reducedLog[:, 1], reducedLog[:, 2])
+    # ax.scatter(reducedLog['prl'][:, 0], reducedLog['prl'][:, 1], reducedLog['prl'][:, 2])
     ax.plot(reducedLog['prl'][:, 0], reducedLog['prl'][:, 1], reducedLog['prl'][:, 2])
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Loss')
 plt.show()
-
-# l0 = logs[0]
-# l01r = hyp.reduce(l0[1], ndims=2)
-# print(l01r.shape)
-# print(l0[0].shape)
-# l0r = np.concatenate((l01r, l0[0]), axis=1)
-# print(l0r.shape)
-
-# ax = plt.axes
-# plt.plot(l0r)
-# plt.show()
-
-# logs = [ parseLogFile(fname)[1] for fname in logFileNames ]
-# logs = [ hyp.reduce(log[0]) for log in logs ]
-
-########################################################################################################################
-
-# def R(fpath):
-#     with open(fpath,'r') as fin:
-#         return fin.read().splitlines()
-#
-# if len(sys.argv) != 2:
-#     print("Usage: %s l.txt" % sys.argv[0])
-#     exit()
-#
-#
-# rs = R(sys.argv[1])
-#
-#
-# data = []
-# loss = []
-# for line in rs:
-#     vs = list( map(float, line.split(', ')) )
-#     loss.append(vs[0])
-#     data.append( vs[1:] )
-#
-# #print(loss)
-#
-# hyp.plot( np.array( data ), reduce='PCA')
-#
