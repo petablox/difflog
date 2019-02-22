@@ -3,10 +3,9 @@ package learner
 
 import qd.evaluator.Evaluator
 import qd.instance.Config
-import qd.learner.HybridAnnealingLearner.debug
 import qd.problem.Problem
 import qd.tokenvec.TokenVec
-import qd.util.{Random, Timers}
+import qd.util.{Contract, Random, Timers}
 
 case class State(pos: TokenVec, cOut: Config[FValue], grad: TokenVec, loss: Double)
 
@@ -82,7 +81,7 @@ object Learner {
                    (t, v) <- cOut(rel).support if !problem.discreteIDB(rel).contains(t);
                    tokenSet = v.l.tokenSet if tokenSet.size == 1)
               yield tokenSet.head
-    if (debug) {
+    if (Contract.VERBOSE) {
       scribe.info(s"  Found forbidden tokens: ${ans.mkString(", ")}")
     }
     ans

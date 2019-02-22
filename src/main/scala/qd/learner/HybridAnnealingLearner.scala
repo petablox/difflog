@@ -4,11 +4,9 @@ package learner
 import qd.evaluator.Evaluator
 import qd.problem.Problem
 import qd.tokenvec.TokenVec
-import qd.util.{Random, Timers}
+import qd.util.{Contract, Random, Timers}
 
 object HybridAnnealingLearner extends Learner {
-
-  var debug = false
 
   override val toString: String = "HybridAnnealingLearner"
 
@@ -25,7 +23,7 @@ object HybridAnnealingLearner extends Learner {
       //    b. Otherwise, choose next state by performing a conventional gradient descent step
       val MCMC_FREQ = 30
       var numIters = 0
-      if (debug) {
+      if (Contract.VERBOSE) {
         scribe.info(problem.rules.toVector.sortBy(_.lineage.toString)
                            .map(rule => s"  $rule")
                            .mkString(System.lineSeparator(), System.lineSeparator(), ""))
@@ -53,18 +51,20 @@ object HybridAnnealingLearner extends Learner {
         // scribe.debug(s"  currState.grad: ${currState.grad}")
         scribe.info(s"  ${currState.loss}, ${bestState.loss}, ${currState.pos.abs}, " +
                     s"${currState.grad.abs}, $stepSize")
-        if (debug) {
-          for ((token, value) <- currState.pos.toVector.sortBy(_._1.toString)) {
+        if (Contract.VERBOSE) {
+          val posStr = currState.pos.toVector.sortBy(_._1.toString).map({ case (_, v) => s"$v" }).mkString(", ")
+          scribe.info(s"  ${currState.loss}, $posStr")
+          /* for ((token, value) <- currState.pos.toVector.sortBy(_._1.toString)) {
             scribe.info(s"  $token: $value")
-          }
+          } */
 
-          for (rel <- problem.outputRels; (t, v) <- currState.cOut(rel).support) {
+          /* for (rel <- problem.outputRels; (t, v) <- currState.cOut(rel).support) {
             if (problem.discreteIDB(rel).contains(t)) {
               scribe.info(s"$t: ${v.l} (Desired)")
             } else {
               scribe.info(s"$t: ${v.l} (Undesired)")
             }
-          }
+          } */
         }
       }
       scribe.info(s"#Iterations: $numIters.")
@@ -84,8 +84,16 @@ object HybridAnnealingLearner extends Learner {
     require(iteration >= 0)
     val solutionPointOpt = Learner.simplifyIfSolutionPoint(problem, evaluator, scorer, currState.cOut)
     solutionPointOpt.getOrElse {
+      /* val newPos = TokenVec(problem.allTokens,
+                            token => if (!forbiddenTokens.contains(token)) Random.nextDouble() else 0.0) */
       val newPos = TokenVec(problem.allTokens,
-                            token => if (!forbiddenTokens.contains(token)) Random.nextDouble() else 0.0)
+                            token => {
+                              if (!forbiddenTokens.contains(token)) {
+                                val coin = Random.nextDouble()
+                                val prev = currState.pos(token).v
+                                if (coin < 0.5) prev * Math.sqrt(2 * coin) else (1 - (1 - prev) * Math.sqrt(2 * (1 - coin)))
+                              } else 0
+                            })
       val proposedState = State(problem, evaluator, scorer, newPos, currState.cOut)
 
       val c = 1.0e-3

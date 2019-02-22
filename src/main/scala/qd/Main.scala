@@ -21,7 +21,13 @@ object Main extends App {
   def readALPSProblem(dataFilename: String, templateFilename: String): Problem = {
     val dataStr = Source.fromFile(dataFilename).mkString
     val templateStr = Source.fromFile(templateFilename).mkString
-    ALPSParser.parse(dataStr, templateStr)
+    val ans = ALPSParser.parse(dataStr, templateStr)
+    if (Contract.VERBOSE) {
+      for (rule <- ans.rules.toVector.sortBy(_.lineage.toString)) {
+        scribe.info(rule.toString)
+      }
+    }
+    ans
   }
 
   Timers("Main") {

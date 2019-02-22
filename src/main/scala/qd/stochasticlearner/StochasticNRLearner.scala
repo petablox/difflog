@@ -96,7 +96,7 @@ object StochasticNRLearner extends StochasticLearner {
       val sconfigPrime: StochasticConfigs = sconfig.map(sc => sc.map { case (rel, scRel) =>
         rel -> scRel.map { case (tuple, scRelTuple) =>
           val newVal = scRelTuple._2.map(clause => Value(clause.rule.lineage, nextPos)).foldLeft(FValueSemiringObj.One)(_ * _)
-          tuple -> (newVal, scRelTuple._2)
+          (tuple, (newVal, scRelTuple._2))
         }
       })
       val newSampleLoss = scorer.loss(dgraph, problem.outputRels, sconfigPrime, problem.idb)

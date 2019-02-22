@@ -4,7 +4,7 @@ package learner
 import qd.evaluator.Evaluator
 import qd.problem.Problem
 import qd.tokenvec.TokenVec
-import qd.util.Timers
+import qd.util.{Contract, Timers}
 
 object NewtonRootLearner extends Learner {
 
@@ -30,6 +30,10 @@ object NewtonRootLearner extends Learner {
         // scribe.debug(s"  currState.grad: ${currState.grad}")
         scribe.info(s"  ${currState.loss}, ${bestState.loss}, ${currState.pos.abs}, " +
                     s"${currState.grad.abs}, $stepSize")
+        if (Contract.VERBOSE) {
+          val posStr = currState.pos.toVector.sortBy(_._1.toString).map({ case (_, v) => s"$v" }).mkString(", ")
+          scribe.info(s"  ${currState.loss}, $posStr")
+        }
       }
       scribe.info(s"#Iterations: $numIters.")
 
