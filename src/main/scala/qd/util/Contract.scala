@@ -6,6 +6,7 @@ object Contract {
 
   val CHECK_CONTRACTS: Boolean = false
   val DEEP_CHECK_CONTRACTS: Boolean = false
+  val VERBOSE: Boolean = sys.env.getOrElse("VERBOSE", "0") != "0"
 
   def require(predicate: => Boolean): Unit = if (CHECK_CONTRACTS) Predef.require(predicate)
   def require(predicate: => Boolean, message: => Any): Unit = if (CHECK_CONTRACTS) Predef.require(predicate, message)
