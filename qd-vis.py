@@ -22,6 +22,7 @@ logFileNames = sys.argv[2:]
 
 def parseLogFile(fname):
     lines = [ line for line in open(fname) if positionPattern in line ]
+    if not lines: logging.warning('No position vectors found in file {}'.format(fname))
     lines = [ line[line.find(positionPattern):] for line in lines ]
     lines = [ line[len(positionPattern):] for line in lines ]
     lines = [ list(map(float, line.split(', '))) for line in lines ]
