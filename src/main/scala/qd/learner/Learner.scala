@@ -49,6 +49,29 @@ object Learner {
     sampleState(problem, evaluator, scorer, problem.edb)
   }
 
+
+  def trySeparate(problem: Problem, evaluator: Evaluator, scorer: Scorer, curState: State, acceptLoss : Double) : Option[State] = {
+
+    val cOut = curState.cOut
+    val cPos = curState.pos
+    val cWeights = problem.allTokens.map( x => cPos(x).v)
+    val ws = cWeights.toVector.sorted
+
+    val step = Math.min(1, ws.size / 5)
+    val idx = Range(1, ws.size).map(x => x * step).filter( x => x < ws.size) :+ 1
+
+    for (theta <- idx.map( i => ws(i))) {
+      val newPos = TokenVec(problem.allTokens, token => if ( cPos(token).v >= theta) 1.0 else 0.0)
+      val newState = State(problem, evaluator, scorer, newPos, cOut)
+      if (newState.loss <= acceptLoss) {
+        scribe.info("after separation, the loss is within acceptable range")
+        return Some(newState)
+      }
+    }
+
+    None
+  }
+
   def simplifyIfSolutionPoint(problem: Problem, evaluator: Evaluator, scorer: Scorer, cOut: Config[FValue]): Option[State] = {
     val usefulTokens = (for ((rel, refOut) <- problem.discreteIDB.toSeq;
                              tuple <- refOut;
@@ -66,7 +89,7 @@ object Learner {
       scribe.info("Current position is separable...")
       val newPos = TokenVec(problem.allTokens, token => if (usefulTokens.contains(token)) 1.0 else 0.0)
       val newState = State(problem, evaluator, scorer, newPos, cOut)
-      if (newState.loss <= 0.0) {
+      if (newState.loss <= 1.01) {
         scribe.info("... and also a solution point.")
         Some(newState)
       } else {
