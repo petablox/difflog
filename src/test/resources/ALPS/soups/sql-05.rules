@@ -1,0 +1,1 @@
+output(v2) :- input1(v0, v1), input2(v1, v2).

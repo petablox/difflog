@@ -1,0 +1,91 @@
+invent_1(v0, v1) :- invent_2(v0, v1).
+invent_1(v0, v1) :- invent_2(v0, v1), invent_2(v0, v2).
+invent_1(v0, v1) :- Output(v0, v1, v2).
+invent_1(v0, v1) :- Output(v0, v1, v2), invent_1(v0, v3).
+invent_1(v0, v1) :- Output(v0, v1, v2), invent_1(v3, v1).
+invent_1(v0, v1) :- Output(v0, v1, v2), invent_2(v0, v3).
+invent_1(v0, v1) :- Output(v0, v1, v2), invent_2(v3, v1).
+invent_1(v0, v2) :- Input1(v0, v1, v2).
+invent_1(v0, v2) :- Input1(v0, v1, v2), invent_1(v0, v3).
+invent_1(v0, v2) :- Input1(v0, v1, v2), invent_1(v3, v2).
+invent_1(v0, v2) :- Input1(v0, v1, v2), invent_2(v0, v3).
+invent_1(v0, v2) :- Input1(v0, v1, v2), invent_2(v3, v2).
+invent_1(v0, v2) :- invent_1(v0, v1), invent_2(v0, v2).
+invent_1(v0, v2) :- Output(v0, v1, v2).
+invent_1(v0, v2) :- Output(v0, v1, v2), invent_1(v0, v3).
+invent_1(v0, v2) :- Output(v0, v1, v2), invent_1(v3, v2).
+invent_1(v0, v2) :- Output(v0, v1, v2), invent_2(v0, v3).
+invent_1(v0, v2) :- Output(v0, v1, v2), invent_2(v3, v2).
+invent_1(v0, v3) :- Input1(v0, v1, v2), invent_2(v0, v3).
+invent_1(v0, v3) :- Output(v0, v1, v2), invent_2(v0, v3).
+invent_1(v0, v4) :- Input1(v0, v1, v2), Input1(v3, v1, v4).
+invent_1(v0, v4) :- Input1(v0, v1, v2), Output(v3, v2, v4).
+invent_1(v0, v4) :- Output(v0, v1, v2), Output(v3, v1, v4).
+invent_1(v0, v4) :- Output(v0, v1, v2), Output(v3, v2, v4).
+invent_1(v1, v2) :- Active(v0), Input1(v1, v0, v2).
+invent_1(v1, v2) :- Active(v0), Input1(v1, v0, v2), invent_1(v1, v3).
+invent_1(v1, v2) :- Active(v0), Input1(v1, v0, v2), invent_1(v3, v2).
+invent_1(v1, v2) :- Active(v0), Input1(v1, v0, v2), invent_2(v1, v3).
+invent_1(v1, v2) :- Active(v0), Input1(v1, v0, v2), invent_2(v3, v2).
+invent_1(v1, v2) :- Inactive(v0), Input1(v1, v0, v2).
+invent_1(v1, v2) :- Inactive(v0), Input1(v1, v0, v2), invent_1(v1, v3).
+invent_1(v1, v2) :- Inactive(v0), Input1(v1, v0, v2), invent_1(v3, v2).
+invent_1(v1, v2) :- Inactive(v0), Input1(v1, v0, v2), invent_2(v1, v3).
+invent_1(v1, v2) :- Inactive(v0), Input1(v1, v0, v2), invent_2(v3, v2).
+invent_1(v3, v1) :- Output(v0, v1, v2), invent_1(v3, v2).
+invent_1(v3, v1) :- Output(v0, v1, v2), invent_2(v3, v1).
+invent_1(v3, v1) :- Output(v0, v1, v2), invent_2(v3, v2).
+invent_1(v3, v2) :- Input1(v0, v1, v2), invent_2(v3, v2).
+invent_1(v3, v2) :- Output(v0, v1, v2), invent_1(v3, v1).
+invent_1(v3, v2) :- Output(v0, v1, v2), invent_2(v3, v1).
+invent_1(v3, v2) :- Output(v0, v1, v2), invent_2(v3, v2).
+invent_2(v0, v1) :- invent_1(v0, v1).
+invent_2(v0, v1) :- invent_1(v0, v1), invent_1(v0, v2).
+invent_2(v0, v1) :- invent_1(v0, v1), invent_2(v0, v2).
+invent_2(v0, v1) :- Output(v0, v1, v2).
+invent_2(v0, v1) :- Output(v0, v1, v2), invent_1(v0, v3).
+invent_2(v0, v1) :- Output(v0, v1, v2), invent_1(v3, v1).
+invent_2(v0, v1) :- Output(v0, v1, v2), invent_2(v0, v3).
+invent_2(v0, v1) :- Output(v0, v1, v2), invent_2(v3, v1).
+invent_2(v0, v2) :- Input1(v0, v1, v2).
+invent_2(v0, v2) :- Input1(v0, v1, v2), invent_1(v0, v3).
+invent_2(v0, v2) :- Input1(v0, v1, v2), invent_1(v3, v2).
+invent_2(v0, v2) :- Input1(v0, v1, v2), invent_2(v0, v3).
+invent_2(v0, v2) :- Input1(v0, v1, v2), invent_2(v3, v2).
+invent_2(v0, v2) :- Output(v0, v1, v2).
+invent_2(v0, v2) :- Output(v0, v1, v2), invent_1(v0, v3).
+invent_2(v0, v2) :- Output(v0, v1, v2), invent_1(v3, v2).
+invent_2(v0, v2) :- Output(v0, v1, v2), invent_2(v0, v3).
+invent_2(v0, v2) :- Output(v0, v1, v2), invent_2(v3, v2).
+invent_2(v0, v3) :- Input1(v0, v1, v2), invent_1(v0, v3).
+invent_2(v0, v3) :- Output(v0, v1, v2), invent_1(v0, v3).
+invent_2(v0, v4) :- Input1(v0, v1, v2), Input1(v3, v1, v4).
+invent_2(v0, v4) :- Input1(v0, v1, v2), Output(v3, v2, v4).
+invent_2(v0, v4) :- Output(v0, v1, v2), Output(v3, v1, v4).
+invent_2(v0, v4) :- Output(v0, v1, v2), Output(v3, v2, v4).
+invent_2(v1, v2) :- Active(v0), Input1(v1, v0, v2).
+invent_2(v1, v2) :- Active(v0), Input1(v1, v0, v2), invent_1(v1, v3).
+invent_2(v1, v2) :- Active(v0), Input1(v1, v0, v2), invent_1(v3, v2).
+invent_2(v1, v2) :- Active(v0), Input1(v1, v0, v2), invent_2(v1, v3).
+invent_2(v1, v2) :- Active(v0), Input1(v1, v0, v2), invent_2(v3, v2).
+invent_2(v1, v2) :- Inactive(v0), Input1(v1, v0, v2).
+invent_2(v1, v2) :- Inactive(v0), Input1(v1, v0, v2), invent_1(v1, v3).
+invent_2(v1, v2) :- Inactive(v0), Input1(v1, v0, v2), invent_1(v3, v2).
+invent_2(v1, v2) :- Inactive(v0), Input1(v1, v0, v2), invent_2(v1, v3).
+invent_2(v1, v2) :- Inactive(v0), Input1(v1, v0, v2), invent_2(v3, v2).
+invent_2(v3, v1) :- Output(v0, v1, v2), invent_1(v3, v1).
+invent_2(v3, v1) :- Output(v0, v1, v2), invent_1(v3, v2).
+invent_2(v3, v1) :- Output(v0, v1, v2), invent_2(v3, v2).
+invent_2(v3, v2) :- Input1(v0, v1, v2), invent_1(v3, v2).
+invent_2(v3, v2) :- Output(v0, v1, v2), invent_1(v3, v1).
+invent_2(v3, v2) :- Output(v0, v1, v2), invent_1(v3, v2).
+invent_2(v3, v2) :- Output(v0, v1, v2), invent_2(v3, v1).
+Output(v0, v1, v2) :- invent_1(v0, v1), invent_1(v0, v2).
+Output(v0, v1, v2) :- invent_1(v0, v1), invent_2(v0, v2).
+Output(v0, v1, v2) :- invent_2(v0, v1), invent_2(v0, v2).
+Output(v0, v2, v1) :- invent_1(v0, v1), invent_2(v0, v2).
+Output(v0, v2, v1) :- Output(v0, v1, v2).
+Output(v3, v1, v2) :- Output(v0, v1, v2), invent_1(v3, v1).
+Output(v3, v1, v2) :- Output(v0, v1, v2), invent_2(v3, v1).
+Output(v3, v2, v1) :- Output(v0, v1, v2), invent_1(v3, v1).
+Output(v3, v2, v1) :- Output(v0, v1, v2), invent_2(v3, v1).

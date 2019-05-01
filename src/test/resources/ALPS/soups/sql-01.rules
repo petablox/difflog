@@ -1,0 +1,26 @@
+output(v1) :- GE20130215(v0), input1(v1, v0, v2), input1(v1, v3, v4).
+output(v1) :- GE20130215(v0), input1(v1, v0, v2), input1(v3, v2, v4).
+output(v1) :- GE20130215(v0), input1(v1, v2, v0), input1(v1, v3, v4).
+output(v1) :- GE20130215(v0), input1(v1, v2, v0), input1(v3, v4, v2).
+output(v1) :- LE20130201(v0), input1(v1, v0, v2), input1(v1, v3, v4).
+output(v1) :- LE20130201(v0), input1(v1, v0, v2), input1(v3, v2, v4).
+output(v1) :- LE20130201(v0), input1(v1, v2, v0), input1(v1, v3, v4).
+output(v1) :- LE20130201(v0), input1(v1, v2, v0), input1(v3, v4, v2).
+output(v2) :- GE20130215(v0), GE20130215(v1), input1(v2, v0, v1).
+output(v2) :- GE20130215(v0), LE20130201(v1), input1(v2, v0, v1).
+output(v2) :- GE20130215(v0), LE20130201(v1), input1(v2, v1, v0).
+output(v2) :- LE20130201(v0), LE20130201(v1), input1(v2, v0, v1).
+output(v3) :- GE20130215(v0), input1(v1, v0, v2), input1(v3, v2, v4).
+output(v3) :- GE20130215(v0), input1(v1, v0, v2), input1(v3, v4, v2).
+output(v3) :- GE20130215(v0), input1(v1, v2, v0), input1(v3, v2, v4).
+output(v3) :- GE20130215(v0), input1(v1, v2, v0), input1(v3, v4, v2).
+output(v3) :- LE20130201(v0), input1(v1, v0, v2), input1(v3, v2, v4).
+output(v3) :- LE20130201(v0), input1(v1, v0, v2), input1(v3, v4, v2).
+output(v3) :- LE20130201(v0), input1(v1, v2, v0), input1(v3, v2, v4).
+output(v3) :- LE20130201(v0), input1(v1, v2, v0), input1(v3, v4, v2).
+output(v3) :- output(v0), input1(v0, v1, v2), input1(v3, v1, v4).
+output(v3) :- output(v0), input1(v0, v1, v2), input1(v3, v2, v4).
+output(v3) :- output(v0), input1(v0, v1, v2), input1(v3, v4, v1).
+output(v3) :- output(v0), input1(v0, v1, v2), input1(v3, v4, v2).
+output(v5) :- input1(v0, v1, v2), input1(v3, v4, v1), input1(v5, v4, v6).
+output(v5) :- input1(v0, v1, v2), input1(v3, v4, v1), input1(v5, v6, v4).

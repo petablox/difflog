@@ -1,0 +1,34 @@
+IM(v0, v2) :- IM(v0, v1), rMM(v1, v2).
+MgetStatFldInst(v3, v1, v2) :- MgetStatFldInst(v0, v1, v2), rMM(v3, v0).
+MI(v2, v1) :- MI(v0, v1), rMM(v2, v0).
+modInstField(v0, v1, v2) :- refInstField(v0, v1, v2).
+modInstField(v0, v4, v2) :- MputInstFldInst(v0, v1, v2, v3), VH(v1, v4).
+modInstField(v0, v4, v3) :- MgetInstFldInst(v0, v1, v2, v3), VH(v2, v4).
+modInstField(v3, v1, v2) :- modInstField(v0, v1, v2), rMM(v3, v0).
+modStatField(v0, v1) :- MputStatFldInst(v0, v1, v2).
+modStatField(v0, v1) :- refStatField(v0, v1).
+modStatField(v0, v2) :- MgetStatFldInst(v0, v1, v2).
+modStatField(v0, v2) :- modInstField(v0, v1, v2).
+modStatField(v0, v2) :- refInstField(v0, v1, v2).
+modStatField(v0, v2) :- rMM(v0, v1), refStatField(v1, v2).
+modStatField(v2, v1) :- modStatField(v0, v1), rMM(v2, v0).
+MputStatFldInst(v3, v1, v2) :- MputStatFldInst(v0, v1, v2), rMM(v3, v0).
+refInstField(v0, v1, v2) :- modInstField(v0, v1, v2).
+refInstField(v0, v2, v3) :- rMM(v0, v1), refInstField(v1, v2, v3).
+refInstField(v0, v4, v2) :- MputInstFldInst(v0, v1, v2, v3), VH(v1, v4).
+refInstField(v0, v4, v3) :- MgetInstFldInst(v0, v1, v2, v3), VH(v2, v4).
+refStatField(v0, v1) :- modStatField(v0, v1).
+refStatField(v0, v1) :- MputStatFldInst(v0, v1, v2).
+refStatField(v0, v2) :- MgetStatFldInst(v0, v1, v2).
+refStatField(v0, v2) :- modInstField(v0, v1, v2).
+refStatField(v0, v2) :- refInstField(v0, v1, v2).
+refStatField(v0, v2) :- rMM(v0, v1), refStatField(v1, v2).
+refStatField(v2, v1) :- modStatField(v0, v1), rMM(v2, v0).
+rMM(v0, v2) :- MI(v0, v1), MI(v2, v1).
+rMM(v0, v2) :- modStatField(v0, v1), modStatField(v2, v1).
+rMM(v0, v2) :- refStatField(v0, v1), refStatField(v2, v1).
+rMM(v0, v2) :- rMM(v0, v1), rMM(v1, v2).
+rMM(v0, v2) :- rMM(v0, v1), rMM(v2, v1).
+rMM(v0, v3) :- rMM(v0, v1), rMM(v1, v2), rMM(v2, v3).
+rMM(v1, v3) :- rMM(v0, v1), rMM(v0, v2), rMM(v2, v3).
+rMM(v2, v1) :- IM(v0, v1), MI(v2, v0).

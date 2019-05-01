@@ -1,0 +1,153 @@
+invent_A(v0, v1, v3) :- enroll(v0, v1), invent_A(v0, v2, v3).
+invent_A(v0, v1, v3) :- enroll(v0, v1), invent_A(v2, v1, v3).
+invent_A(v0, v1, v4) :- enroll(v0, v1), enroll(v0, v2), invent_A(v3, v2, v4).
+invent_A(v0, v1, v4) :- invent_A(v0, v1, v2), invent_A(v3, v1, v4).
+invent_A(v0, v2, v4) :- enroll(v0, v1), enroll(v0, v2), invent_A(v3, v2, v4).
+invent_A(v0, v3, v2) :- enroll(v0, v1), invent_A(v0, v1, v2), class(v3, v2).
+invent_A(v2, v0, v1) :- class(v0, v1), enroll(v2, v0).
+invent_A(v2, v0, v1) :- class(v0, v1), enroll(v2, v0), invent_A(v2, v3, v1).
+invent_A(v2, v0, v1) :- class(v0, v1), enroll(v2, v0), invent_A(v2, v3, v4).
+invent_A(v2, v0, v1) :- class(v0, v1), enroll(v2, v0), invent_A(v3, v4, v1).
+invent_A(v2, v0, v1) :- class(v0, v1), enroll(v2, v0), output(v2).
+invent_A(v2, v0, v1) :- class(v0, v1), enroll(v2, v3), enroll(v2, v0).
+invent_A(v2, v0, v1) :- class(v0, v1), enroll(v2, v3), invent_A(v2, v0, v4).
+invent_A(v2, v0, v1) :- class(v0, v1), invent_A(v2, v0, v3).
+invent_A(v2, v0, v1) :- class(v0, v1), invent_A(v2, v3, v1).
+invent_A(v2, v0, v3) :- LT(v0, v1), enroll(v2, v0), invent_A(v2, v1, v3).
+invent_A(v2, v0, v3) :- LT(v0, v1), enroll(v2, v1), invent_A(v2, v1, v3).
+invent_A(v2, v0, v3) :- LT(v0, v1), invent_A(v2, v1, v3).
+invent_A(v2, v0, v3) :- LT(v0, v1), invent_A(v2, v1, v3), output(v2).
+invent_A(v2, v0, v3) :- LT(v0, v1), LT(v1, v0), invent_A(v2, v1, v3).
+invent_A(v2, v0, v4) :- class(v0, v1), enroll(v2, v0), invent_A(v2, v3, v4).
+invent_A(v2, v0, v4) :- LT(v0, v1), enroll(v2, v0), invent_A(v2, v3, v4).
+invent_A(v2, v0, v4) :- LT(v0, v1), enroll(v2, v0), invent_A(v3, v1, v4).
+invent_A(v2, v0, v4) :- LT(v0, v1), enroll(v2, v3), invent_A(v2, v1, v4).
+invent_A(v2, v0, v4) :- LT(v0, v1), invent_A(v2, v0, v3), invent_A(v2, v1, v4).
+invent_A(v2, v0, v5) :- LT(v0, v1), invent_A(v2, v0, v3), invent_A(v4, v1, v5).
+invent_A(v2, v1, v3) :- LT(v0, v1), enroll(v2, v0), invent_A(v2, v0, v3).
+invent_A(v2, v1, v3) :- LT(v0, v1), invent_A(v2, v0, v3).
+invent_A(v2, v1, v3) :- LT(v0, v1), invent_A(v2, v0, v3), invent_A(v4, v1, v3).
+invent_A(v2, v1, v4) :- LT(v0, v1), enroll(v2, v0), invent_A(v2, v3, v4).
+invent_A(v2, v1, v4) :- LT(v0, v1), enroll(v2, v0), invent_A(v3, v1, v4).
+invent_A(v2, v1, v4) :- LT(v0, v1), enroll(v2, v1), invent_A(v3, v0, v4).
+invent_A(v2, v1, v4) :- LT(v0, v1), enroll(v2, v3), invent_A(v2, v0, v4).
+invent_A(v2, v1, v5) :- LT(v0, v1), invent_A(v2, v0, v3), invent_A(v4, v1, v5).
+invent_A(v2, v3, v1) :- class(v0, v1), enroll(v2, v0), enroll(v2, v3).
+invent_A(v2, v3, v1) :- class(v0, v1), enroll(v2, v0), invent_A(v2, v3, v4).
+invent_A(v2, v3, v1) :- class(v0, v1), enroll(v2, v3), invent_A(v4, v3, v1).
+invent_A(v2, v3, v1) :- class(v0, v1), invent_A(v2, v0, v1), enroll(v2, v3).
+invent_A(v2, v4, v1) :- class(v0, v1), enroll(v2, v0), invent_A(v3, v4, v1).
+invent_A(v2, v4, v1) :- class(v0, v1), invent_A(v2, v0, v3), class(v4, v3).
+invent_A(v2, v4, v1) :- class(v0, v1), invent_A(v2, v0, v3), enroll(v2, v4).
+invent_A(v3, v0, v1) :- class(v0, v1), class(v2, v1), invent_A(v3, v2, v4).
+invent_A(v3, v0, v1) :- class(v0, v1), enroll(v2, v0), invent_A(v3, v4, v1).
+invent_A(v3, v0, v2) :- LT(v0, v1), class(v0, v2), enroll(v3, v1).
+invent_A(v3, v0, v2) :- LT(v0, v1), class(v0, v2), invent_A(v3, v1, v4).
+invent_A(v3, v0, v2) :- LT(v0, v1), class(v1, v2), enroll(v3, v0).
+invent_A(v3, v0, v2) :- LT(v0, v1), class(v1, v2), invent_A(v3, v0, v4).
+invent_A(v3, v0, v2) :- LT(v0, v1), class(v1, v2), invent_A(v3, v1, v2).
+invent_A(v3, v0, v2) :- LT(v0, v1), class(v1, v2), invent_A(v3, v4, v2).
+invent_A(v3, v0, v4) :- LT(v0, v1), class(v0, v2), invent_A(v3, v1, v4).
+invent_A(v3, v0, v4) :- LT(v0, v1), enroll(v2, v0), invent_A(v3, v1, v4).
+invent_A(v3, v0, v4) :- LT(v0, v1), LT(v0, v2), invent_A(v3, v2, v4).
+invent_A(v3, v0, v4) :- LT(v0, v1), LT(v1, v2), invent_A(v3, v2, v4).
+invent_A(v3, v0, v4) :- LT(v0, v1), LT(v2, v0), invent_A(v3, v2, v4).
+invent_A(v3, v1, v2) :- LT(v0, v1), class(v0, v2), enroll(v3, v1).
+invent_A(v3, v1, v2) :- LT(v0, v1), class(v0, v2), invent_A(v3, v0, v2).
+invent_A(v3, v1, v2) :- LT(v0, v1), class(v1, v2), enroll(v3, v0).
+invent_A(v3, v1, v2) :- LT(v0, v1), class(v1, v2), invent_A(v3, v0, v2).
+invent_A(v3, v1, v2) :- LT(v0, v1), class(v1, v2), invent_A(v3, v0, v4).
+invent_A(v3, v1, v2) :- LT(v0, v1), class(v1, v2), invent_A(v3, v4, v2).
+invent_A(v3, v1, v4) :- LT(v0, v1), class(v1, v2), invent_A(v3, v0, v4).
+invent_A(v3, v1, v4) :- LT(v0, v1), enroll(v2, v1), invent_A(v3, v0, v4).
+invent_A(v3, v1, v4) :- LT(v0, v1), LT(v1, v2), invent_A(v3, v2, v4).
+invent_A(v3, v1, v4) :- LT(v0, v1), LT(v2, v0), invent_A(v3, v2, v4).
+invent_A(v3, v1, v4) :- LT(v0, v1), LT(v2, v1), invent_A(v3, v2, v4).
+invent_A(v3, v2, v1) :- class(v0, v1), class(v2, v1), enroll(v3, v0).
+invent_A(v3, v2, v1) :- class(v0, v1), class(v2, v1), invent_A(v3, v2, v4).
+invent_A(v4, v0, v1) :- class(v0, v1), invent_A(v2, v3, v1), enroll(v4, v3).
+invent_A(v4, v0, v3) :- LT(v0, v1), class(v2, v3), invent_A(v4, v1, v3).
+invent_A(v4, v1, v3) :- enroll(v0, v1), invent_A(v0, v2, v3), enroll(v4, v2).
+invent_A(v4, v1, v3) :- LT(v0, v1), class(v2, v3), invent_A(v4, v0, v3).
+output(v0) :- enroll(v0, v1), invent_A(v0, v1, v2).
+output(v0) :- enroll(v0, v1), invent_A(v0, v2, v3).
+output(v1) :- LT(v0, v0), enroll(v1, v0).
+output(v1) :- LT(v0, v0), enroll(v1, v0), enroll(v1, v2).
+output(v1) :- LT(v0, v0), enroll(v1, v0), invent_A(v1, v2, v3).
+output(v1) :- LT(v0, v0), invent_A(v1, v0, v2).
+output(v1) :- LT(v0, v0), invent_A(v1, v0, v2), enroll(v1, v3).
+output(v2) :- class(v0, v1), enroll(v2, v0).
+output(v2) :- class(v0, v1), enroll(v2, v0), invent_A(v2, v0, v3).
+output(v2) :- class(v0, v1), enroll(v2, v0), invent_A(v2, v3, v1).
+output(v2) :- class(v0, v1), enroll(v2, v0), invent_A(v2, v3, v4).
+output(v2) :- class(v0, v1), invent_A(v2, v0, v1).
+output(v2) :- class(v0, v1), invent_A(v2, v0, v1), enroll(v2, v3).
+output(v2) :- class(v0, v1), invent_A(v2, v0, v3).
+output(v2) :- class(v0, v1), invent_A(v2, v0, v3), enroll(v2, v4).
+output(v2) :- class(v0, v1), invent_A(v2, v3, v1).
+output(v2) :- class(v0, v1), invent_A(v2, v3, v1), enroll(v2, v3).
+output(v2) :- enroll(v0, v1), enroll(v2, v1).
+output(v2) :- enroll(v0, v1), enroll(v2, v1), invent_A(v2, v1, v3).
+output(v2) :- enroll(v0, v1), invent_A(v2, v1, v3).
+output(v2) :- enroll(v0, v1), invent_A(v2, v1, v3), enroll(v2, v4).
+output(v2) :- LT(v0, v0), class(v0, v1), invent_A(v2, v3, v1).
+output(v2) :- LT(v0, v0), LT(v0, v1), enroll(v2, v1).
+output(v2) :- LT(v0, v0), LT(v0, v1), invent_A(v2, v1, v3).
+output(v2) :- LT(v0, v0), LT(v1, v0), enroll(v2, v1).
+output(v2) :- LT(v0, v0), LT(v1, v0), invent_A(v2, v1, v3).
+output(v2) :- LT(v0, v1), enroll(v2, v0).
+output(v2) :- LT(v0, v1), enroll(v2, v0), enroll(v2, v1).
+output(v2) :- LT(v0, v1), enroll(v2, v0), invent_A(v2, v0, v3).
+output(v2) :- LT(v0, v1), enroll(v2, v0), invent_A(v2, v1, v3).
+output(v2) :- LT(v0, v1), enroll(v2, v0), invent_A(v2, v3, v4).
+output(v2) :- LT(v0, v1), enroll(v2, v1).
+output(v2) :- LT(v0, v1), enroll(v2, v1), invent_A(v2, v1, v3).
+output(v2) :- LT(v0, v1), invent_A(v2, v0, v3).
+output(v2) :- LT(v0, v1), invent_A(v2, v0, v3), enroll(v2, v4).
+output(v2) :- LT(v0, v1), invent_A(v2, v0, v3), invent_A(v2, v1, v3).
+output(v2) :- LT(v0, v1), invent_A(v2, v0, v3), invent_A(v2, v1, v4).
+output(v2) :- LT(v0, v1), invent_A(v2, v1, v3).
+output(v2) :- LT(v0, v1), invent_A(v2, v1, v3), enroll(v2, v4).
+output(v2) :- LT(v0, v1), LT(v1, v0), enroll(v2, v1).
+output(v2) :- LT(v0, v1), LT(v1, v0), invent_A(v2, v1, v3).
+output(v2) :- output(v0), enroll(v0, v1), enroll(v2, v1).
+output(v2) :- output(v0), enroll(v0, v1), invent_A(v2, v1, v3).
+output(v3) :- class(v0, v1), class(v2, v1), enroll(v3, v2).
+output(v3) :- class(v0, v1), class(v2, v1), invent_A(v3, v2, v1).
+output(v3) :- class(v0, v1), class(v2, v1), invent_A(v3, v2, v4).
+output(v3) :- class(v0, v1), enroll(v2, v0), invent_A(v3, v0, v1).
+output(v3) :- class(v0, v1), invent_A(v2, v0, v1), enroll(v3, v0).
+output(v3) :- class(v0, v1), LT(v0, v2), enroll(v3, v2).
+output(v3) :- class(v0, v1), LT(v2, v0), enroll(v3, v2).
+output(v3) :- class(v0, v1), LT(v2, v0), invent_A(v3, v2, v4).
+output(v3) :- enroll(v0, v1), class(v1, v2), invent_A(v3, v4, v2).
+output(v3) :- enroll(v0, v1), enroll(v0, v2), enroll(v3, v2).
+output(v3) :- enroll(v0, v1), invent_A(v0, v1, v2), enroll(v3, v1).
+output(v3) :- enroll(v0, v1), LT(v1, v2), enroll(v3, v2).
+output(v3) :- enroll(v0, v1), LT(v1, v2), invent_A(v3, v2, v4).
+output(v3) :- enroll(v0, v1), LT(v2, v1), enroll(v3, v2).
+output(v3) :- enroll(v0, v1), LT(v2, v1), invent_A(v3, v2, v4).
+output(v3) :- invent_A(v0, v1, v2), enroll(v3, v1).
+output(v3) :- invent_A(v0, v1, v2), enroll(v3, v1), enroll(v3, v4).
+output(v3) :- invent_A(v0, v1, v2), invent_A(v3, v1, v4).
+output(v3) :- LT(v0, v0), class(v1, v2), invent_A(v3, v0, v2).
+output(v3) :- LT(v0, v1), class(v1, v2), invent_A(v3, v0, v2).
+output(v3) :- LT(v0, v1), class(v1, v2), invent_A(v3, v1, v2).
+output(v3) :- LT(v0, v1), class(v1, v2), invent_A(v3, v4, v2).
+output(v3) :- LT(v0, v1), LT(v0, v2), enroll(v3, v2).
+output(v3) :- LT(v0, v1), LT(v1, v2), enroll(v3, v2).
+output(v3) :- LT(v0, v1), LT(v1, v2), invent_A(v3, v2, v4).
+output(v3) :- LT(v0, v1), LT(v2, v0), enroll(v3, v2).
+output(v3) :- LT(v0, v1), LT(v2, v0), invent_A(v3, v2, v4).
+output(v3) :- LT(v0, v1), LT(v2, v1), enroll(v3, v2).
+output(v3) :- LT(v0, v1), LT(v2, v1), invent_A(v3, v2, v4).
+output(v3) :- output(v0), invent_A(v0, v1, v2), enroll(v3, v1).
+output(v4) :- class(v0, v1), class(v2, v3), invent_A(v4, v0, v3).
+output(v4) :- class(v0, v1), invent_A(v2, v3, v1), enroll(v4, v3).
+output(v4) :- enroll(v0, v1), invent_A(v0, v2, v3), enroll(v4, v2).
+output(v4) :- invent_A(v0, v1, v2), class(v3, v2), enroll(v4, v3).
+output(v4) :- invent_A(v0, v1, v2), LT(v1, v3), enroll(v4, v3).
+output(v4) :- invent_A(v0, v1, v2), LT(v3, v1), enroll(v4, v3).
+output(v4) :- invent_A(v0, v1, v2), LT(v3, v1), invent_A(v4, v3, v5).
+output(v4) :- LT(v0, v1), class(v2, v3), invent_A(v4, v0, v3).
+output(v4) :- LT(v0, v1), invent_A(v2, v1, v3), invent_A(v4, v0, v3).

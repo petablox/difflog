@@ -1,0 +1,688 @@
+invent_1(v0, v1) :- Out(v0, v1, v2).
+invent_1(v0, v1) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v0, v4).
+invent_1(v0, v2) :- invent_1(v0, v1), Out(v0, v1, v2), invent_1(v3, v2).
+invent_1(v0, v2) :- invent_1(v0, v1), Out(v0, v1, v2), Lt(v2, v3).
+invent_1(v0, v2) :- invent_1(v0, v1), Out(v0, v1, v2), Lt(v3, v2).
+invent_1(v0, v2) :- invent_1(v0, v1), Out(v0, v1, v2), Out(v3, v2, v4).
+invent_1(v0, v2) :- invent_1(v0, v1), Out(v0, v1, v2), Out(v3, v4, v2).
+invent_1(v0, v2) :- invent_1(v0, v1), Out(v0, v2, v1), invent_1(v3, v2).
+invent_1(v0, v2) :- invent_1(v0, v1), Out(v0, v2, v1), Lt(v2, v3).
+invent_1(v0, v2) :- invent_1(v0, v1), Out(v0, v2, v1), Lt(v3, v2).
+invent_1(v0, v2) :- Out(v0, v1, v2).
+invent_1(v0, v2) :- Out(v0, v1, v2), invent_1(v3, v2), invent_1(v0, v4).
+invent_1(v0, v3) :- invent_1(v0, v1), Out(v0, v1, v2), Lt(v2, v3).
+invent_1(v0, v3) :- invent_1(v0, v1), Out(v0, v1, v2), Lt(v3, v2).
+invent_1(v0, v3) :- invent_1(v0, v1), Out(v0, v2, v1), Lt(v2, v3).
+invent_1(v0, v3) :- invent_1(v0, v1), Out(v0, v2, v1), Lt(v3, v2).
+invent_1(v0, v3) :- Out(v0, v1, v1), invent_1(v2, v1), invent_1(v2, v3).
+invent_1(v0, v3) :- Out(v0, v1, v1), Out(v2, v1, v3), invent_1(v0, v4).
+invent_1(v0, v3) :- Out(v0, v1, v2), invent_1(v0, v1), Lt(v1, v3).
+invent_1(v0, v3) :- Out(v0, v1, v2), invent_1(v0, v1), Lt(v3, v1).
+invent_1(v0, v3) :- Out(v0, v1, v2), invent_1(v0, v2), Lt(v2, v3).
+invent_1(v0, v3) :- Out(v0, v1, v2), Out(v0, v1, v3), invent_1(v4, v3).
+invent_1(v0, v3) :- Out(v0, v1, v2), Out(v0, v1, v3), Lt(v3, v4).
+invent_1(v0, v3) :- Out(v0, v1, v2), Out(v0, v1, v3), Lt(v4, v3).
+invent_1(v0, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), invent_1(v4, v3).
+invent_1(v0, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), Lt(v3, v4).
+invent_1(v0, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), Lt(v4, v3).
+invent_1(v0, v3) :- Out(v0, v1, v2), Out(v0, v3, v1), invent_1(v4, v3).
+invent_1(v0, v3) :- Out(v0, v1, v2), Out(v0, v3, v1), Lt(v4, v3).
+invent_1(v0, v4) :- invent_1(v0, v1), Out(v0, v1, v2), Out(v3, v2, v4).
+invent_1(v0, v4) :- invent_1(v0, v1), Out(v0, v1, v2), Out(v3, v4, v2).
+invent_1(v0, v4) :- invent_1(v0, v1), Out(v0, v2, v1), Out(v3, v2, v4).
+invent_1(v0, v4) :- Out(v0, v1, v2), invent_1(v0, v1), Out(v3, v1, v4).
+invent_1(v0, v4) :- Out(v0, v1, v2), invent_1(v0, v1), Out(v3, v4, v1).
+invent_1(v0, v4) :- Out(v0, v1, v2), invent_1(v0, v2), Out(v3, v2, v4).
+invent_1(v0, v4) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v3, v4).
+invent_1(v0, v4) :- Out(v0, v1, v2), invent_1(v3, v2), invent_1(v3, v4).
+invent_1(v0, v4) :- Out(v0, v1, v2), Out(v0, v2, v3), Lt(v3, v4).
+invent_1(v0, v4) :- Out(v0, v1, v2), Out(v0, v3, v1), Lt(v1, v4).
+invent_1(v0, v4) :- Out(v0, v1, v2), Out(v0, v3, v1), Lt(v3, v4).
+invent_1(v0, v4) :- Out(v0, v1, v2), Out(v3, v1, v4), invent_1(v0, v5).
+invent_1(v0, v4) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v0, v5).
+invent_1(v0, v5) :- Out(v0, v1, v1), Out(v2, v1, v3), Out(v4, v3, v5).
+invent_1(v0, v5) :- Out(v0, v1, v2), invent_1(v0, v3), Out(v4, v3, v5).
+invent_1(v0, v5) :- Out(v0, v1, v2), Out(v0, v1, v3), Out(v4, v3, v5).
+invent_1(v0, v5) :- Out(v0, v1, v2), Out(v0, v2, v3), Out(v4, v3, v5).
+invent_1(v0, v5) :- Out(v0, v1, v2), Out(v3, v1, v4), Out(v0, v4, v5).
+invent_1(v0, v6) :- Out(v0, v1, v2), Out(v3, v1, v4), Out(v5, v4, v6).
+invent_1(v1, v3) :- In(v0, v1, v2, v3).
+invent_1(v1, v4) :- In(v0, v1, v2, v3), invent_1(v1, v3), Lt(v3, v4).
+invent_1(v1, v4) :- In(v0, v1, v2, v3), Lt(v3, v4), invent_1(v1, v5).
+invent_1(v1, v4) :- In(v0, v1, v2, v3), Lt(v3, v4), invent_1(v5, v4).
+invent_1(v1, v4) :- In(v0, v1, v2, v3), Lt(v3, v4), Lt(v4, v5).
+invent_1(v1, v4) :- In(v0, v1, v2, v3), Lt(v3, v4), Lt(v5, v4).
+invent_1(v1, v5) :- In(v0, v1, v2, v3), invent_1(v1, v4), Lt(v4, v5).
+invent_1(v1, v5) :- In(v0, v1, v2, v3), Lt(v3, v4), Lt(v4, v5).
+invent_1(v1, v5) :- In(v0, v1, v2, v3), Lt(v3, v4), Out(v1, v4, v5).
+invent_1(v1, v5) :- In(v0, v1, v2, v3), Out(v1, v3, v4), Lt(v4, v5).
+invent_1(v1, v6) :- In(v0, v1, v2, v3), Lt(v3, v4), Out(v5, v4, v6).
+invent_1(v1, v6) :- In(v0, v1, v2, v3), Out(v4, v3, v5), Lt(v5, v6).
+invent_1(v2, v0) :- Lt(v0, v1), invent_1(v2, v1), Out(v2, v3, v0).
+invent_1(v2, v0) :- Lt(v0, v1), Lt(v1, v0), invent_1(v2, v1).
+invent_1(v2, v0) :- Lt(v0, v1), Lt(v1, v0), Out(v2, v1, v3).
+invent_1(v2, v0) :- Lt(v0, v1), Lt(v1, v0), Out(v2, v3, v1).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v0, v1), invent_1(v2, v3).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v1, v0), invent_1(v2, v3).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v1, v0), Out(v2, v3, v4).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v1, v1), invent_1(v2, v3).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v1, v1), invent_1(v3, v0).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v4).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v1, v3), Out(v2, v0, v4).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v1, v3), Out(v2, v4, v0).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+invent_1(v2, v0) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+invent_1(v2, v1) :- Lt(v0, v1), invent_1(v2, v0), In(v3, v2, v4, v1).
+invent_1(v2, v1) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v1, v3).
+invent_1(v2, v1) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v1).
+invent_1(v2, v1) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v4).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v0), invent_1(v2, v3).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v0), invent_1(v3, v1).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v0), Out(v3, v1, v4).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v0), Out(v3, v4, v1).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v1), invent_1(v2, v3).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v1), Out(v2, v3, v4).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v2, v1, v4).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v2, v4, v1).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v5).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v5, v1).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v1, v0), invent_1(v2, v3).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v1, v0), Out(v2, v3, v4).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v4).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v1, v4).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v4, v1).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v1).
+invent_1(v2, v1) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v2, v4).
+invent_1(v2, v3) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v1, v3).
+invent_1(v2, v3) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v1).
+invent_1(v2, v3) :- Lt(v0, v1), invent_1(v2, v1), Out(v2, v0, v3).
+invent_1(v2, v3) :- Lt(v0, v1), invent_1(v2, v1), Out(v2, v3, v0).
+invent_1(v2, v3) :- Lt(v0, v1), Out(v2, v0, v1), Lt(v0, v3).
+invent_1(v2, v3) :- Lt(v0, v1), Out(v2, v0, v1), Lt(v1, v3).
+invent_1(v2, v3) :- Lt(v0, v1), Out(v2, v0, v1), Lt(v3, v0).
+invent_1(v2, v3) :- Lt(v0, v1), Out(v2, v0, v1), Lt(v3, v1).
+invent_1(v2, v3) :- Lt(v0, v1), Out(v2, v1, v0), Lt(v0, v3).
+invent_1(v2, v3) :- Lt(v0, v1), Out(v2, v1, v0), Lt(v1, v3).
+invent_1(v2, v3) :- Lt(v0, v1), Out(v2, v1, v0), Lt(v3, v0).
+invent_1(v2, v3) :- Lt(v0, v1), Out(v2, v1, v0), Lt(v3, v1).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v0, v0), Out(v3, v1, v4).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v0, v0), Out(v3, v4, v1).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v0, v1), Out(v3, v0, v4).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v0, v1), Out(v3, v1, v4).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v0, v1), Out(v3, v4, v0).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v0, v1), Out(v3, v4, v1).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v0, v3), Out(v2, v1, v4).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v0, v3), Out(v2, v4, v1).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v0, v4).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v1, v4).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v4, v0).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v4, v1).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v1, v3), Out(v2, v0, v4).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v1, v3), Out(v2, v4, v0).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v1, v4).
+invent_1(v2, v4) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v4, v1).
+invent_1(v2, v4) :- Out(v0, v1, v1), Out(v2, v1, v3), invent_1(v0, v4).
+invent_1(v2, v4) :- Out(v0, v1, v1), Out(v2, v3, v1), invent_1(v0, v4).
+invent_1(v2, v5) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v5).
+invent_1(v2, v5) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v5, v1).
+invent_1(v2, v5) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v1).
+invent_1(v3, v0) :- Lt(v0, v1), invent_1(v2, v0), invent_1(v3, v1).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v0, v2), invent_1(v3, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v1, v0), In(v2, v3, v4, v1).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v1, v2), invent_1(v3, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v0, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v0).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v4, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v0), invent_1(v3, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v1, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v1).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v1), invent_1(v3, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v0, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v0).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v4).
+invent_1(v3, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v4, v2).
+invent_1(v3, v0) :- Lt(v0, v1), Out(v2, v0, v1), invent_1(v3, v1).
+invent_1(v3, v0) :- Lt(v0, v1), Out(v2, v1, v0), invent_1(v3, v1).
+invent_1(v3, v0) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v1, v4).
+invent_1(v3, v0) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v4, v1).
+invent_1(v3, v1) :- invent_1(v0, v1), invent_1(v0, v2), invent_1(v3, v2).
+invent_1(v3, v1) :- invent_1(v0, v1), invent_1(v0, v2), Out(v3, v1, v2).
+invent_1(v3, v1) :- invent_1(v0, v1), invent_1(v0, v2), Out(v3, v2, v1).
+invent_1(v3, v1) :- invent_1(v0, v1), Out(v0, v1, v2), invent_1(v3, v2).
+invent_1(v3, v1) :- invent_1(v0, v1), Out(v0, v2, v1), invent_1(v3, v2).
+invent_1(v3, v1) :- invent_1(v0, v1), Out(v0, v2, v1), Out(v3, v2, v4).
+invent_1(v3, v1) :- invent_1(v0, v1), Out(v0, v2, v1), Out(v3, v4, v2).
+invent_1(v3, v1) :- Lt(v0, v1), invent_1(v2, v1), invent_1(v3, v0).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v0, v2), invent_1(v3, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v1, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v2, v1).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v2, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v2, v4).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v4, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v1, v2), invent_1(v3, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v4, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v0), invent_1(v3, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v1, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v1).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v1), invent_1(v3, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v0, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v4).
+invent_1(v3, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v4, v2).
+invent_1(v3, v1) :- Lt(v0, v1), Out(v2, v0, v1), invent_1(v3, v0).
+invent_1(v3, v1) :- Lt(v0, v1), Out(v2, v0, v1), Out(v3, v0, v4).
+invent_1(v3, v1) :- Lt(v0, v1), Out(v2, v0, v1), Out(v3, v4, v0).
+invent_1(v3, v1) :- Lt(v0, v1), Out(v2, v1, v0), invent_1(v3, v0).
+invent_1(v3, v1) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v0, v4).
+invent_1(v3, v1) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v4, v0).
+invent_1(v3, v1) :- Out(v0, v1, v2), invent_1(v3, v2), invent_1(v3, v4).
+invent_1(v3, v1) :- Out(v0, v1, v2), Out(v3, v2, v1), invent_1(v3, v4).
+invent_1(v3, v2) :- invent_1(v0, v1), Out(v0, v1, v2), invent_1(v3, v1).
+invent_1(v3, v2) :- invent_1(v0, v1), Out(v0, v1, v2), Out(v3, v1, v4).
+invent_1(v3, v2) :- invent_1(v0, v1), Out(v0, v1, v2), Out(v3, v4, v1).
+invent_1(v3, v2) :- invent_1(v0, v1), Out(v0, v2, v1), invent_1(v3, v1).
+invent_1(v3, v2) :- Out(v0, v1, v1), invent_1(v0, v2), invent_1(v3, v1).
+invent_1(v3, v2) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v3, v4).
+invent_1(v3, v2) :- Out(v0, v1, v2), invent_1(v3, v1), Out(v3, v2, v4).
+invent_1(v3, v2) :- Out(v0, v1, v2), invent_1(v3, v1), Out(v3, v4, v2).
+invent_1(v3, v2) :- Out(v0, v1, v2), Out(v3, v1, v1), invent_1(v4, v2).
+invent_1(v3, v2) :- Out(v0, v1, v2), Out(v3, v1, v2), invent_1(v3, v4).
+invent_1(v3, v2) :- Out(v0, v1, v2), Out(v3, v1, v4), invent_1(v5, v2).
+invent_1(v3, v2) :- Out(v0, v1, v2), Out(v3, v2, v1), invent_1(v3, v4).
+invent_1(v3, v2) :- Out(v0, v1, v2), Out(v3, v4, v1), invent_1(v5, v2).
+invent_1(v3, v4) :- Out(v0, v1, v2), invent_1(v3, v1), Out(v3, v2, v4).
+invent_1(v3, v4) :- Out(v0, v1, v2), invent_1(v3, v1), Out(v3, v4, v2).
+invent_1(v3, v4) :- Out(v0, v1, v2), invent_1(v3, v2), Out(v3, v1, v4).
+invent_1(v3, v4) :- Out(v0, v1, v2), Out(v3, v1, v1), invent_1(v0, v4).
+invent_1(v3, v4) :- Out(v0, v1, v2), Out(v3, v1, v2), invent_1(v0, v4).
+invent_1(v3, v4) :- Out(v0, v1, v2), Out(v3, v2, v1), invent_1(v0, v4).
+invent_1(v3, v4) :- Out(v0, v1, v2), Out(v3, v2, v1), Lt(v1, v4).
+invent_1(v3, v4) :- Out(v0, v1, v2), Out(v3, v2, v1), Lt(v2, v4).
+invent_1(v3, v5) :- Out(v0, v1, v2), Out(v3, v1, v4), invent_1(v0, v5).
+invent_1(v3, v5) :- Out(v0, v1, v2), Out(v3, v2, v1), Out(v4, v2, v5).
+invent_1(v3, v5) :- Out(v0, v1, v2), Out(v3, v4, v1), invent_1(v0, v5).
+invent_1(v3, v5) :- Out(v0, v1, v2), Out(v3, v4, v1), Out(v3, v2, v5).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v3).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v3).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v0, v3).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v3, v0).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v1, v3).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v1).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v3).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v5).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v3).
+invent_1(v4, v0) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v3, v1).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v3, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v3, v5).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v5, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v0, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v3, v0).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v5, v0).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v1, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v1).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v5).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v1), Out(v4, v0, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v1), Out(v4, v3, v0).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v1), Out(v4, v3, v3).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v1), Out(v4, v3, v5).
+invent_1(v4, v1) :- Lt(v0, v1), Out(v2, v3, v1), Out(v4, v5, v3).
+invent_1(v4, v1) :- Out(v0, v1, v2), invent_1(v0, v3), invent_1(v4, v3).
+invent_1(v4, v1) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v4, v2).
+invent_1(v4, v1) :- Out(v0, v1, v2), Out(v0, v3, v1), invent_1(v4, v3).
+invent_1(v4, v2) :- Out(v0, v1, v1), Out(v0, v2, v3), invent_1(v4, v1).
+invent_1(v4, v2) :- Out(v0, v1, v2), invent_1(v0, v3), invent_1(v4, v3).
+invent_1(v4, v2) :- Out(v0, v1, v2), invent_1(v0, v3), Out(v4, v3, v1).
+invent_1(v4, v2) :- Out(v0, v1, v2), invent_1(v3, v2), invent_1(v4, v1).
+invent_1(v4, v2) :- Out(v0, v1, v2), Out(v3, v2, v1), invent_1(v4, v1).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v3).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v0, v3).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v3, v0).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v5, v0).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v1, v3).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v1).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v3, v1), Out(v4, v0, v3).
+invent_1(v4, v3) :- Lt(v0, v1), Out(v2, v3, v1), Out(v4, v3, v0).
+invent_1(v4, v3) :- Out(v0, v1, v1), Out(v0, v2, v3), invent_1(v4, v1).
+invent_1(v4, v3) :- Out(v0, v1, v2), invent_1(v0, v3), invent_1(v4, v1).
+invent_1(v4, v3) :- Out(v0, v1, v2), invent_1(v0, v3), invent_1(v4, v2).
+invent_1(v4, v3) :- Out(v0, v1, v2), invent_1(v0, v3), Out(v4, v1, v3).
+invent_1(v4, v3) :- Out(v0, v1, v2), invent_1(v0, v3), Out(v4, v3, v1).
+invent_1(v4, v3) :- Out(v0, v1, v2), Out(v0, v1, v3), invent_1(v4, v2).
+invent_1(v4, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), invent_1(v4, v1).
+invent_1(v4, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), invent_1(v4, v2).
+invent_1(v4, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), Out(v4, v1, v5).
+invent_1(v4, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), Out(v4, v5, v1).
+invent_1(v4, v3) :- Out(v0, v1, v2), Out(v0, v3, v1), invent_1(v4, v1).
+invent_1(v4, v3) :- Out(v0, v1, v2), Out(v0, v3, v2), invent_1(v4, v1).
+invent_1(v5, v2) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v5, v1).
+invent_1(v5, v2) :- Out(v0, v1, v2), Out(v3, v4, v1), Out(v5, v2, v4).
+invent_1(v5, v2) :- Out(v0, v1, v2), Out(v3, v4, v1), Out(v5, v6, v4).
+invent_1(v5, v3) :- In(v0, v1, v2, v3), Lt(v4, v3), invent_1(v5, v4).
+invent_1(v5, v3) :- Out(v0, v1, v2), Out(v0, v3, v4), invent_1(v5, v1).
+invent_1(v5, v4) :- In(v0, v1, v2, v3), invent_1(v1, v4), invent_1(v5, v3).
+invent_1(v5, v4) :- Out(v0, v1, v2), Out(v0, v3, v4), invent_1(v5, v1).
+invent_1(v5, v4) :- Out(v0, v1, v2), Out(v3, v1, v4), invent_1(v5, v2).
+invent_1(v5, v4) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v5, v1).
+invent_1(v5, v4) :- Out(v0, v1, v2), Out(v3, v2, v4), Out(v5, v1, v4).
+invent_1(v5, v4) :- Out(v0, v1, v2), Out(v3, v4, v2), invent_1(v5, v1).
+Out(v0, v1, v3) :- Out(v0, v1, v2), invent_1(v0, v2), Lt(v1, v3).
+Out(v0, v1, v4) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v0, v1).
+Out(v0, v2, v1) :- Out(v0, v1, v2).
+Out(v0, v2, v1) :- Out(v0, v1, v2), invent_1(v0, v1), invent_1(v3, v2).
+Out(v0, v2, v1) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v0, v2).
+Out(v0, v2, v1) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v0, v4).
+Out(v0, v2, v3) :- Out(v0, v1, v2), invent_1(v0, v1), Lt(v2, v3).
+Out(v0, v2, v3) :- Out(v0, v1, v2), invent_1(v0, v1), Lt(v3, v2).
+Out(v0, v2, v4) :- Out(v0, v1, v2), invent_1(v0, v1), Out(v3, v2, v4).
+Out(v0, v3, v1) :- Out(v0, v1, v2), invent_1(v0, v2), Lt(v1, v3).
+Out(v0, v3, v2) :- Out(v0, v1, v2), invent_1(v0, v1), Lt(v2, v3).
+Out(v0, v3, v2) :- Out(v0, v1, v2), invent_1(v0, v1), Lt(v3, v2).
+Out(v0, v3, v4) :- Out(v0, v1, v2), Out(v0, v2, v3), Lt(v3, v4).
+Out(v0, v4, v1) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v0, v1).
+Out(v0, v4, v2) :- Out(v0, v1, v2), invent_1(v0, v1), Out(v3, v2, v4).
+Out(v0, v4, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), Lt(v3, v4).
+Out(v1, v3, v5) :- In(v0, v1, v2, v3), Lt(v3, v4), Lt(v4, v5).
+Out(v1, v4, v5) :- In(v0, v1, v2, v3), Lt(v3, v4), Lt(v4, v5).
+Out(v1, v5, v3) :- In(v0, v1, v2, v3), Lt(v3, v4), Lt(v4, v5).
+Out(v1, v5, v4) :- In(v0, v1, v2, v3), Lt(v3, v4), Lt(v4, v5).
+Out(v2, v0, v1) :- Lt(v0, v1), invent_1(v2, v0), invent_1(v2, v1).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v1, v0), invent_1(v2, v3).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v0).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v1).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v2, v0).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+Out(v2, v0, v1) :- Lt(v0, v1), Out(v2, v3, v4), invent_1(v2, v0).
+Out(v2, v0, v3) :- Lt(v0, v1), invent_1(v2, v0), invent_1(v2, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), invent_1(v2, v1), invent_1(v2, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), invent_1(v2, v1), Out(v2, v1, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), Lt(v1, v0), Out(v2, v1, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), Lt(v1, v0), Out(v2, v3, v1).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v0, v1), invent_1(v2, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v1, v0), invent_1(v2, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v1, v1), invent_1(v2, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v0).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v4).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v2, v0).
+Out(v2, v0, v3) :- Lt(v0, v1), Out(v2, v3, v4), invent_1(v2, v0).
+Out(v2, v0, v4) :- Lt(v0, v1), Out(v2, v0, v1), Out(v3, v1, v4).
+Out(v2, v0, v4) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+Out(v2, v0, v4) :- Lt(v0, v1), Out(v2, v0, v3), Out(v2, v1, v4).
+Out(v2, v0, v4) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v1, v4).
+Out(v2, v0, v4) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v4).
+Out(v2, v0, v4) :- Lt(v0, v1), Out(v2, v1, v3), Out(v2, v3, v4).
+Out(v2, v0, v4) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+Out(v2, v0, v4) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v1, v4).
+Out(v2, v0, v4) :- Lt(v0, v1), Out(v2, v3, v4), invent_1(v2, v0).
+Out(v2, v0, v5) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v5).
+Out(v2, v0, v5) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v3, v5).
+Out(v2, v1, v0) :- Lt(v0, v1), invent_1(v2, v0), invent_1(v2, v1).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v0, v1), invent_1(v2, v3).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v0).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v1).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v2, v0).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+Out(v2, v1, v0) :- Lt(v0, v1), Out(v2, v3, v4), invent_1(v2, v0).
+Out(v2, v1, v3) :- invent_1(v0, v1), invent_1(v2, v1), invent_1(v2, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), invent_1(v2, v0), invent_1(v2, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v0, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v0).
+Out(v2, v1, v3) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v1).
+Out(v2, v1, v3) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v4).
+Out(v2, v1, v3) :- Lt(v0, v1), invent_1(v2, v1), invent_1(v2, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v0, v0), invent_1(v2, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v0, v1), invent_1(v2, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v1, v0), invent_1(v2, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v1).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v4, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v1, v3).
+Out(v2, v1, v3) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v2, v3).
+Out(v2, v1, v4) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v4).
+Out(v2, v1, v4) :- Lt(v0, v1), Out(v2, v0, v0), Out(v3, v1, v4).
+Out(v2, v1, v4) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+Out(v2, v1, v4) :- Lt(v0, v1), Out(v2, v0, v3), Lt(v3, v4).
+Out(v2, v1, v4) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+Out(v2, v1, v4) :- Lt(v0, v1), Out(v2, v3, v0), Lt(v4, v3).
+Out(v2, v1, v4) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v3, v4).
+Out(v2, v1, v4) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v4, v3).
+Out(v2, v1, v5) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v5).
+Out(v2, v3, v0) :- Lt(v0, v1), invent_1(v2, v0), invent_1(v2, v3).
+Out(v2, v3, v0) :- Lt(v0, v1), invent_1(v2, v1), invent_1(v2, v3).
+Out(v2, v3, v0) :- Lt(v0, v1), invent_1(v2, v1), Out(v2, v1, v3).
+Out(v2, v3, v0) :- Lt(v0, v1), Lt(v1, v0), Out(v2, v1, v3).
+Out(v2, v3, v0) :- Lt(v0, v1), Lt(v1, v0), Out(v2, v3, v1).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v0, v1), invent_1(v2, v3).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v3).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v3).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v1, v0), invent_1(v2, v3).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v0).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v3).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v4).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v2, v0).
+Out(v2, v3, v0) :- Lt(v0, v1), Out(v2, v3, v4), invent_1(v2, v0).
+Out(v2, v3, v1) :- Lt(v0, v1), invent_1(v2, v0), invent_1(v2, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v0, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v1, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v0).
+Out(v2, v3, v1) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v4).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v0, v0), invent_1(v2, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v0, v1), invent_1(v2, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v1, v0), invent_1(v2, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v2, v4).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v1).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v4, v3).
+Out(v2, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v1, v3).
+Out(v2, v3, v4) :- Lt(v0, v1), Out(v2, v0, v3), Out(v2, v1, v4).
+Out(v2, v3, v4) :- Lt(v0, v1), Out(v2, v1, v3), Out(v2, v4, v0).
+Out(v2, v3, v5) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v5).
+Out(v2, v4, v0) :- Lt(v0, v1), Out(v2, v0, v1), Out(v3, v1, v4).
+Out(v2, v4, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+Out(v2, v4, v0) :- Lt(v0, v1), Out(v2, v0, v3), Out(v2, v1, v4).
+Out(v2, v4, v0) :- Lt(v0, v1), Out(v2, v1, v0), Out(v3, v1, v4).
+Out(v2, v4, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+Out(v2, v4, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v1, v4).
+Out(v2, v4, v0) :- Lt(v0, v1), Out(v2, v3, v4), invent_1(v2, v0).
+Out(v2, v4, v1) :- Lt(v0, v1), invent_1(v2, v0), Out(v2, v3, v4).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v0, v0), Out(v3, v1, v4).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v2, v4).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), Lt(v3, v4).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), Lt(v4, v3).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v2, v1, v4).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v2, v4).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), Lt(v4, v3).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v1, v4).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v3, v4).
+Out(v2, v4, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v2, v4, v3).
+Out(v2, v4, v3) :- Lt(v0, v1), Out(v2, v0, v3), Out(v2, v1, v4).
+Out(v2, v4, v3) :- Lt(v0, v1), Out(v2, v1, v3), Out(v2, v4, v0).
+Out(v2, v5, v0) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v5).
+Out(v2, v5, v1) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v5).
+Out(v2, v5, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v3).
+Out(v2, v5, v3) :- Lt(v0, v1), Out(v2, v0, v3), Out(v4, v1, v5).
+Out(v2, v5, v3) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v5, v0).
+Out(v3, v0, v1) :- Lt(v0, v1), invent_1(v2, v0), invent_1(v3, v1).
+Out(v3, v0, v1) :- Lt(v0, v1), invent_1(v2, v1), invent_1(v3, v0).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v0, v2), invent_1(v3, v2).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v2, v4).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v1, v2), invent_1(v3, v2).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v0), invent_1(v3, v2).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v1, v2).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v1).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v2).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v1), invent_1(v3, v2).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v0, v2).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v0).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v2).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v4).
+Out(v3, v0, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v4, v2).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v0, v2), invent_1(v3, v2).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v1, v2), invent_1(v3, v2).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v1, v2).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v1).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v4, v2).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v2, v0), invent_1(v3, v2).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v1, v2).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v1).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v0, v2) :- Lt(v0, v1), Lt(v2, v1), invent_1(v3, v2).
+Out(v3, v0, v4) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v2, v4).
+Out(v3, v0, v4) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+Out(v3, v0, v4) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v4, v2).
+Out(v3, v0, v4) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v0, v4) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), invent_1(v2, v0), invent_1(v3, v1).
+Out(v3, v1, v0) :- Lt(v0, v1), invent_1(v2, v1), invent_1(v3, v0).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v0, v2), invent_1(v3, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v1, v2), invent_1(v3, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v0), invent_1(v3, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v1, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v1).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v1), invent_1(v3, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v0, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v0).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v2).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v4).
+Out(v3, v1, v0) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v4, v2).
+Out(v3, v1, v2) :- invent_1(v0, v1), invent_1(v0, v2), invent_1(v3, v2).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v0, v2), invent_1(v3, v2).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v0, v2).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v2, v0).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v1, v2), invent_1(v3, v2).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v4, v2).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v2, v0), invent_1(v3, v2).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v0, v2).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v0).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v1).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v2, v1), invent_1(v3, v2).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v4).
+Out(v3, v1, v2) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v4, v2).
+Out(v3, v1, v2) :- Out(v0, v1, v2), invent_1(v0, v1), invent_1(v3, v2).
+Out(v3, v1, v2) :- Out(v0, v1, v2), invent_1(v0, v2), invent_1(v3, v1).
+Out(v3, v1, v2) :- Out(v0, v1, v2), invent_1(v3, v4), invent_1(v3, v1).
+Out(v3, v1, v4) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+Out(v3, v1, v4) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v1, v4) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v1, v4) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v4).
+Out(v3, v1, v4) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v4, v2).
+Out(v3, v1, v4) :- Out(v0, v1, v2), invent_1(v3, v4), invent_1(v3, v1).
+Out(v3, v1, v4) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v3, v1).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v0, v2), invent_1(v3, v2).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v1, v2), invent_1(v3, v2).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v1, v2).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v1).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v4, v2).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v2, v0), invent_1(v3, v2).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v1, v2).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v1).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v2, v0) :- Lt(v0, v1), Lt(v2, v1), invent_1(v3, v2).
+Out(v3, v2, v1) :- invent_1(v0, v1), invent_1(v0, v2), invent_1(v3, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v0, v2), invent_1(v3, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v0, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v0, v2), Out(v3, v2, v0).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v1, v2), invent_1(v3, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v4, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v2, v0), invent_1(v3, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v0, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v1, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v0).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v2, v1), invent_1(v3, v2).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v4).
+Out(v3, v2, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v4, v2).
+Out(v3, v2, v1) :- Out(v0, v1, v2), invent_1(v0, v1), invent_1(v3, v2).
+Out(v3, v2, v1) :- Out(v0, v1, v2), invent_1(v0, v2), invent_1(v3, v1).
+Out(v3, v2, v1) :- Out(v0, v1, v2), invent_1(v3, v4), invent_1(v3, v1).
+Out(v3, v2, v4) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v3, v4).
+Out(v3, v4, v0) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+Out(v3, v4, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v4, v0) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v4, v1) :- Lt(v0, v1), Lt(v1, v2), Out(v3, v2, v4).
+Out(v3, v4, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v2, v4).
+Out(v3, v4, v1) :- Lt(v0, v1), Lt(v2, v0), Out(v3, v4, v2).
+Out(v3, v4, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v2, v4).
+Out(v3, v4, v1) :- Lt(v0, v1), Lt(v2, v1), Out(v3, v4, v2).
+Out(v3, v4, v1) :- Out(v0, v1, v2), invent_1(v3, v4), invent_1(v3, v1).
+Out(v3, v4, v1) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v3, v1).
+Out(v3, v4, v2) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v3, v4).
+Out(v3, v4, v2) :- Out(v0, v1, v2), invent_1(v3, v1), Out(v3, v2, v4).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v3).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v1, v3).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v1).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v3).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v5).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v3).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+Out(v4, v0, v1) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v3).
+Out(v4, v0, v3) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v0, v2).
+Out(v4, v0, v3) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v1, v3).
+Out(v4, v0, v3) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v3, v0).
+Out(v4, v0, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v4, v0, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v3).
+Out(v4, v0, v3) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v3, v0).
+Out(v4, v0, v3) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v5, v0).
+Out(v4, v0, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+Out(v4, v0, v3) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+Out(v4, v0, v5) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v3, v5).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v3).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v1, v3).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v1).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v3).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v5).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v3).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+Out(v4, v1, v0) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v3).
+Out(v4, v1, v2) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v0, v2).
+Out(v4, v1, v2) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v4, v2).
+Out(v4, v1, v2) :- Out(v0, v1, v2), invent_1(v3, v2), invent_1(v4, v1).
+Out(v4, v1, v3) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v0, v3).
+Out(v4, v1, v3) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v3, v0).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v3).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v3).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v5, v0).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v0, v3).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v1).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v5).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v3).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+Out(v4, v1, v3) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v3).
+Out(v4, v1, v3) :- Out(v0, v1, v2), invent_1(v0, v3), invent_1(v4, v1).
+Out(v4, v1, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), invent_1(v4, v1).
+Out(v4, v1, v5) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v5).
+Out(v4, v1, v5) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v3).
+Out(v4, v2, v0) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v3, v0).
+Out(v4, v2, v1) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v0, v2).
+Out(v4, v2, v1) :- Out(v0, v1, v2), invent_1(v3, v1), invent_1(v4, v2).
+Out(v4, v2, v1) :- Out(v0, v1, v2), invent_1(v3, v2), invent_1(v4, v1).
+Out(v4, v2, v3) :- Out(v0, v1, v2), invent_1(v0, v3), invent_1(v4, v1).
+Out(v4, v2, v3) :- Out(v0, v1, v2), Out(v0, v2, v3), invent_1(v4, v1).
+Out(v4, v3, v0) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v0, v2).
+Out(v4, v3, v0) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v0, v3).
+Out(v4, v3, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v4, v3, v0) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v3).
+Out(v4, v3, v0) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v0, v3).
+Out(v4, v3, v0) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v5, v0).
+Out(v4, v3, v0) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+Out(v4, v3, v0) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+Out(v4, v3, v1) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v0, v3).
+Out(v4, v3, v1) :- Lt(v0, v1), Lt(v2, v3), Out(v4, v3, v0).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v1).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v0, v3), invent_1(v4, v3).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v0).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v1, v3), invent_1(v4, v3).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v5, v0).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v1).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), invent_1(v4, v3).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v0, v3).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v1, v3).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v5).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v3).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v0).
+Out(v4, v3, v1) :- Lt(v0, v1), Out(v2, v3, v1), invent_1(v4, v3).
+Out(v4, v3, v1) :- Out(v0, v1, v2), invent_1(v0, v3), invent_1(v4, v1).
+Out(v4, v3, v1) :- Out(v0, v1, v2), Out(v0, v2, v3), invent_1(v4, v1).
+Out(v4, v3, v2) :- Out(v0, v1, v2), invent_1(v0, v3), invent_1(v4, v1).
+Out(v4, v3, v2) :- Out(v0, v1, v2), Out(v0, v2, v3), invent_1(v4, v1).
+Out(v4, v3, v5) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v5, v0).
+Out(v4, v5, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v3, v5).
+Out(v4, v5, v1) :- Lt(v0, v1), Out(v2, v3, v0), Out(v4, v5, v3).
+Out(v4, v5, v3) :- Lt(v0, v1), Out(v2, v1, v3), Out(v4, v5, v0).
+Out(v5, v1, v4) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v5, v1).
+Out(v5, v2, v4) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v5, v1).
+Out(v5, v4, v1) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v5, v1).
+Out(v5, v4, v2) :- Out(v0, v1, v2), Out(v3, v2, v4), invent_1(v5, v1).

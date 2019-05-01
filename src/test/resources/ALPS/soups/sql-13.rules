@@ -1,0 +1,7 @@
+Out(v0, v1) :- A(v0, v1), A(v0, v2).
+Out(v0, v1) :- A(v0, v1), B(v1, v2).
+Out(v0, v1) :- A(v0, v1), Out(v0, v2).
+Out(v0, v2) :- A(v0, v1), B(v1, v2).
+Out(v0, v2) :- A(v0, v1), B(v2, v1).
+Out(v2, v0) :- B(v0, v1), Out(v2, v1).
+Out(v2, v1) :- B(v0, v1), Out(v2, v0).

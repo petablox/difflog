@@ -1,0 +1,76 @@
+bird(v0) :- fish(v0).
+bird(v0) :- fish(v0), has_covering(v0, v1).
+bird(v0) :- has_covering(v0, v1).
+bird(v0) :- has_covering(v0, v1), has_eggs(v0).
+bird(v0) :- has_covering(v0, v1), has_gills(v0).
+bird(v0) :- has_covering(v0, v1), has_milk(v0).
+bird(v0) :- has_covering(v0, v1), homeothermic(v0).
+bird(v0) :- has_covering(v0, v1), mammal(v0).
+bird(v0) :- has_covering(v0, v1), reptile(v0).
+bird(v0) :- has_eggs(v0).
+bird(v0) :- has_gills(v0).
+bird(v0) :- has_milk(v0).
+bird(v0) :- homeothermic(v0).
+bird(v0) :- mammal(v0).
+bird(v0) :- reptile(v0).
+bird(v1) :- feathers(v0), has_covering(v1, v0).
+bird(v1) :- hair(v0), has_covering(v1, v0).
+bird(v1) :- none(v0), has_covering(v1, v0).
+bird(v1) :- scales(v0), has_covering(v1, v0).
+fish(v0) :- bird(v0).
+fish(v0) :- bird(v0), has_covering(v0, v1).
+fish(v0) :- has_covering(v0, v1).
+fish(v0) :- has_covering(v0, v1), has_eggs(v0).
+fish(v0) :- has_covering(v0, v1), has_gills(v0).
+fish(v0) :- has_covering(v0, v1), has_milk(v0).
+fish(v0) :- has_covering(v0, v1), homeothermic(v0).
+fish(v0) :- has_covering(v0, v1), mammal(v0).
+fish(v0) :- has_covering(v0, v1), reptile(v0).
+fish(v0) :- has_eggs(v0).
+fish(v0) :- has_gills(v0).
+fish(v0) :- has_milk(v0).
+fish(v0) :- homeothermic(v0).
+fish(v0) :- mammal(v0).
+fish(v0) :- reptile(v0).
+fish(v1) :- feathers(v0), has_covering(v1, v0).
+fish(v1) :- hair(v0), has_covering(v1, v0).
+fish(v1) :- none(v0), has_covering(v1, v0).
+fish(v1) :- scales(v0), has_covering(v1, v0).
+mammal(v0) :- bird(v0).
+mammal(v0) :- bird(v0), has_covering(v0, v1).
+mammal(v0) :- fish(v0).
+mammal(v0) :- fish(v0), has_covering(v0, v1).
+mammal(v0) :- has_covering(v0, v1).
+mammal(v0) :- has_covering(v0, v1), has_eggs(v0).
+mammal(v0) :- has_covering(v0, v1), has_gills(v0).
+mammal(v0) :- has_covering(v0, v1), has_milk(v0).
+mammal(v0) :- has_covering(v0, v1), homeothermic(v0).
+mammal(v0) :- has_covering(v0, v1), reptile(v0).
+mammal(v0) :- has_eggs(v0).
+mammal(v0) :- has_gills(v0).
+mammal(v0) :- has_milk(v0).
+mammal(v0) :- homeothermic(v0).
+mammal(v0) :- reptile(v0).
+mammal(v1) :- feathers(v0), has_covering(v1, v0).
+mammal(v1) :- hair(v0), has_covering(v1, v0).
+mammal(v1) :- none(v0), has_covering(v1, v0).
+mammal(v1) :- scales(v0), has_covering(v1, v0).
+reptile(v0) :- bird(v0).
+reptile(v0) :- bird(v0), has_covering(v0, v1).
+reptile(v0) :- fish(v0).
+reptile(v0) :- fish(v0), has_covering(v0, v1).
+reptile(v0) :- has_covering(v0, v1).
+reptile(v0) :- has_covering(v0, v1), has_eggs(v0).
+reptile(v0) :- has_covering(v0, v1), has_gills(v0).
+reptile(v0) :- has_covering(v0, v1), has_milk(v0).
+reptile(v0) :- has_covering(v0, v1), homeothermic(v0).
+reptile(v0) :- has_covering(v0, v1), mammal(v0).
+reptile(v0) :- has_eggs(v0).
+reptile(v0) :- has_gills(v0).
+reptile(v0) :- has_milk(v0).
+reptile(v0) :- homeothermic(v0).
+reptile(v0) :- mammal(v0).
+reptile(v1) :- feathers(v0), has_covering(v1, v0).
+reptile(v1) :- hair(v0), has_covering(v1, v0).
+reptile(v1) :- none(v0), has_covering(v1, v0).
+reptile(v1) :- scales(v0), has_covering(v1, v0).

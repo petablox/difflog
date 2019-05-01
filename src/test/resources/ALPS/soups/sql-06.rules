@@ -1,0 +1,8 @@
+Out(v0, v1, v0) :- Child(v0, v1, v2).
+Out(v0, v1, v0) :- Out(v0, v1, v2).
+Out(v0, v1, v0) :- Parent(v0, v1, v2).
+Out(v0, v1, v2) :- Child(v0, v1, v2).
+Out(v0, v1, v2) :- Parent(v0, v1, v2).
+Out(v2, v1, v2) :- Child(v0, v1, v2).
+Out(v2, v1, v2) :- Out(v0, v1, v2).
+Out(v2, v1, v2) :- Parent(v0, v1, v2).

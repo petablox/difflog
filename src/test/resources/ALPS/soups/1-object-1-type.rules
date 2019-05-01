@@ -1,0 +1,12 @@
+pointsto_objcont(v0, v2, v1) :- points_initial(v0, v1), points_initial(v2, v1).
+pointsto_objcont(v0, v2, v1) :- points_initial(v0, v1), pointsto_objcont(v2, v0, v3).
+pointsto_objcont(v0, v2, v1) :- points_initial(v0, v1), receiver_formal(v1, v2).
+pointsto_objcont(v0, v2, v1) :- points_initial(v0, v1), store(v2, v3, v0).
+pointsto_objcont(v0, v2, v3) :- load(v0, v1, v2), points_initial(v2, v3).
+pointsto_objcont(v0, v3, v2) :- pointsto_objcont(v0, v1, v2), receiver_formal(v2, v3).
+pointsto_objcont(v1, v3, v2) :- pointsto_objcont(v0, v1, v2), receiver_formal(v2, v3).
+pointsto_objcont(v2, v0, v1) :- points_initial(v0, v1), pointsto_objcont(v2, v0, v3).
+pointsto_objcont(v2, v0, v1) :- points_initial(v0, v1), receiver_formal(v1, v2).
+pointsto_objcont(v2, v0, v1) :- points_initial(v0, v1), store(v2, v3, v0).
+pointsto_objcont(v2, v0, v3) :- load(v0, v1, v2), points_initial(v2, v3).
+pointsto_objcont(v3, v2, v0) :- actual(v0, v1, v2), points_initial(v3, v0).

@@ -1,0 +1,325 @@
+insvIM(v0, v1) :- virtIM(v0, v1).
+insvIM(v0, v2) :- polySite(v0), virtIM(v1, v2), virtIM(v0, v2).
+insvIM(v0, v2) :- virtI(v0), virtIM(v1, v2), virtIM(v0, v2).
+insvIM(v0, v3) :- insvIM(v0, v1), virtIM(v2, v1), virtIM(v2, v3).
+insvIM(v0, v3) :- insvIM(v0, v1), virtIM(v2, v3), virtIM(v0, v3).
+insvIM(v1, v2) :- CICM(v0, v1, v2).
+insvIM(v1, v2) :- CICM(v0, v1, v2), insvIM(v1, v3), virtIM(v4, v2).
+insvIM(v1, v2) :- CICM(v0, v1, v2), insvIM(v3, v2), insvIM(v1, v4).
+insvIM(v1, v2) :- CICM(v0, v1, v2), insvIM(v3, v2), polySite(v1).
+insvIM(v1, v2) :- CICM(v0, v1, v2), insvIM(v3, v2), virtIM(v1, v4).
+insvIM(v1, v2) :- CICM(v0, v1, v2), insvIM(v3, v2), virtI(v1).
+insvIM(v1, v2) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v1, v4).
+insvIM(v1, v2) :- CICM(v0, v1, v2), Mneq(v2, v3), polySite(v1).
+insvIM(v1, v2) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v1, v4).
+insvIM(v1, v2) :- CICM(v0, v1, v2), Mneq(v2, v3), virtI(v1).
+insvIM(v1, v2) :- CICM(v0, v1, v2), Mneq(v3, v2), insvIM(v1, v4).
+insvIM(v1, v2) :- CICM(v0, v1, v2), Mneq(v3, v2), polySite(v1).
+insvIM(v1, v2) :- CICM(v0, v1, v2), Mneq(v3, v2), virtIM(v1, v4).
+insvIM(v1, v2) :- CICM(v0, v1, v2), Mneq(v3, v2), virtI(v1).
+insvIM(v1, v2) :- CICM(v0, v1, v2), polySite(v1), virtIM(v3, v2).
+insvIM(v1, v2) :- CICM(v0, v1, v2), virtIM(v3, v2), virtIM(v1, v4).
+insvIM(v1, v2) :- CICM(v0, v1, v2), virtI(v1), virtIM(v3, v2).
+insvIM(v1, v3) :- CICM(v0, v1, v2), insvIM(v1, v2), Mneq(v2, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), CICM(v4, v1, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), CICM(v4, v5, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v1, v4).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v4, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), Mneq(v3, v4).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), Mneq(v4, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), polySite(v1).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v1, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v1, v4).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v4, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), virtI(v1).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v3, v2), insvIM(v4, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v3, v2), Mneq(v4, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v3, v2), virtIM(v1, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v3, v2), virtIM(v4, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), Mneq(v3, v4), virtIM(v1, v3).
+insvIM(v1, v3) :- CICM(v0, v1, v2), virtIM(v1, v2), Mneq(v2, v3).
+insvIM(v1, v4) :- CICM(v0, v1, v2), insvIM(v1, v3), Mneq(v3, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), insvIM(v3, v2), insvIM(v3, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), insvIM(v3, v2), virtIM(v3, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), insvIM(v3, v4), virtIM(v1, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), Mneq(v2, v3), Mneq(v3, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), Mneq(v2, v3), Mneq(v4, v3).
+insvIM(v1, v4) :- CICM(v0, v1, v2), Mneq(v3, v2), Mneq(v3, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), Mneq(v3, v2), Mneq(v4, v3).
+insvIM(v1, v4) :- CICM(v0, v1, v2), Mneq(v3, v4), virtIM(v1, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), virtIM(v1, v3), Mneq(v3, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), virtIM(v3, v2), insvIM(v3, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), virtIM(v3, v2), virtIM(v3, v4).
+insvIM(v1, v4) :- CICM(v0, v1, v2), virtIM(v3, v4), virtIM(v1, v4).
+insvIM(v2, v0) :- Mneq(v0, v1), insvIM(v2, v1), CICM(v3, v2, v0).
+insvIM(v2, v0) :- Mneq(v0, v1), insvIM(v2, v1), virtIM(v2, v0).
+insvIM(v2, v0) :- Mneq(v0, v1), insvIM(v2, v1), virtIM(v3, v0).
+insvIM(v2, v0) :- Mneq(v0, v1), insvIM(v2, v3), virtIM(v2, v0).
+insvIM(v2, v0) :- Mneq(v0, v1), Mneq(v1, v0), insvIM(v2, v1).
+insvIM(v2, v0) :- Mneq(v0, v1), Mneq(v1, v0), virtIM(v2, v1).
+insvIM(v2, v0) :- Mneq(v0, v1), polySite(v2), virtIM(v2, v0).
+insvIM(v2, v0) :- Mneq(v0, v1), virtIM(v2, v0), virtIM(v2, v3).
+insvIM(v2, v0) :- Mneq(v0, v1), virtIM(v2, v1), CICM(v3, v2, v0).
+insvIM(v2, v0) :- Mneq(v0, v1), virtIM(v2, v1), virtIM(v2, v0).
+insvIM(v2, v0) :- Mneq(v0, v1), virtI(v2), virtIM(v2, v0).
+insvIM(v2, v1) :- insvIM(v0, v1), insvIM(v2, v3), virtIM(v2, v1).
+insvIM(v2, v1) :- insvIM(v0, v1), polySite(v2), virtIM(v2, v1).
+insvIM(v2, v1) :- insvIM(v0, v1), virtIM(v2, v1), virtIM(v2, v3).
+insvIM(v2, v1) :- insvIM(v0, v1), virtI(v2), virtIM(v2, v1).
+insvIM(v2, v1) :- Mneq(v0, v1), insvIM(v2, v0), CICM(v3, v2, v1).
+insvIM(v2, v1) :- Mneq(v0, v1), insvIM(v2, v0), polySite(v2).
+insvIM(v2, v1) :- Mneq(v0, v1), insvIM(v2, v0), virtIM(v2, v1).
+insvIM(v2, v1) :- Mneq(v0, v1), insvIM(v2, v0), virtIM(v3, v1).
+insvIM(v2, v1) :- Mneq(v0, v1), insvIM(v2, v0), virtI(v2).
+insvIM(v2, v1) :- Mneq(v0, v1), insvIM(v2, v3), virtIM(v2, v1).
+insvIM(v2, v1) :- Mneq(v0, v1), polySite(v2), virtIM(v2, v1).
+insvIM(v2, v1) :- Mneq(v0, v1), virtIM(v2, v0), CICM(v3, v2, v1).
+insvIM(v2, v1) :- Mneq(v0, v1), virtIM(v2, v0), polySite(v2).
+insvIM(v2, v1) :- Mneq(v0, v1), virtIM(v2, v0), virtIM(v2, v1).
+insvIM(v2, v1) :- Mneq(v0, v1), virtIM(v2, v0), virtI(v2).
+insvIM(v2, v1) :- Mneq(v0, v1), virtIM(v2, v1), virtIM(v2, v3).
+insvIM(v2, v1) :- Mneq(v0, v1), virtI(v2), virtIM(v2, v1).
+insvIM(v2, v1) :- virtIM(v0, v1), virtIM(v2, v1), virtIM(v2, v3).
+insvIM(v2, v3) :- insvIM(v0, v1), insvIM(v2, v1), virtIM(v0, v3).
+insvIM(v3, v0) :- Mneq(v0, v1), insvIM(v2, v0), insvIM(v3, v1).
+insvIM(v3, v0) :- Mneq(v0, v1), insvIM(v2, v0), virtIM(v3, v1).
+insvIM(v3, v0) :- Mneq(v0, v1), Mneq(v0, v2), insvIM(v3, v2).
+insvIM(v3, v0) :- Mneq(v0, v1), Mneq(v0, v2), virtIM(v3, v2).
+insvIM(v3, v0) :- Mneq(v0, v1), Mneq(v1, v0), CICM(v2, v3, v1).
+insvIM(v3, v0) :- Mneq(v0, v1), Mneq(v1, v2), insvIM(v3, v2).
+insvIM(v3, v0) :- Mneq(v0, v1), Mneq(v1, v2), virtIM(v3, v2).
+insvIM(v3, v0) :- Mneq(v0, v1), Mneq(v2, v0), insvIM(v3, v2).
+insvIM(v3, v0) :- Mneq(v0, v1), Mneq(v2, v0), virtIM(v3, v2).
+insvIM(v3, v0) :- Mneq(v0, v1), Mneq(v2, v1), insvIM(v3, v2).
+insvIM(v3, v0) :- Mneq(v0, v1), Mneq(v2, v1), virtIM(v3, v2).
+insvIM(v3, v0) :- Mneq(v0, v1), virtIM(v2, v0), virtIM(v3, v1).
+insvIM(v3, v1) :- insvIM(v0, v1), CICM(v2, v0, v1), CICM(v2, v3, v4).
+insvIM(v3, v1) :- insvIM(v0, v1), insvIM(v0, v2), insvIM(v3, v2).
+insvIM(v3, v1) :- insvIM(v0, v1), insvIM(v0, v2), virtIM(v3, v2).
+insvIM(v3, v1) :- insvIM(v0, v1), virtIM(v0, v2), insvIM(v3, v2).
+insvIM(v3, v1) :- insvIM(v0, v1), virtIM(v0, v2), virtIM(v3, v2).
+insvIM(v3, v1) :- Mneq(v0, v1), insvIM(v2, v1), insvIM(v3, v0).
+insvIM(v3, v1) :- Mneq(v0, v1), insvIM(v2, v1), virtIM(v3, v0).
+insvIM(v3, v1) :- Mneq(v0, v1), Mneq(v0, v2), insvIM(v3, v2).
+insvIM(v3, v1) :- Mneq(v0, v1), Mneq(v0, v2), virtIM(v3, v2).
+insvIM(v3, v1) :- Mneq(v0, v1), Mneq(v1, v2), insvIM(v3, v2).
+insvIM(v3, v1) :- Mneq(v0, v1), Mneq(v1, v2), virtIM(v3, v2).
+insvIM(v3, v1) :- Mneq(v0, v1), Mneq(v2, v0), insvIM(v3, v2).
+insvIM(v3, v1) :- Mneq(v0, v1), Mneq(v2, v0), virtIM(v3, v2).
+insvIM(v3, v1) :- Mneq(v0, v1), Mneq(v2, v1), insvIM(v3, v2).
+insvIM(v3, v1) :- Mneq(v0, v1), Mneq(v2, v1), virtIM(v3, v2).
+insvIM(v3, v1) :- Mneq(v0, v1), virtIM(v2, v1), virtIM(v3, v0).
+insvIM(v3, v1) :- virtIM(v0, v1), CICM(v2, v0, v1), CICM(v2, v3, v4).
+insvIM(v3, v1) :- virtIM(v0, v1), virtIM(v0, v2), virtIM(v3, v2).
+insvIM(v3, v2) :- CICM(v0, v1, v2), CICM(v0, v3, v4), Mneq(v4, v2).
+insvIM(v3, v2) :- CICM(v0, v1, v2), insvIM(v3, v4), virtIM(v3, v2).
+insvIM(v3, v2) :- CICM(v0, v1, v2), polySite(v3), virtIM(v3, v2).
+insvIM(v3, v2) :- CICM(v0, v1, v2), virtIM(v3, v4), virtIM(v3, v2).
+insvIM(v3, v2) :- CICM(v0, v1, v2), virtI(v3), virtIM(v3, v2).
+insvIM(v3, v2) :- insvIM(v0, v1), virtIM(v0, v2), virtIM(v3, v1).
+insvIM(v3, v4) :- CICM(v0, v1, v2), CICM(v0, v3, v2), insvIM(v1, v4).
+insvIM(v3, v4) :- CICM(v0, v1, v2), CICM(v0, v3, v2), virtIM(v1, v4).
+insvIM(v3, v4) :- CICM(v0, v1, v2), insvIM(v3, v2), virtIM(v1, v4).
+insvIM(v3, v5) :- CICM(v0, v1, v2), CICM(v0, v3, v4), insvIM(v1, v5).
+insvIM(v3, v5) :- CICM(v0, v1, v2), CICM(v0, v3, v4), Mneq(v2, v5).
+insvIM(v3, v5) :- CICM(v0, v1, v2), CICM(v0, v3, v4), virtIM(v1, v5).
+insvIM(v4, v2) :- CICM(v0, v1, v2), insvIM(v1, v3), insvIM(v4, v3).
+insvIM(v4, v2) :- CICM(v0, v1, v2), insvIM(v1, v3), virtIM(v4, v3).
+insvIM(v4, v2) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v4, v3).
+insvIM(v4, v2) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v4, v3).
+insvIM(v4, v2) :- CICM(v0, v1, v2), Mneq(v3, v2), insvIM(v4, v3).
+insvIM(v4, v2) :- CICM(v0, v1, v2), Mneq(v3, v2), virtIM(v4, v3).
+insvIM(v4, v2) :- CICM(v0, v1, v2), virtIM(v1, v3), insvIM(v4, v3).
+insvIM(v4, v2) :- CICM(v0, v1, v2), virtIM(v1, v3), virtIM(v4, v3).
+insvIM(v4, v3) :- CICM(v0, v1, v2), CICM(v0, v1, v3), insvIM(v4, v2).
+insvIM(v4, v3) :- CICM(v0, v1, v2), CICM(v0, v1, v3), virtIM(v4, v2).
+insvIM(v4, v3) :- CICM(v0, v1, v2), insvIM(v1, v3), CICM(v0, v4, v3).
+insvIM(v4, v3) :- CICM(v0, v1, v2), insvIM(v1, v3), insvIM(v4, v2).
+insvIM(v4, v3) :- CICM(v0, v1, v2), insvIM(v1, v3), virtIM(v4, v2).
+insvIM(v4, v3) :- CICM(v0, v1, v2), Mneq(v2, v3), CICM(v0, v4, v3).
+insvIM(v4, v3) :- CICM(v0, v1, v2), virtIM(v1, v3), CICM(v0, v4, v3).
+insvIM(v4, v3) :- CICM(v0, v1, v2), virtIM(v1, v3), virtIM(v4, v2).
+insvIM(v4, v5) :- CICM(v0, v1, v2), CICM(v3, v4, v2), insvIM(v1, v5).
+insvIM(v4, v5) :- CICM(v0, v1, v2), CICM(v3, v4, v2), virtIM(v1, v5).
+insvIM(v5, v4) :- CICM(v0, v1, v2), CICM(v3, v1, v4), insvIM(v5, v2).
+insvIM(v5, v4) :- CICM(v0, v1, v2), CICM(v3, v1, v4), virtIM(v5, v2).
+polySite(v0) :- insvIM(v0, v1).
+polySite(v0) :- virtIM(v0, v1).
+polySite(v0) :- virtI(v0).
+polySite(v1) :- CICM(v0, v1, v2).
+polySite(v1) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v1, v2).
+polySite(v1) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v1, v3).
+polySite(v1) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v1, v2).
+polySite(v1) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v1, v3).
+polySite(v1) :- CICM(v0, v1, v2), Mneq(v3, v2), insvIM(v1, v3).
+polySite(v1) :- CICM(v0, v1, v2), Mneq(v3, v2), virtIM(v1, v3).
+polySite(v1) :- Mneq(v0, v0), insvIM(v1, v0), CICM(v2, v1, v3).
+polySite(v1) :- Mneq(v0, v0), insvIM(v1, v0), insvIM(v1, v2).
+polySite(v1) :- Mneq(v0, v0), insvIM(v1, v0), virtIM(v1, v2).
+polySite(v1) :- Mneq(v0, v0), virtIM(v1, v0), CICM(v2, v1, v3).
+polySite(v1) :- Mneq(v0, v0), virtIM(v1, v0), insvIM(v1, v2).
+polySite(v1) :- Mneq(v0, v0), virtIM(v1, v0), virtIM(v1, v2).
+polySite(v2) :- Mneq(v0, v0), Mneq(v0, v1), insvIM(v2, v1).
+polySite(v2) :- Mneq(v0, v0), Mneq(v0, v1), virtIM(v2, v1).
+polySite(v2) :- Mneq(v0, v0), Mneq(v1, v0), insvIM(v2, v1).
+polySite(v2) :- Mneq(v0, v0), Mneq(v1, v0), virtIM(v2, v1).
+polySite(v2) :- Mneq(v0, v1), insvIM(v2, v0), CICM(v3, v2, v4).
+polySite(v2) :- Mneq(v0, v1), insvIM(v2, v0), insvIM(v2, v1).
+polySite(v2) :- Mneq(v0, v1), insvIM(v2, v0), virtIM(v2, v1).
+polySite(v2) :- Mneq(v0, v1), insvIM(v2, v0), virtI(v2).
+polySite(v2) :- Mneq(v0, v1), insvIM(v2, v1), virtIM(v2, v0).
+polySite(v2) :- Mneq(v0, v1), Mneq(v1, v0), insvIM(v2, v1).
+polySite(v2) :- Mneq(v0, v1), Mneq(v1, v0), virtIM(v2, v1).
+polySite(v2) :- Mneq(v0, v1), virtIM(v2, v0), CICM(v3, v2, v4).
+polySite(v2) :- Mneq(v0, v1), virtIM(v2, v0), virtIM(v2, v1).
+polySite(v2) :- Mneq(v0, v1), virtIM(v2, v0), virtI(v2).
+polySite(v2) :- polySite(v0), insvIM(v0, v1), insvIM(v2, v1).
+polySite(v2) :- polySite(v0), insvIM(v0, v1), virtIM(v2, v1).
+polySite(v2) :- polySite(v0), virtIM(v0, v1), insvIM(v2, v1).
+polySite(v2) :- polySite(v0), virtIM(v0, v1), virtIM(v2, v1).
+polySite(v2) :- virtI(v0), insvIM(v0, v1), insvIM(v2, v1).
+polySite(v2) :- virtI(v0), insvIM(v0, v1), virtIM(v2, v1).
+polySite(v2) :- virtI(v0), virtIM(v0, v1), insvIM(v2, v1).
+polySite(v2) :- virtI(v0), virtIM(v0, v1), virtIM(v2, v1).
+polySite(v3) :- CICM(v0, v1, v2), insvIM(v1, v2), insvIM(v3, v2).
+polySite(v3) :- CICM(v0, v1, v2), insvIM(v1, v2), virtIM(v3, v2).
+polySite(v3) :- CICM(v0, v1, v2), virtIM(v1, v2), insvIM(v3, v2).
+polySite(v3) :- CICM(v0, v1, v2), virtIM(v1, v2), virtIM(v3, v2).
+polySite(v3) :- insvIM(v0, v1), insvIM(v0, v2), insvIM(v3, v2).
+polySite(v3) :- insvIM(v0, v1), insvIM(v0, v2), virtIM(v3, v2).
+polySite(v3) :- insvIM(v0, v1), Mneq(v1, v2), insvIM(v3, v2).
+polySite(v3) :- insvIM(v0, v1), Mneq(v1, v2), virtIM(v3, v2).
+polySite(v3) :- insvIM(v0, v1), Mneq(v2, v1), insvIM(v3, v2).
+polySite(v3) :- insvIM(v0, v1), Mneq(v2, v1), virtIM(v3, v2).
+polySite(v3) :- insvIM(v0, v1), virtIM(v0, v2), insvIM(v3, v2).
+polySite(v3) :- insvIM(v0, v1), virtIM(v0, v2), virtIM(v3, v2).
+polySite(v3) :- Mneq(v0, v0), Mneq(v1, v0), CICM(v2, v3, v1).
+polySite(v3) :- Mneq(v0, v1), CICM(v2, v3, v0), insvIM(v3, v4).
+polySite(v3) :- Mneq(v0, v1), CICM(v2, v3, v0), virtIM(v3, v4).
+polySite(v3) :- Mneq(v0, v1), CICM(v2, v3, v0), virtI(v3).
+polySite(v3) :- Mneq(v0, v1), Mneq(v0, v2), insvIM(v3, v2).
+polySite(v3) :- Mneq(v0, v1), Mneq(v0, v2), virtIM(v3, v2).
+polySite(v3) :- Mneq(v0, v1), Mneq(v1, v0), CICM(v2, v3, v1).
+polySite(v3) :- Mneq(v0, v1), Mneq(v1, v2), insvIM(v3, v2).
+polySite(v3) :- Mneq(v0, v1), Mneq(v1, v2), virtIM(v3, v2).
+polySite(v3) :- Mneq(v0, v1), Mneq(v2, v0), insvIM(v3, v2).
+polySite(v3) :- Mneq(v0, v1), Mneq(v2, v0), virtIM(v3, v2).
+polySite(v3) :- Mneq(v0, v1), Mneq(v2, v1), insvIM(v3, v2).
+polySite(v3) :- Mneq(v0, v1), Mneq(v2, v1), virtIM(v3, v2).
+polySite(v3) :- virtIM(v0, v1), insvIM(v0, v2), insvIM(v3, v2).
+polySite(v3) :- virtIM(v0, v1), insvIM(v0, v2), virtIM(v3, v2).
+polySite(v3) :- virtIM(v0, v1), Mneq(v1, v2), insvIM(v3, v2).
+polySite(v3) :- virtIM(v0, v1), Mneq(v1, v2), virtIM(v3, v2).
+polySite(v3) :- virtIM(v0, v1), Mneq(v2, v1), insvIM(v3, v2).
+polySite(v3) :- virtIM(v0, v1), Mneq(v2, v1), virtIM(v3, v2).
+polySite(v3) :- virtIM(v0, v1), virtIM(v0, v2), insvIM(v3, v2).
+polySite(v3) :- virtIM(v0, v1), virtIM(v0, v2), virtIM(v3, v2).
+polySite(v4) :- CICM(v0, v1, v2), insvIM(v1, v3), insvIM(v4, v3).
+polySite(v4) :- CICM(v0, v1, v2), insvIM(v1, v3), virtIM(v4, v3).
+polySite(v4) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v4, v3).
+polySite(v4) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v4, v3).
+polySite(v4) :- CICM(v0, v1, v2), Mneq(v3, v2), insvIM(v4, v3).
+polySite(v4) :- CICM(v0, v1, v2), Mneq(v3, v2), virtIM(v4, v3).
+polySite(v4) :- CICM(v0, v1, v2), virtIM(v1, v3), insvIM(v4, v3).
+polySite(v4) :- CICM(v0, v1, v2), virtIM(v1, v3), virtIM(v4, v3).
+polySite(v4) :- insvIM(v0, v1), CICM(v2, v0, v3), insvIM(v4, v3).
+polySite(v4) :- insvIM(v0, v1), CICM(v2, v0, v3), virtIM(v4, v3).
+polySite(v4) :- insvIM(v0, v1), Mneq(v1, v2), CICM(v3, v4, v2).
+polySite(v4) :- insvIM(v0, v1), Mneq(v2, v1), CICM(v3, v4, v2).
+polySite(v4) :- Mneq(v0, v1), Mneq(v1, v2), CICM(v3, v4, v2).
+polySite(v4) :- Mneq(v0, v1), Mneq(v2, v0), CICM(v3, v4, v2).
+polySite(v4) :- Mneq(v0, v1), Mneq(v2, v1), CICM(v3, v4, v2).
+polySite(v4) :- virtIM(v0, v1), CICM(v2, v0, v3), insvIM(v4, v3).
+polySite(v4) :- virtIM(v0, v1), CICM(v2, v0, v3), virtIM(v4, v3).
+polySite(v4) :- virtIM(v0, v1), Mneq(v1, v2), CICM(v3, v4, v2).
+polySite(v4) :- virtIM(v0, v1), Mneq(v2, v1), CICM(v3, v4, v2).
+virtI(v0) :- insvIM(v0, v1).
+virtI(v0) :- polySite(v0).
+virtI(v0) :- virtIM(v0, v1).
+virtI(v1) :- CICM(v0, v1, v2).
+virtI(v1) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v1, v2).
+virtI(v1) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v1, v3).
+virtI(v1) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v1, v2).
+virtI(v1) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v1, v3).
+virtI(v1) :- CICM(v0, v1, v2), Mneq(v3, v2), insvIM(v1, v3).
+virtI(v1) :- CICM(v0, v1, v2), Mneq(v3, v2), virtIM(v1, v3).
+virtI(v1) :- Mneq(v0, v0), insvIM(v1, v0), CICM(v2, v1, v3).
+virtI(v1) :- Mneq(v0, v0), insvIM(v1, v0), insvIM(v1, v2).
+virtI(v1) :- Mneq(v0, v0), insvIM(v1, v0), virtIM(v1, v2).
+virtI(v1) :- Mneq(v0, v0), virtIM(v1, v0), CICM(v2, v1, v3).
+virtI(v1) :- Mneq(v0, v0), virtIM(v1, v0), insvIM(v1, v2).
+virtI(v1) :- Mneq(v0, v0), virtIM(v1, v0), virtIM(v1, v2).
+virtI(v2) :- Mneq(v0, v0), Mneq(v0, v1), insvIM(v2, v1).
+virtI(v2) :- Mneq(v0, v0), Mneq(v0, v1), virtIM(v2, v1).
+virtI(v2) :- Mneq(v0, v0), Mneq(v1, v0), insvIM(v2, v1).
+virtI(v2) :- Mneq(v0, v0), Mneq(v1, v0), virtIM(v2, v1).
+virtI(v2) :- Mneq(v0, v1), insvIM(v2, v0), CICM(v3, v2, v4).
+virtI(v2) :- Mneq(v0, v1), insvIM(v2, v0), insvIM(v2, v1).
+virtI(v2) :- Mneq(v0, v1), insvIM(v2, v0), polySite(v2).
+virtI(v2) :- Mneq(v0, v1), insvIM(v2, v0), virtIM(v2, v1).
+virtI(v2) :- Mneq(v0, v1), insvIM(v2, v1), virtIM(v2, v0).
+virtI(v2) :- Mneq(v0, v1), Mneq(v1, v0), insvIM(v2, v1).
+virtI(v2) :- Mneq(v0, v1), Mneq(v1, v0), virtIM(v2, v1).
+virtI(v2) :- Mneq(v0, v1), virtIM(v2, v0), CICM(v3, v2, v4).
+virtI(v2) :- Mneq(v0, v1), virtIM(v2, v0), polySite(v2).
+virtI(v2) :- Mneq(v0, v1), virtIM(v2, v0), virtIM(v2, v1).
+virtI(v2) :- polySite(v0), insvIM(v0, v1), insvIM(v2, v1).
+virtI(v2) :- polySite(v0), insvIM(v0, v1), virtIM(v2, v1).
+virtI(v2) :- polySite(v0), virtIM(v0, v1), insvIM(v2, v1).
+virtI(v2) :- polySite(v0), virtIM(v0, v1), virtIM(v2, v1).
+virtI(v2) :- virtI(v0), insvIM(v0, v1), insvIM(v2, v1).
+virtI(v2) :- virtI(v0), insvIM(v0, v1), virtIM(v2, v1).
+virtI(v2) :- virtI(v0), virtIM(v0, v1), insvIM(v2, v1).
+virtI(v2) :- virtI(v0), virtIM(v0, v1), virtIM(v2, v1).
+virtI(v3) :- CICM(v0, v1, v2), insvIM(v1, v2), insvIM(v3, v2).
+virtI(v3) :- CICM(v0, v1, v2), insvIM(v1, v2), virtIM(v3, v2).
+virtI(v3) :- CICM(v0, v1, v2), virtIM(v1, v2), insvIM(v3, v2).
+virtI(v3) :- CICM(v0, v1, v2), virtIM(v1, v2), virtIM(v3, v2).
+virtI(v3) :- insvIM(v0, v1), insvIM(v0, v2), insvIM(v3, v2).
+virtI(v3) :- insvIM(v0, v1), insvIM(v0, v2), virtIM(v3, v2).
+virtI(v3) :- insvIM(v0, v1), Mneq(v1, v2), insvIM(v3, v2).
+virtI(v3) :- insvIM(v0, v1), Mneq(v1, v2), virtIM(v3, v2).
+virtI(v3) :- insvIM(v0, v1), Mneq(v2, v1), insvIM(v3, v2).
+virtI(v3) :- insvIM(v0, v1), Mneq(v2, v1), virtIM(v3, v2).
+virtI(v3) :- insvIM(v0, v1), virtIM(v0, v2), insvIM(v3, v2).
+virtI(v3) :- insvIM(v0, v1), virtIM(v0, v2), virtIM(v3, v2).
+virtI(v3) :- Mneq(v0, v0), Mneq(v1, v0), CICM(v2, v3, v1).
+virtI(v3) :- Mneq(v0, v1), CICM(v2, v3, v0), insvIM(v3, v4).
+virtI(v3) :- Mneq(v0, v1), CICM(v2, v3, v0), polySite(v3).
+virtI(v3) :- Mneq(v0, v1), CICM(v2, v3, v0), virtIM(v3, v4).
+virtI(v3) :- Mneq(v0, v1), Mneq(v0, v2), insvIM(v3, v2).
+virtI(v3) :- Mneq(v0, v1), Mneq(v0, v2), virtIM(v3, v2).
+virtI(v3) :- Mneq(v0, v1), Mneq(v1, v0), CICM(v2, v3, v1).
+virtI(v3) :- Mneq(v0, v1), Mneq(v1, v2), insvIM(v3, v2).
+virtI(v3) :- Mneq(v0, v1), Mneq(v1, v2), virtIM(v3, v2).
+virtI(v3) :- Mneq(v0, v1), Mneq(v2, v0), insvIM(v3, v2).
+virtI(v3) :- Mneq(v0, v1), Mneq(v2, v0), virtIM(v3, v2).
+virtI(v3) :- Mneq(v0, v1), Mneq(v2, v1), insvIM(v3, v2).
+virtI(v3) :- Mneq(v0, v1), Mneq(v2, v1), virtIM(v3, v2).
+virtI(v3) :- virtIM(v0, v1), insvIM(v0, v2), insvIM(v3, v2).
+virtI(v3) :- virtIM(v0, v1), insvIM(v0, v2), virtIM(v3, v2).
+virtI(v3) :- virtIM(v0, v1), Mneq(v1, v2), insvIM(v3, v2).
+virtI(v3) :- virtIM(v0, v1), Mneq(v1, v2), virtIM(v3, v2).
+virtI(v3) :- virtIM(v0, v1), Mneq(v2, v1), insvIM(v3, v2).
+virtI(v3) :- virtIM(v0, v1), Mneq(v2, v1), virtIM(v3, v2).
+virtI(v3) :- virtIM(v0, v1), virtIM(v0, v2), insvIM(v3, v2).
+virtI(v3) :- virtIM(v0, v1), virtIM(v0, v2), virtIM(v3, v2).
+virtI(v4) :- CICM(v0, v1, v2), insvIM(v1, v3), insvIM(v4, v3).
+virtI(v4) :- CICM(v0, v1, v2), insvIM(v1, v3), virtIM(v4, v3).
+virtI(v4) :- CICM(v0, v1, v2), Mneq(v2, v3), insvIM(v4, v3).
+virtI(v4) :- CICM(v0, v1, v2), Mneq(v2, v3), virtIM(v4, v3).
+virtI(v4) :- CICM(v0, v1, v2), Mneq(v3, v2), insvIM(v4, v3).
+virtI(v4) :- CICM(v0, v1, v2), Mneq(v3, v2), virtIM(v4, v3).
+virtI(v4) :- CICM(v0, v1, v2), virtIM(v1, v3), insvIM(v4, v3).
+virtI(v4) :- CICM(v0, v1, v2), virtIM(v1, v3), virtIM(v4, v3).
+virtI(v4) :- insvIM(v0, v1), CICM(v2, v0, v3), insvIM(v4, v3).
+virtI(v4) :- insvIM(v0, v1), CICM(v2, v0, v3), virtIM(v4, v3).
+virtI(v4) :- insvIM(v0, v1), Mneq(v1, v2), CICM(v3, v4, v2).
+virtI(v4) :- insvIM(v0, v1), Mneq(v2, v1), CICM(v3, v4, v2).
+virtI(v4) :- Mneq(v0, v1), Mneq(v1, v2), CICM(v3, v4, v2).
+virtI(v4) :- Mneq(v0, v1), Mneq(v2, v0), CICM(v3, v4, v2).
+virtI(v4) :- Mneq(v0, v1), Mneq(v2, v1), CICM(v3, v4, v2).
+virtI(v4) :- virtIM(v0, v1), CICM(v2, v0, v3), insvIM(v4, v3).
+virtI(v4) :- virtIM(v0, v1), CICM(v2, v0, v3), virtIM(v4, v3).
+virtI(v4) :- virtIM(v0, v1), Mneq(v1, v2), CICM(v3, v4, v2).
+virtI(v4) :- virtIM(v0, v1), Mneq(v2, v1), CICM(v3, v4, v2).

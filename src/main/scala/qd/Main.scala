@@ -107,6 +107,10 @@ object Main extends App {
           .map({ case (weight, rule) => s"$weight: $rule" })
           .foreach(println)
 
+      case Array("build-soup", dataFilename, templateFilename) =>
+        val query = readALPSProblem(dataFilename, templateFilename)
+        query.rules.foreach(println)
+
       case Array("ntp-learn", _*) => ???
       case Array("ntp-query", _*)=> ???
       case _ =>
@@ -157,6 +161,10 @@ object Main extends App {
              |            tgtLoss
              |            maxIters
              |     Runs Difflog with probabilistic sampling of derivation graphs
+             |
+             | 6. build-soup data.d
+             |               templates.tp
+             |    Prints the set of rules from which selection occurs
            """.stripMargin)
     }
 

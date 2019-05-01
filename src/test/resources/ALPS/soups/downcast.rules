@@ -1,0 +1,359 @@
+badCast(v0, v1) :- ptsVT(v0, v1).
+badCast(v0, v1) :- ptsVT(v0, v1), reachableCast(v1, v0).
+badCast(v0, v1) :- ptsVT(v0, v1), reachableCast(v1, v2).
+badCast(v0, v1) :- ptsVT(v0, v1), reachableCast(v2, v0).
+badCast(v0, v1) :- ptsVT(v0, v1), unsafeDowncast(v0, v2).
+badCast(v0, v1) :- ptsVT(v0, v1), unsafeDowncast(v2, v1).
+badCast(v0, v1) :- unsafeDowncast(v0, v1).
+badCast(v0, v2) :- badCast(v0, v1), notSub(v1, v2).
+badCast(v0, v2) :- badCast(v0, v1), notSub(v2, v1).
+badCast(v0, v2) :- badCast(v0, v1), ptsVT(v0, v2).
+badCast(v0, v2) :- badCast(v0, v1), reachableCast(v2, v0).
+badCast(v0, v2) :- badCast(v0, v1), unsafeDowncast(v0, v2).
+badCast(v0, v2) :- ptsVT(v0, v1), ptsVT(v0, v2).
+badCast(v0, v2) :- ptsVT(v0, v1), reachableCast(v2, v0).
+badCast(v0, v2) :- ptsVT(v0, v1), unsafeDowncast(v0, v2).
+badCast(v0, v2) :- unsafeDowncast(v0, v1), unsafeDowncast(v0, v2).
+badCast(v0, v2) :- VH(v0, v1), ptsVT(v0, v2).
+badCast(v0, v2) :- VH(v0, v1), reachableCast(v2, v0).
+badCast(v0, v2) :- VH(v0, v1), unsafeDowncast(v0, v2).
+badCast(v1, v0) :- reachableCast(v0, v1).
+badCast(v1, v0) :- reachableCast(v0, v1), unsafeDowncast(v1, v0).
+badCast(v1, v0) :- reachableCast(v0, v1), unsafeDowncast(v1, v2).
+badCast(v1, v0) :- reachableCast(v0, v1), unsafeDowncast(v2, v0).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v4).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v4, v2).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), notSub(v4, v2).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v2).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v4).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v4, v2).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v2, v4).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v4, v1).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v2).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v4).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v4, v2).
+badCast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), VH(v1, v4).
+badCast(v1, v2) :- reachableCast(v0, v1), reachableCast(v2, v1).
+badCast(v1, v2) :- reachableCast(v0, v1), unsafeDowncast(v1, v2).
+badCast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v4).
+badCast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+badCast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v4).
+badCast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v4).
+badCast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v4).
+badCast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v4).
+badCast(v2, v0) :- notSub(v0, v1), ptsVT(v2, v0).
+badCast(v2, v0) :- notSub(v0, v1), ptsVT(v2, v1).
+badCast(v2, v0) :- notSub(v0, v1), reachableCast(v0, v2).
+badCast(v2, v0) :- notSub(v0, v1), reachableCast(v1, v2).
+badCast(v2, v0) :- notSub(v0, v1), unsafeDowncast(v2, v0).
+badCast(v2, v0) :- notSub(v0, v1), unsafeDowncast(v2, v1).
+badCast(v2, v0) :- reachableCast(v0, v1), reachableCast(v0, v2).
+badCast(v2, v0) :- reachableCast(v0, v1), unsafeDowncast(v2, v0).
+badCast(v2, v1) :- badCast(v0, v1), ptsVT(v2, v1).
+badCast(v2, v1) :- badCast(v0, v1), reachableCast(v1, v2).
+badCast(v2, v1) :- badCast(v0, v1), unsafeDowncast(v2, v1).
+badCast(v2, v1) :- HT(v0, v1), ptsVT(v2, v1).
+badCast(v2, v1) :- HT(v0, v1), reachableCast(v1, v2).
+badCast(v2, v1) :- HT(v0, v1), unsafeDowncast(v2, v1).
+badCast(v2, v1) :- HT(v0, v1), VH(v2, v0).
+badCast(v2, v1) :- notSub(v0, v1), ptsVT(v2, v0).
+badCast(v2, v1) :- notSub(v0, v1), ptsVT(v2, v1).
+badCast(v2, v1) :- notSub(v0, v1), reachableCast(v0, v2).
+badCast(v2, v1) :- notSub(v0, v1), reachableCast(v1, v2).
+badCast(v2, v1) :- notSub(v0, v1), unsafeDowncast(v2, v0).
+badCast(v2, v1) :- notSub(v0, v1), unsafeDowncast(v2, v1).
+badCast(v2, v1) :- ptsVT(v0, v1), ptsVT(v2, v1).
+badCast(v2, v1) :- ptsVT(v0, v1), reachableCast(v1, v2).
+badCast(v2, v1) :- ptsVT(v0, v1), unsafeDowncast(v2, v1).
+badCast(v2, v1) :- unsafeDowncast(v0, v1), unsafeDowncast(v2, v1).
+badCast(v3, v0) :- reachableCast(v0, v1), McheckCastInst(v2, v1, v0, v3).
+badCast(v3, v0) :- reachableCast(v0, v1), McheckCastInst(v2, v3, v0, v1).
+badCast(v3, v1) :- badCast(v0, v1), McheckCastInst(v2, v0, v1, v3).
+badCast(v3, v1) :- badCast(v0, v1), McheckCastInst(v2, v3, v1, v0).
+badCast(v3, v1) :- HT(v0, v1), McheckCastInst(v2, v3, v1, v4).
+badCast(v3, v1) :- ptsVT(v0, v1), McheckCastInst(v2, v0, v1, v3).
+badCast(v3, v1) :- ptsVT(v0, v1), McheckCastInst(v2, v3, v1, v0).
+badCast(v3, v1) :- unsafeDowncast(v0, v1), McheckCastInst(v2, v0, v1, v3).
+badCast(v3, v1) :- unsafeDowncast(v0, v1), McheckCastInst(v2, v3, v1, v0).
+badCast(v3, v2) :- McheckCastInst(v0, v1, v2, v3).
+badCast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v4).
+badCast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v2).
+badCast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v4).
+badCast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v2).
+badCast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v4).
+badCast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), VH(v3, v4).
+badCast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v4).
+badCast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+badCast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v4).
+badCast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v4).
+badCast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v4).
+badCast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v4).
+badCast(v4, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v4, v2).
+badCast(v4, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v4, v2).
+ptsVT(v0, v1) :- badCast(v0, v1).
+ptsVT(v0, v1) :- badCast(v0, v1), notSub(v1, v2).
+ptsVT(v0, v1) :- badCast(v0, v1), notSub(v2, v1).
+ptsVT(v0, v1) :- badCast(v0, v1), ptsVT(v0, v2).
+ptsVT(v0, v1) :- badCast(v0, v1), ptsVT(v2, v1).
+ptsVT(v0, v1) :- badCast(v0, v1), reachableCast(v1, v0).
+ptsVT(v0, v1) :- badCast(v0, v1), reachableCast(v1, v2).
+ptsVT(v0, v1) :- badCast(v0, v1), reachableCast(v2, v0).
+ptsVT(v0, v1) :- badCast(v0, v1), unsafeDowncast(v0, v2).
+ptsVT(v0, v1) :- badCast(v0, v1), unsafeDowncast(v2, v1).
+ptsVT(v0, v1) :- unsafeDowncast(v0, v1).
+ptsVT(v0, v2) :- badCast(v0, v1), badCast(v0, v2).
+ptsVT(v0, v2) :- badCast(v0, v1), notSub(v1, v2).
+ptsVT(v0, v2) :- badCast(v0, v1), notSub(v2, v1).
+ptsVT(v0, v2) :- badCast(v0, v1), reachableCast(v2, v0).
+ptsVT(v0, v2) :- badCast(v0, v1), unsafeDowncast(v0, v2).
+ptsVT(v0, v2) :- ptsVT(v0, v1), reachableCast(v2, v0).
+ptsVT(v0, v2) :- ptsVT(v0, v1), unsafeDowncast(v0, v2).
+ptsVT(v0, v2) :- unsafeDowncast(v0, v1), unsafeDowncast(v0, v2).
+ptsVT(v0, v2) :- VH(v0, v1), badCast(v0, v2).
+ptsVT(v0, v2) :- VH(v0, v1), reachableCast(v2, v0).
+ptsVT(v0, v2) :- VH(v0, v1), unsafeDowncast(v0, v2).
+ptsVT(v1, v0) :- reachableCast(v0, v1).
+ptsVT(v1, v0) :- reachableCast(v0, v1), unsafeDowncast(v1, v0).
+ptsVT(v1, v0) :- reachableCast(v0, v1), unsafeDowncast(v1, v2).
+ptsVT(v1, v0) :- reachableCast(v0, v1), unsafeDowncast(v2, v0).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v2).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v4).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v4, v2).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), notSub(v4, v2).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v4).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v4, v2).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v2, v4).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v4, v1).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v2).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v4).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v4, v2).
+ptsVT(v1, v2) :- McheckCastInst(v0, v1, v2, v3), VH(v1, v4).
+ptsVT(v1, v2) :- reachableCast(v0, v1), reachableCast(v2, v1).
+ptsVT(v1, v2) :- reachableCast(v0, v1), unsafeDowncast(v1, v2).
+ptsVT(v1, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v4).
+ptsVT(v1, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v4).
+ptsVT(v1, v4) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+ptsVT(v1, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v4).
+ptsVT(v1, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v4).
+ptsVT(v1, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v4).
+ptsVT(v2, v0) :- notSub(v0, v1), ptsVT(v2, v1).
+ptsVT(v2, v0) :- notSub(v0, v1), reachableCast(v0, v2).
+ptsVT(v2, v0) :- notSub(v0, v1), reachableCast(v1, v2).
+ptsVT(v2, v0) :- notSub(v0, v1), unsafeDowncast(v2, v0).
+ptsVT(v2, v0) :- notSub(v0, v1), unsafeDowncast(v2, v1).
+ptsVT(v2, v0) :- reachableCast(v0, v1), reachableCast(v0, v2).
+ptsVT(v2, v0) :- reachableCast(v0, v1), unsafeDowncast(v2, v0).
+ptsVT(v2, v1) :- badCast(v0, v1), badCast(v2, v1).
+ptsVT(v2, v1) :- badCast(v0, v1), reachableCast(v1, v2).
+ptsVT(v2, v1) :- badCast(v0, v1), unsafeDowncast(v2, v1).
+ptsVT(v2, v1) :- HT(v0, v1), badCast(v2, v1).
+ptsVT(v2, v1) :- HT(v0, v1), reachableCast(v1, v2).
+ptsVT(v2, v1) :- HT(v0, v1), unsafeDowncast(v2, v1).
+ptsVT(v2, v1) :- HT(v0, v1), VH(v2, v0).
+ptsVT(v2, v1) :- notSub(v0, v1), ptsVT(v2, v0).
+ptsVT(v2, v1) :- notSub(v0, v1), reachableCast(v0, v2).
+ptsVT(v2, v1) :- notSub(v0, v1), reachableCast(v1, v2).
+ptsVT(v2, v1) :- notSub(v0, v1), unsafeDowncast(v2, v0).
+ptsVT(v2, v1) :- notSub(v0, v1), unsafeDowncast(v2, v1).
+ptsVT(v2, v1) :- ptsVT(v0, v1), reachableCast(v1, v2).
+ptsVT(v2, v1) :- ptsVT(v0, v1), unsafeDowncast(v2, v1).
+ptsVT(v2, v1) :- unsafeDowncast(v0, v1), unsafeDowncast(v2, v1).
+ptsVT(v3, v0) :- reachableCast(v0, v1), McheckCastInst(v2, v1, v0, v3).
+ptsVT(v3, v0) :- reachableCast(v0, v1), McheckCastInst(v2, v3, v0, v1).
+ptsVT(v3, v1) :- badCast(v0, v1), McheckCastInst(v2, v0, v1, v3).
+ptsVT(v3, v1) :- badCast(v0, v1), McheckCastInst(v2, v3, v1, v0).
+ptsVT(v3, v1) :- HT(v0, v1), McheckCastInst(v2, v3, v1, v4).
+ptsVT(v3, v1) :- ptsVT(v0, v1), McheckCastInst(v2, v0, v1, v3).
+ptsVT(v3, v1) :- ptsVT(v0, v1), McheckCastInst(v2, v3, v1, v0).
+ptsVT(v3, v1) :- unsafeDowncast(v0, v1), McheckCastInst(v2, v0, v1, v3).
+ptsVT(v3, v1) :- unsafeDowncast(v0, v1), McheckCastInst(v2, v3, v1, v0).
+ptsVT(v3, v2) :- McheckCastInst(v0, v1, v2, v3).
+ptsVT(v3, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v2).
+ptsVT(v3, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v4).
+ptsVT(v3, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v4).
+ptsVT(v3, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v2).
+ptsVT(v3, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v4).
+ptsVT(v3, v2) :- McheckCastInst(v0, v1, v2, v3), VH(v3, v4).
+ptsVT(v3, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v4).
+ptsVT(v3, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v4).
+ptsVT(v3, v4) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+ptsVT(v3, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v4).
+ptsVT(v3, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v4).
+ptsVT(v3, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v4).
+ptsVT(v4, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v4, v2).
+ptsVT(v4, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v4, v2).
+reachableCast(v0, v2) :- notSub(v0, v1), ptsVT(v2, v0).
+reachableCast(v0, v2) :- notSub(v0, v1), ptsVT(v2, v1).
+reachableCast(v0, v2) :- notSub(v0, v1), reachableCast(v1, v2).
+reachableCast(v0, v2) :- notSub(v0, v1), unsafeDowncast(v2, v0).
+reachableCast(v0, v2) :- notSub(v0, v1), unsafeDowncast(v2, v1).
+reachableCast(v0, v2) :- reachableCast(v0, v1), unsafeDowncast(v2, v0).
+reachableCast(v0, v3) :- reachableCast(v0, v1), McheckCastInst(v2, v1, v0, v3).
+reachableCast(v0, v3) :- reachableCast(v0, v1), McheckCastInst(v2, v3, v0, v1).
+reachableCast(v1, v0) :- badCast(v0, v1).
+reachableCast(v1, v0) :- badCast(v0, v1), notSub(v1, v2).
+reachableCast(v1, v0) :- badCast(v0, v1), notSub(v2, v1).
+reachableCast(v1, v0) :- badCast(v0, v1), ptsVT(v0, v2).
+reachableCast(v1, v0) :- badCast(v0, v1), ptsVT(v2, v1).
+reachableCast(v1, v0) :- badCast(v0, v1), reachableCast(v1, v2).
+reachableCast(v1, v0) :- badCast(v0, v1), reachableCast(v2, v0).
+reachableCast(v1, v0) :- badCast(v0, v1), unsafeDowncast(v0, v2).
+reachableCast(v1, v0) :- badCast(v0, v1), unsafeDowncast(v2, v1).
+reachableCast(v1, v0) :- ptsVT(v0, v1).
+reachableCast(v1, v0) :- ptsVT(v0, v1), reachableCast(v1, v2).
+reachableCast(v1, v0) :- ptsVT(v0, v1), reachableCast(v2, v0).
+reachableCast(v1, v0) :- ptsVT(v0, v1), unsafeDowncast(v0, v2).
+reachableCast(v1, v0) :- ptsVT(v0, v1), unsafeDowncast(v2, v1).
+reachableCast(v1, v0) :- unsafeDowncast(v0, v1).
+reachableCast(v1, v2) :- badCast(v0, v1), badCast(v2, v1).
+reachableCast(v1, v2) :- badCast(v0, v1), ptsVT(v2, v1).
+reachableCast(v1, v2) :- badCast(v0, v1), unsafeDowncast(v2, v1).
+reachableCast(v1, v2) :- HT(v0, v1), badCast(v2, v1).
+reachableCast(v1, v2) :- HT(v0, v1), ptsVT(v2, v1).
+reachableCast(v1, v2) :- HT(v0, v1), unsafeDowncast(v2, v1).
+reachableCast(v1, v2) :- HT(v0, v1), VH(v2, v0).
+reachableCast(v1, v2) :- notSub(v0, v1), ptsVT(v2, v0).
+reachableCast(v1, v2) :- notSub(v0, v1), ptsVT(v2, v1).
+reachableCast(v1, v2) :- notSub(v0, v1), reachableCast(v0, v2).
+reachableCast(v1, v2) :- notSub(v0, v1), unsafeDowncast(v2, v0).
+reachableCast(v1, v2) :- notSub(v0, v1), unsafeDowncast(v2, v1).
+reachableCast(v1, v2) :- ptsVT(v0, v1), ptsVT(v2, v1).
+reachableCast(v1, v2) :- ptsVT(v0, v1), unsafeDowncast(v2, v1).
+reachableCast(v1, v2) :- unsafeDowncast(v0, v1), unsafeDowncast(v2, v1).
+reachableCast(v1, v3) :- badCast(v0, v1), McheckCastInst(v2, v0, v1, v3).
+reachableCast(v1, v3) :- badCast(v0, v1), McheckCastInst(v2, v3, v1, v0).
+reachableCast(v1, v3) :- ptsVT(v0, v1), McheckCastInst(v2, v0, v1, v3).
+reachableCast(v1, v3) :- ptsVT(v0, v1), McheckCastInst(v2, v3, v1, v0).
+reachableCast(v1, v3) :- unsafeDowncast(v0, v1), McheckCastInst(v2, v0, v1, v3).
+reachableCast(v1, v3) :- unsafeDowncast(v0, v1), McheckCastInst(v2, v3, v1, v0).
+reachableCast(v1, v4) :- HT(v0, v1), McheckCastInst(v2, v3, v1, v4).
+reachableCast(v2, v0) :- badCast(v0, v1), badCast(v0, v2).
+reachableCast(v2, v0) :- badCast(v0, v1), notSub(v1, v2).
+reachableCast(v2, v0) :- badCast(v0, v1), notSub(v2, v1).
+reachableCast(v2, v0) :- badCast(v0, v1), ptsVT(v0, v2).
+reachableCast(v2, v0) :- badCast(v0, v1), unsafeDowncast(v0, v2).
+reachableCast(v2, v0) :- ptsVT(v0, v1), ptsVT(v0, v2).
+reachableCast(v2, v0) :- ptsVT(v0, v1), unsafeDowncast(v0, v2).
+reachableCast(v2, v0) :- unsafeDowncast(v0, v1), unsafeDowncast(v0, v2).
+reachableCast(v2, v0) :- VH(v0, v1), badCast(v0, v2).
+reachableCast(v2, v0) :- VH(v0, v1), ptsVT(v0, v2).
+reachableCast(v2, v0) :- VH(v0, v1), unsafeDowncast(v0, v2).
+reachableCast(v2, v1) :- McheckCastInst(v0, v1, v2, v3).
+reachableCast(v2, v1) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+reachableCast(v2, v1) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v2, v4).
+reachableCast(v2, v1) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v4, v1).
+reachableCast(v2, v1) :- reachableCast(v0, v1), unsafeDowncast(v1, v2).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v4).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), badCast(v4, v2).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), notSub(v4, v2).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v4).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v4, v2).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v2, v4).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v4, v3).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v4).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v4, v2).
+reachableCast(v2, v3) :- McheckCastInst(v0, v1, v2, v3), VH(v3, v4).
+reachableCast(v4, v1) :- McheckCastInst(v0, v1, v2, v3), notSub(v4, v2).
+reachableCast(v4, v1) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v4, v3).
+reachableCast(v4, v3) :- McheckCastInst(v0, v1, v2, v3), notSub(v4, v2).
+reachableCast(v4, v3) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v4, v1).
+unsafeDowncast(v0, v1) :- badCast(v0, v1).
+unsafeDowncast(v0, v1) :- badCast(v0, v1), notSub(v1, v2).
+unsafeDowncast(v0, v1) :- badCast(v0, v1), notSub(v2, v1).
+unsafeDowncast(v0, v1) :- badCast(v0, v1), ptsVT(v0, v2).
+unsafeDowncast(v0, v1) :- badCast(v0, v1), ptsVT(v2, v1).
+unsafeDowncast(v0, v1) :- badCast(v0, v1), reachableCast(v1, v0).
+unsafeDowncast(v0, v1) :- badCast(v0, v1), reachableCast(v1, v2).
+unsafeDowncast(v0, v1) :- badCast(v0, v1), reachableCast(v2, v0).
+unsafeDowncast(v0, v1) :- badCast(v0, v1), unsafeDowncast(v0, v2).
+unsafeDowncast(v0, v1) :- badCast(v0, v1), unsafeDowncast(v2, v1).
+unsafeDowncast(v0, v1) :- ptsVT(v0, v1).
+unsafeDowncast(v0, v1) :- ptsVT(v0, v1), reachableCast(v1, v0).
+unsafeDowncast(v0, v1) :- ptsVT(v0, v1), reachableCast(v1, v2).
+unsafeDowncast(v0, v1) :- ptsVT(v0, v1), reachableCast(v2, v0).
+unsafeDowncast(v0, v1) :- ptsVT(v0, v1), unsafeDowncast(v0, v2).
+unsafeDowncast(v0, v1) :- ptsVT(v0, v1), unsafeDowncast(v2, v1).
+unsafeDowncast(v0, v2) :- badCast(v0, v1), badCast(v0, v2).
+unsafeDowncast(v0, v2) :- badCast(v0, v1), notSub(v1, v2).
+unsafeDowncast(v0, v2) :- badCast(v0, v1), notSub(v2, v1).
+unsafeDowncast(v0, v2) :- badCast(v0, v1), ptsVT(v0, v2).
+unsafeDowncast(v0, v2) :- badCast(v0, v1), reachableCast(v2, v0).
+unsafeDowncast(v0, v2) :- ptsVT(v0, v1), ptsVT(v0, v2).
+unsafeDowncast(v0, v2) :- ptsVT(v0, v1), reachableCast(v2, v0).
+unsafeDowncast(v0, v2) :- VH(v0, v1), badCast(v0, v2).
+unsafeDowncast(v0, v2) :- VH(v0, v1), ptsVT(v0, v2).
+unsafeDowncast(v0, v2) :- VH(v0, v1), reachableCast(v2, v0).
+unsafeDowncast(v1, v0) :- reachableCast(v0, v1).
+unsafeDowncast(v1, v0) :- reachableCast(v0, v1), unsafeDowncast(v1, v2).
+unsafeDowncast(v1, v0) :- reachableCast(v0, v1), unsafeDowncast(v2, v0).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v2).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v4).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v4, v2).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), notSub(v4, v2).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v2).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v4).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v4, v2).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v2, v4).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), reachableCast(v4, v1).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v4).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v4, v2).
+unsafeDowncast(v1, v2) :- McheckCastInst(v0, v1, v2, v3), VH(v1, v4).
+unsafeDowncast(v1, v2) :- reachableCast(v0, v1), reachableCast(v2, v1).
+unsafeDowncast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v4).
+unsafeDowncast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v4).
+unsafeDowncast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+unsafeDowncast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v4).
+unsafeDowncast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v4).
+unsafeDowncast(v1, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v4).
+unsafeDowncast(v2, v0) :- notSub(v0, v1), ptsVT(v2, v0).
+unsafeDowncast(v2, v0) :- notSub(v0, v1), ptsVT(v2, v1).
+unsafeDowncast(v2, v0) :- notSub(v0, v1), reachableCast(v0, v2).
+unsafeDowncast(v2, v0) :- notSub(v0, v1), reachableCast(v1, v2).
+unsafeDowncast(v2, v0) :- notSub(v0, v1), unsafeDowncast(v2, v1).
+unsafeDowncast(v2, v0) :- reachableCast(v0, v1), reachableCast(v0, v2).
+unsafeDowncast(v2, v1) :- badCast(v0, v1), badCast(v2, v1).
+unsafeDowncast(v2, v1) :- badCast(v0, v1), ptsVT(v2, v1).
+unsafeDowncast(v2, v1) :- badCast(v0, v1), reachableCast(v1, v2).
+unsafeDowncast(v2, v1) :- HT(v0, v1), badCast(v2, v1).
+unsafeDowncast(v2, v1) :- HT(v0, v1), ptsVT(v2, v1).
+unsafeDowncast(v2, v1) :- HT(v0, v1), reachableCast(v1, v2).
+unsafeDowncast(v2, v1) :- HT(v0, v1), VH(v2, v0).
+unsafeDowncast(v2, v1) :- notSub(v0, v1), ptsVT(v2, v0).
+unsafeDowncast(v2, v1) :- notSub(v0, v1), ptsVT(v2, v1).
+unsafeDowncast(v2, v1) :- notSub(v0, v1), reachableCast(v0, v2).
+unsafeDowncast(v2, v1) :- notSub(v0, v1), reachableCast(v1, v2).
+unsafeDowncast(v2, v1) :- notSub(v0, v1), unsafeDowncast(v2, v0).
+unsafeDowncast(v2, v1) :- ptsVT(v0, v1), ptsVT(v2, v1).
+unsafeDowncast(v2, v1) :- ptsVT(v0, v1), reachableCast(v1, v2).
+unsafeDowncast(v3, v0) :- reachableCast(v0, v1), McheckCastInst(v2, v1, v0, v3).
+unsafeDowncast(v3, v0) :- reachableCast(v0, v1), McheckCastInst(v2, v3, v0, v1).
+unsafeDowncast(v3, v1) :- badCast(v0, v1), McheckCastInst(v2, v0, v1, v3).
+unsafeDowncast(v3, v1) :- badCast(v0, v1), McheckCastInst(v2, v3, v1, v0).
+unsafeDowncast(v3, v1) :- HT(v0, v1), McheckCastInst(v2, v3, v1, v4).
+unsafeDowncast(v3, v1) :- ptsVT(v0, v1), McheckCastInst(v2, v0, v1, v3).
+unsafeDowncast(v3, v1) :- ptsVT(v0, v1), McheckCastInst(v2, v3, v1, v0).
+unsafeDowncast(v3, v1) :- unsafeDowncast(v0, v1), McheckCastInst(v2, v0, v1, v3).
+unsafeDowncast(v3, v1) :- unsafeDowncast(v0, v1), McheckCastInst(v2, v3, v1, v0).
+unsafeDowncast(v3, v2) :- McheckCastInst(v0, v1, v2, v3).
+unsafeDowncast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v2).
+unsafeDowncast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v4).
+unsafeDowncast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v2).
+unsafeDowncast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v4).
+unsafeDowncast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v3, v4).
+unsafeDowncast(v3, v2) :- McheckCastInst(v0, v1, v2, v3), VH(v3, v4).
+unsafeDowncast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v1, v4).
+unsafeDowncast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), badCast(v3, v4).
+unsafeDowncast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), notSub(v2, v4).
+unsafeDowncast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v1, v4).
+unsafeDowncast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v3, v4).
+unsafeDowncast(v3, v4) :- McheckCastInst(v0, v1, v2, v3), unsafeDowncast(v1, v4).
+unsafeDowncast(v4, v2) :- McheckCastInst(v0, v1, v2, v3), badCast(v4, v2).
+unsafeDowncast(v4, v2) :- McheckCastInst(v0, v1, v2, v3), ptsVT(v4, v2).
