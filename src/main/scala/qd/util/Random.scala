@@ -17,4 +17,8 @@ object Random {
     Contract.require(lo <= hi)
     this.synchronized { random.nextInt(hi - lo) + lo }
   }
+  def pick[T](set: Set[T]): T = {
+    val vector = set.toVector
+    vector(nextInt(0, vector.size))
+  }
 }

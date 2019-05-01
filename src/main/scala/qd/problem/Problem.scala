@@ -4,6 +4,7 @@ package problem
 import qd.Semiring.FValueSemiringObj
 import qd.instance.{Config, Instance}
 import qd.tokenvec.TokenVec
+import qd.util.Random
 import util.Contract
 
 class Problem private (
@@ -15,8 +16,12 @@ class Problem private (
                         val discreteIDB: Map[Relation, Set[DTuple]],
 
                         val pos: TokenVec,
-                        val rules: Set[Rule]
+                        val rules: Set[Rule],
+
+                        val dom2values : Map[Domain, Set[Constant]] = Map.empty[Domain,Set[Constant]],
+                        val allOutTuples : Map[Relation, Set[DTuple]] = Map.empty[Relation, Set[DTuple]]
                       ) {
+
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // 1. Relations
@@ -42,15 +47,45 @@ class Problem private (
   }
 
   def addInputRel(rel: Relation): Problem = {
-    new Problem(addRel(inputRels, rel), inventedRels, outputRels, discreteEDB + (rel -> Set()), discreteIDB, pos, rules)
+    new Problem(addRel(inputRels, rel), inventedRels, outputRels, discreteEDB + (rel -> Set()), discreteIDB, pos, rules, dom2values, allOutTuples)
   }
 
   def addInventedRel(rel: Relation): Problem = {
-    new Problem(inputRels, addRel(inventedRels, rel), outputRels, discreteEDB, discreteIDB, pos, rules)
+    new Problem(inputRels, addRel(inventedRels, rel), outputRels, discreteEDB, discreteIDB, pos, rules, dom2values, allOutTuples)
   }
 
   def addOutputRel(rel: Relation): Problem = {
-    new Problem(inputRels, inventedRels, addRel(outputRels, rel), discreteEDB, discreteIDB + (rel -> Set()), pos, rules)
+    new Problem(inputRels, inventedRels, addRel(outputRels, rel), discreteEDB, discreteIDB + (rel -> Set()), pos, rules, dom2values, allOutTuples)
+  }
+
+
+  def addDom2values(d2v :  Map[Domain, Set[Constant]]) : Problem = {
+    new Problem(inputRels, inventedRels, outputRels, discreteEDB, discreteIDB, pos, rules, d2v, allOutTuples)
+  }
+
+  def genTuples(sig:IndexedSeq[Domain], k:Int): Set[ Vector[Constant] ] = {
+    if (k <= 0) Set( Vector.empty )
+    else {
+      for {v <- dom2values(sig(k-1)); partial <- genTuples(sig, k-1) } yield partial :+ v
+    }
+  }
+
+  def addOutputRelThenDump(rel: Relation): Problem = {
+    val relTuples = genTuples(rel.signature, rel.signature.size).map(x => DTuple(x))
+
+    new Problem(inputRels, inventedRels, addRel(outputRels, rel), discreteEDB, discreteIDB + (rel -> Set()), pos, rules,
+      dom2values, allOutTuples + (rel -> relTuples))
+  }
+
+  // inject noise
+  def injectNoise() : Problem = {
+    // randomly pick an output relation and an output tuple
+    val rel = Random.pick(outputRels)
+    val noiseTuple = Random.pick( allOutTuples(rel) )
+    val cleanIDB = discreteIDB(rel)
+    val noisyIDB = if (cleanIDB.contains(noiseTuple)) { cleanIDB - noiseTuple } else { cleanIDB + noiseTuple }
+
+    new Problem(inputRels, inventedRels, outputRels, discreteEDB,  discreteIDB + (rel -> noisyIDB), pos, rules, dom2values, allOutTuples)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,11 +117,11 @@ class Problem private (
   }
 
   def addEDBTuples(rts: collection.immutable.Seq[(Relation, DTuple)]): Problem = {
-    new Problem(inputRels, inventedRels, outputRels, addTuples(discreteEDB, rts), discreteIDB, pos, rules)
+    new Problem(inputRels, inventedRels, outputRels, addTuples(discreteEDB, rts), discreteIDB, pos, rules, dom2values, allOutTuples)
   }
 
   def addIDBTuples(rts: collection.immutable.Seq[(Relation, DTuple)]): Problem = {
-    new Problem(inputRels, inventedRels, outputRels, discreteEDB, addTuples(discreteIDB, rts), pos, rules)
+    new Problem(inputRels, inventedRels, outputRels, discreteEDB, addTuples(discreteIDB, rts), pos, rules, dom2values, allOutTuples)
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,14 +134,14 @@ class Problem private (
       scribe.info(s"Ignoring redeclaration of token $token. Already initialized to ${pos(token)}")
       return this
     }
-    new Problem(inputRels, inventedRels, outputRels, discreteEDB, discreteIDB, pos + (token -> value), rules)
+    new Problem(inputRels, inventedRels, outputRels, discreteEDB, discreteIDB, pos + (token -> value), rules, dom2values, allOutTuples)
   }
 
   def addRule(rule: Rule): Problem = {
     Contract.require(knownRelation(rule.head.relation))
     Contract.require(rule.body.forall(literal => knownRelation(literal.relation)))
     Contract.require(rule.lineage.tokenSet.forall(token => pos.contains(token)))
-    new Problem(inputRels, inventedRels, outputRels, discreteEDB, discreteIDB, pos, rules + rule)
+    new Problem(inputRels, inventedRels, outputRels, discreteEDB, discreteIDB, pos, rules + rule, dom2values, allOutTuples)
   }
 
   def addRules(newRules: Set[Rule]): Problem = newRules.foldLeft(this)(_ addRule _)

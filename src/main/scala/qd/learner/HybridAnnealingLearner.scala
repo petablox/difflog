@@ -83,6 +83,7 @@ object HybridAnnealingLearner extends Learner {
                    ): State = {
     require(iteration >= 0)
     val solutionPointOpt = Learner.simplifyIfSolutionPoint(problem, evaluator, scorer, currState.cOut)
+//    val solutionPointOpt = Learner.trySeparate(problem, evaluator, scorer, currState, 0.1)
     solutionPointOpt.getOrElse {
       /* val newPos = TokenVec(problem.allTokens,
                             token => if (!forbiddenTokens.contains(token)) Random.nextDouble() else 0.0) */

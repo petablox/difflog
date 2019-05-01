@@ -55,6 +55,8 @@ object ALPSParser {
       domainElems = domainElems + (domain -> elems)
     }
 
+    ans = ans.addDom2values(domainElems)
+
     //////////
     // 1b. Read relations
 
@@ -75,7 +77,7 @@ object ALPSParser {
 
       ans = if (isEDB) ans.addInputRel(relation)
             else if (isInventedRelation) ans.addInventedRel(relation)
-            else ans.addOutputRel(relation)
+            else ans.addOutputRelThenDump(relation)
 
       // 1b(ii). Parse tuples present in relation
       while (lines.head != ".") {

@@ -85,6 +85,26 @@ object Main extends App {
                      .map({ case (weight, rule) => s"$weight: $rule" })
                      .foreach(println)
 
+      case Array("alps-noise", dataFilename, templateFilename,
+      learnerName, evaluatorName, scorerName,
+      tgtLossStr, maxItersStr) =>
+        val query = readALPSProblem(dataFilename, templateFilename).injectNoise()
+        val learner = Learner.STD_LEARNERS(learnerName)
+        val evaluator = Evaluator.STD_EVALUATORS(evaluatorName)
+        val scorer = Scorer.STD_SCORERS(scorerName)
+        val tgtLoss = tgtLossStr.toDouble
+        val maxIters = maxItersStr.toInt
+        Contract.require(maxIters > 0)
+
+        val result = learner.learn(query, evaluator, scorer, tgtLoss, maxIters)
+        println(s"// Achieved loss ${result.loss}")
+        val weightedRules = query.rules.map(rule => (Value(rule.lineage, result.pos), rule))
+        weightedRules.filter({ case (weight, _) => FValueSemiringObj.nonZero(weight) })
+          .toVector
+          .sortBy(-_._1.v)
+          .map({ case (weight, rule) => s"$weight: $rule" })
+          .foreach(println)
+
       case Array("alps-2", dataFilename, templateFilename,
                            learnerName, extractorName, evaluatorName, scorerName,
                            nsamplesStr, tgtLossStr, maxItersStr) =>
