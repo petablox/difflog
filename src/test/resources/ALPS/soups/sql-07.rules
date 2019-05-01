@@ -1,1 +1,39 @@
 Out(v0, v1) :- In(v0, v1, v2).
+Out(v0, v1) :- In(v0, v1, v2), In(v0, v3, v4).
+Out(v0, v1) :- In(v0, v1, v2), In(v3, v1, v4).
+Out(v0, v1) :- In(v0, v1, v2), Out(v0, v3).
+Out(v0, v1) :- In(v0, v1, v2), Out(v0, v3), Out(v4, v1).
+Out(v0, v1) :- In(v0, v1, v2), Out(v3, v1).
+Out(v0, v1) :- In(v0, v1, v2), Out(v3, v1), Out(v0, v4).
+Out(v0, v3) :- In(v0, v1, v2), In(v0, v3, v4).
+Out(v0, v3) :- In(v0, v1, v2), In(v0, v3, v4), In(v5, v3, v6).
+Out(v0, v3) :- In(v0, v1, v2), In(v0, v3, v4), Out(v5, v3).
+Out(v0, v3) :- Out(v0, v1), Out(v2, v1), Out(v2, v3).
+Out(v0, v4) :- In(v0, v1, v2), In(v3, v4, v2).
+Out(v0, v4) :- In(v0, v1, v2), In(v3, v4, v2), In(v5, v4, v6).
+Out(v0, v4) :- In(v0, v1, v2), In(v3, v4, v2), Out(v5, v4).
+Out(v0, v4) :- In(v0, v1, v2), Out(v3, v1), In(v3, v4, v5).
+Out(v0, v4) :- In(v0, v1, v2), Out(v3, v1), Out(v3, v4).
+Out(v0, v5) :- In(v0, v1, v2), In(v3, v1, v4), In(v3, v5, v6).
+Out(v0, v5) :- In(v0, v1, v2), In(v3, v1, v4), Out(v3, v5).
+Out(v0, v5) :- In(v0, v1, v2), In(v3, v4, v2), In(v3, v5, v6).
+Out(v0, v5) :- In(v0, v1, v2), In(v3, v4, v2), Out(v3, v5).
+Out(v0, v6) :- In(v0, v1, v2), In(v0, v3, v4), In(v5, v6, v4).
+Out(v0, v6) :- In(v0, v1, v2), In(v3, v1, v4), In(v5, v6, v4).
+Out(v3, v1) :- In(v0, v1, v2), In(v3, v1, v4).
+Out(v3, v1) :- In(v0, v1, v2), In(v3, v1, v4), In(v3, v5, v6).
+Out(v3, v1) :- In(v0, v1, v2), In(v3, v1, v4), Out(v3, v5).
+Out(v3, v1) :- In(v0, v1, v2), In(v3, v4, v2).
+Out(v3, v1) :- In(v0, v1, v2), In(v3, v4, v2), In(v3, v5, v6).
+Out(v3, v1) :- In(v0, v1, v2), In(v3, v4, v2), Out(v3, v5).
+Out(v3, v1) :- Out(v0, v1), Out(v0, v2), Out(v3, v2).
+Out(v3, v4) :- In(v0, v1, v2), Out(v3, v1), Out(v0, v4).
+Out(v4, v1) :- In(v0, v1, v2), Out(v0, v3), In(v4, v3, v5).
+Out(v4, v1) :- In(v0, v1, v2), Out(v0, v3), Out(v4, v3).
+Out(v4, v3) :- In(v0, v1, v2), Out(v0, v3), Out(v4, v1).
+Out(v5, v1) :- In(v0, v1, v2), In(v0, v3, v4), In(v5, v3, v6).
+Out(v5, v1) :- In(v0, v1, v2), In(v0, v3, v4), In(v5, v6, v4).
+Out(v5, v1) :- In(v0, v1, v2), In(v0, v3, v4), Out(v5, v3).
+Out(v5, v1) :- In(v0, v1, v2), In(v3, v1, v4), In(v5, v6, v4).
+Out(v5, v1) :- In(v0, v1, v2), In(v3, v4, v2), In(v5, v4, v6).
+Out(v5, v1) :- In(v0, v1, v2), In(v3, v4, v2), Out(v5, v4).
