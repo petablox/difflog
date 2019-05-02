@@ -33,37 +33,33 @@
 .decl refStatField(v0: M, v1: F)
 .output refStatField
 
-rMM(v0, v2) :- rMM(v0, v1), rMM(v1, v2), Rule(32).
-rMM(v0, v2) :- refStatField(v0, v1), refStatField(v2, v1), Rule(20).
-refInstField(v0, v2, v3) :- rMM(v0, v1), refInstField(v1, v2, v3), Rule(25).
-refStatField(v0, v2) :- refInstField(v0, v1, v2), Rule(4).
-refStatField(v0, v2) :- modInstField(v0, v1, v2), Rule(3).
-refStatField(v0, v1) :- MputStatFldInst(v0, v1, v2), Rule(17).
-modStatField(v0, v1) :- refStatField(v0, v1), Rule(19).
-rMM(v1, v3) :- rMM(v0, v1), rMM(v0, v2), rMM(v2, v3), Rule(10).
-rMM(v0, v3) :- rMM(v0, v1), rMM(v1, v2), rMM(v2, v3), Rule(24).
-refInstField(v0, v4, v3) :- MgetInstFldInst(v0, v1, v2, v3), VH(v2, v4), Rule(1).
-MputStatFldInst(v3, v1, v2) :- MputStatFldInst(v0, v1, v2), rMM(v3, v0), Rule(15).
+modStatField(v0, v1) :- MputStatFldInst(v0, v1, v2), Rule(11).
+refStatField(v2, v1) :- modStatField(v0, v1), rMM(v2, v0), Rule(18).
+rMM(v0, v2) :- rMM(v0, v1), rMM(v2, v1), Rule(10).
+modStatField(v0, v2) :- rMM(v0, v1), refStatField(v1, v2), Rule(27).
+refInstField(v0, v2, v3) :- rMM(v0, v1), refInstField(v1, v2, v3), Rule(5).
+rMM(v0, v2) :- refStatField(v0, v1), refStatField(v2, v1), Rule(15).
+refInstField(v0, v4, v2) :- MputInstFldInst(v0, v1, v2, v3), VH(v1, v4), Rule(12).
+refStatField(v0, v1) :- modStatField(v0, v1), Rule(7).
+refInstField(v0, v4, v3) :- MgetInstFldInst(v0, v1, v2, v3), VH(v2, v4), Rule(22).
 refStatField(v0, v2) :- MgetStatFldInst(v0, v1, v2), Rule(6).
-modInstField(v3, v1, v2) :- modInstField(v0, v1, v2), rMM(v3, v0), Rule(5).
-modStatField(v0, v1) :- MputStatFldInst(v0, v1, v2), Rule(9).
-IM(v0, v2) :- IM(v0, v1), rMM(v1, v2), Rule(11).
-modStatField(v0, v2) :- modInstField(v0, v1, v2), Rule(2).
-rMM(v0, v2) :- modStatField(v0, v1), modStatField(v2, v1), Rule(28).
-modStatField(v0, v2) :- rMM(v0, v1), refStatField(v1, v2), Rule(31).
-rMM(v2, v1) :- IM(v0, v1), MI(v2, v0), Rule(29).
-refInstField(v0, v4, v2) :- MputInstFldInst(v0, v1, v2, v3), VH(v1, v4), Rule(33).
-modInstField(v0, v1, v2) :- refInstField(v0, v1, v2), Rule(22).
-refStatField(v0, v1) :- modStatField(v0, v1), Rule(14).
-refStatField(v0, v2) :- rMM(v0, v1), refStatField(v1, v2), Rule(27).
-modStatField(v0, v2) :- MgetStatFldInst(v0, v1, v2), Rule(26).
-rMM(v0, v2) :- MI(v0, v1), MI(v2, v1), Rule(13).
-refStatField(v2, v1) :- modStatField(v0, v1), rMM(v2, v0), Rule(23).
-modStatField(v2, v1) :- modStatField(v0, v1), rMM(v2, v0), Rule(21).
-modInstField(v0, v4, v2) :- MputInstFldInst(v0, v1, v2, v3), VH(v1, v4), Rule(12).
-rMM(v0, v2) :- rMM(v0, v1), rMM(v2, v1), Rule(16).
+rMM(v0, v2) :- rMM(v0, v1), rMM(v1, v2), Rule(29).
+modInstField(v0, v4, v2) :- MputInstFldInst(v0, v1, v2, v3), VH(v1, v4), Rule(2).
+modInstField(v0, v1, v2) :- refInstField(v0, v1, v2), Rule(14).
+rMM(v2, v1) :- IM(v0, v1), MI(v2, v0), Rule(24).
+modInstField(v3, v1, v2) :- modInstField(v0, v1, v2), rMM(v3, v0), Rule(0).
 refInstField(v0, v1, v2) :- modInstField(v0, v1, v2), Rule(8).
-modInstField(v0, v4, v3) :- MgetInstFldInst(v0, v1, v2, v3), VH(v2, v4), Rule(18).
-modStatField(v0, v2) :- refInstField(v0, v1, v2), Rule(30).
-MgetStatFldInst(v3, v1, v2) :- MgetStatFldInst(v0, v1, v2), rMM(v3, v0), Rule(7).
-MI(v2, v1) :- MI(v0, v1), rMM(v2, v0), Rule(0).
+rMM(v1, v3) :- rMM(v0, v1), rMM(v0, v2), rMM(v2, v3), Rule(28).
+modStatField(v0, v2) :- refInstField(v0, v1, v2), Rule(9).
+rMM(v0, v2) :- modStatField(v0, v1), modStatField(v2, v1), Rule(13).
+modStatField(v2, v1) :- modStatField(v0, v1), rMM(v2, v0), Rule(17).
+modStatField(v0, v2) :- MgetStatFldInst(v0, v1, v2), Rule(26).
+refStatField(v0, v2) :- modInstField(v0, v1, v2), Rule(23).
+refStatField(v0, v2) :- rMM(v0, v1), refStatField(v1, v2), Rule(21).
+modStatField(v0, v1) :- refStatField(v0, v1), Rule(16).
+refStatField(v0, v2) :- refInstField(v0, v1, v2), Rule(19).
+modInstField(v0, v4, v3) :- MgetInstFldInst(v0, v1, v2, v3), VH(v2, v4), Rule(20).
+refStatField(v0, v1) :- MputStatFldInst(v0, v1, v2), Rule(4).
+modStatField(v0, v2) :- modInstField(v0, v1, v2), Rule(25).
+rMM(v0, v3) :- rMM(v0, v1), rMM(v1, v2), rMM(v2, v3), Rule(1).
+rMM(v0, v2) :- MI(v0, v1), MI(v2, v1), Rule(3).

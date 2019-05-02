@@ -129,7 +129,8 @@ object ALPSParser {
 
       for ((bodyLits, msr, msv) <- instantiateMetaLiterals(mlits.tail, problem);
            (headLit, _, _) <- instantiateMetaLiteral(mlits.head, msr, msv, problem.outputRels ++
-                                                                           problem.inventedRels)) {
+                                                                           problem.inventedRels)
+           if problem.outputRels.contains(headLit.relation) || problem.inventedRels.contains(headLit.relation)) {
         val token = nextToken()
         val rule = Rule(token, headLit, bodyLits.toVector).normalized
         if (ans.rules.forall(rulePrime => rulePrime.head != rule.head || rulePrime.body != rule.body) &&
