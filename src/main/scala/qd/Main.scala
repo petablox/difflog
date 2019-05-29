@@ -86,8 +86,8 @@ object Main extends App {
                      .foreach(println)
 
       case Array("alps-noise", dataFilename, templateFilename,
-      learnerName, evaluatorName, scorerName,
-      tgtLossStr, maxItersStr) =>
+                               learnerName, evaluatorName, scorerName,
+                               tgtLossStr, maxItersStr) =>
         val query = readALPSProblem(dataFilename, templateFilename).injectNoise()
         val learner = Learner.STD_LEARNERS(learnerName)
         val evaluator = Evaluator.STD_EVALUATORS(evaluatorName)
@@ -122,10 +122,10 @@ object Main extends App {
         println(s"// Achieved loss ${result.loss}")
         val weightedRules = query.rules.map(rule => (Value(rule.lineage, result.pos), rule))
         weightedRules.filter({ case (weight, _) => FValueSemiringObj.nonZero(weight) })
-          .toVector
-          .sortBy(-_._1.v)
-          .map({ case (weight, rule) => s"$weight: $rule" })
-          .foreach(println)
+                     .toVector
+                     .sortBy(-_._1.v)
+                     .map({ case (weight, rule) => s"$weight: $rule" })
+                     .foreach(println)
 
       case Array("ntp-learn", _*) => ???
       case Array("ntp-query", _*)=> ???

@@ -143,3 +143,19 @@ case class VecValueSemiring[T <: Value[T]](n: Int)(implicit vs: Semiring[T]) ext
   override def Zero: VecValue[T] = VecValue(Range(0, n).map(_ => vs.Zero))
   override def nonZero(t: VecValue[T]): Boolean = t.vec.exists(vs.nonZero)
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Coprovenance
+
+case class Coprov(set: Set[Token]) extends Value[Coprov] {
+  override def +(that: Coprov): Coprov = Coprov(this.set & that.set)
+  override def *(that: Coprov): Coprov = Coprov(this.set | that.set)
+  override def <~(that: Coprov): Boolean = that.set.forall(this.set)
+  override def unwrap: Coprov = this
+}
+
+case class CoprovSemiring(allTokens: Set[Token]) extends Semiring[Coprov] {
+  override val One: Coprov = Coprov(Set.empty)
+  override val Zero: Coprov = Coprov(allTokens)
+  override def nonZero(t: Coprov): Boolean = t.set.nonEmpty
+}

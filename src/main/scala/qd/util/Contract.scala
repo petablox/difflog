@@ -4,7 +4,7 @@ object Contract {
   // By factoring out calls to Predef.require(...) and Predef.assert(...), we can turn them off and on to determine
   // performance penalties
 
-  val CHECK_CONTRACTS: Boolean = false
+  val CHECK_CONTRACTS: Boolean = true
   val DEEP_CHECK_CONTRACTS: Boolean = false
   val VERBOSE: Boolean = sys.env.getOrElse("VERBOSE", "0") != "0"
 
