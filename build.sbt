@@ -1,7 +1,10 @@
 import Dependencies._
 
-lazy val root = (project in file(".")).
-  settings(
+sbtPlugin := true
+
+lazy val root = (project in file("."))
+  .enablePlugins(ScalaZ3Plugin)
+  .settings(
     inThisBuild(List(
       organization := "edu.upenn.cis",
       scalaVersion := "2.12.3",
