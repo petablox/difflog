@@ -58,7 +58,7 @@ class ALPSParserSpec extends FunSuite {
     assert(problem.inventedRels.map(_.name) == Set())
     assert(problem.outputRels.map(_.name) == Set("path"))
 
-    assert(problem.rules.size == 6)
+    assert(problem.rules.size == 5)
 
     assert(problem.discreteEDB.values.flatten.size == 7)
     assert(problem.discreteIDB.values.flatten.size == 31)

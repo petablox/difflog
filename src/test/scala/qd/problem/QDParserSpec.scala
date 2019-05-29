@@ -47,13 +47,13 @@ class QDParserSpec extends FunSuite {
     assert(problem.outputRels == Set(scc))
 
     val pedge = problem.edb(edge).support.map(tv => (tv._1, tv._2.v))
-    assert(pedge == Set((DTuple(Vector(a, b)), 1.0),
-                        (DTuple(Vector(b, c)), 1.0),
-                        (DTuple(Vector(c, d)), 1.0),
-                        (DTuple(Vector(d, a)), 1.0)))
+    assert(pedge.toSet == Set((DTuple(Vector(a, b)), 1.0),
+                              (DTuple(Vector(b, c)), 1.0),
+                              (DTuple(Vector(c, d)), 1.0),
+                              (DTuple(Vector(d, a)), 1.0)))
     val pscc = problem.idb(scc).support.map(tv => (tv._1, tv._2.v))
-    assert(pscc == Set((DTuple(Vector(a, b)), 1.0),
-                       (DTuple(Vector(b, c)), 1.0)))
+    assert(pscc.toSet == Set((DTuple(Vector(a, b)), 1.0),
+                             (DTuple(Vector(b, c)), 1.0)))
 
     assert(problem.rules.size == 2)
     problem.rules.find(rule => rule.head.relation == nullRel && rule.body.isEmpty).get
@@ -115,13 +115,13 @@ class QDParserSpec extends FunSuite {
     assert(problem.outputRels == Set(scc))
 
     val pedge = problem.edb(edge).support.map(tv => (tv._1, tv._2.v))
-    assert(pedge == Set((DTuple(Vector(a, b)), 1.0),
-                        (DTuple(Vector(b, c)), 1.0),
-                        (DTuple(Vector(c, d)), 1.0),
-                        (DTuple(Vector(a, c)), 1.0)))
+    assert(pedge.toSet == Set((DTuple(Vector(a, b)), 1.0),
+                              (DTuple(Vector(b, c)), 1.0),
+                              (DTuple(Vector(c, d)), 1.0),
+                              (DTuple(Vector(a, c)), 1.0)))
     val pscc = problem.idb(scc).support.map(tv => (tv._1, tv._2.v))
-    assert(pscc == Set((DTuple(Vector(a, b)), 1.0),
-                       (DTuple(Vector(b, c)), 1.0)))
+    assert(pscc.toSet == Set((DTuple(Vector(a, b)), 1.0),
+                             (DTuple(Vector(b, c)), 1.0)))
 
     assert(problem.rules.size == 1)
     val prule = problem.rules.head
