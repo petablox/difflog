@@ -1,10 +1,12 @@
 package qd
 
+import java.io.{File, PrintWriter}
+
 import qd.Semiring.FValueSemiringObj
 import qd.dgraph.Extractor
 import qd.evaluator.Evaluator
 import qd.learner.{Learner, Scorer}
-import qd.problem.{ALPSParser, Problem, QDParser}
+import qd.problem.{ALPSParser, Problem, QDParser, SouffleWriter}
 import qd.stochasticlearner.{StochasticLearner, StochasticScorer}
 import qd.util.Timers.Timer
 import qd.util.{Contract, Counters, Timers}
@@ -127,6 +129,10 @@ object Main extends App {
                      .map({ case (weight, rule) => s"$weight: $rule" })
                      .foreach(println)
 
+      case Array("2souffle", dataFilename, templateFilename, outputDirectoryName) =>
+        val query = readALPSProblem(dataFilename, templateFilename)
+        SouffleWriter.write(query, outputDirectoryName)
+
       case Array("ntp-learn", _*) => ???
       case Array("ntp-query", _*)=> ???
       case _ =>
@@ -177,6 +183,11 @@ object Main extends App {
              |            tgtLoss
              |            maxIters
              |     Runs Difflog with probabilistic sampling of derivation graphs
+             |
+             | 6. 2souffle data.d
+             |             templates.tp
+             |             outputDirectory
+             |    Translates the ALPS benchmarks into a format suitable for consumption by Souffle and Prosynth
            """.stripMargin)
     }
 
