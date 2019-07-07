@@ -1,7 +1,5 @@
 package qd
 
-import java.io.{File, PrintWriter}
-
 import qd.Semiring.FValueSemiringObj
 import qd.dgraph.Extractor
 import qd.evaluator.Evaluator
