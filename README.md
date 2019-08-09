@@ -1,13 +1,8 @@
 # Difflog #
 
-## Materials & Submissions
-### 5/31/2018: NIPS 2018 submissions
-> In progress...
+## Materials
 
-### MLP 2018 Overview
-[Draft](https://www.cis.upenn.edu/~rmukund/pdf/2018-MLP.pdf) | 
-[Slides](https://www.cis.upenn.edu/~rmukund/pdf/2018-MLP.pptx) | 
-[Video](https://www.youtube.com/watch?v=4d4cNL9xbrs)
+[Paper](https://www.cis.upenn.edu/~rmukund/pdf/2019-IJCAI.pdf) | 
 
 ## Usage
 ### Toolchain 
