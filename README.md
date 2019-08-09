@@ -3,6 +3,8 @@
 ## Materials
 
 [Paper](https://www.cis.upenn.edu/~rmukund/pdf/2019-IJCAI.pdf) | 
+[Slides] (TBD) |
+[Poster] (TBD)
 
 ## Usage
 ### Toolchain 
