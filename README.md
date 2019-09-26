@@ -21,7 +21,8 @@ Relaxation."
    [info] Loading settings from plugins.sbt ...
    [info] ...
    ...
-   sbt> run alps src/test/resources/ALPS/data/path.d src/test/resources/ALPS/templates/path.tp HybridAnnealingLearner NaiveEvaluator L2Scorer 0.01 1000```
+   sbt> run alps src/test/resources/ALPS/data/path.d src/test/resources/ALPS/templates/path.tp HybridAnnealingLearner NaiveEvaluator L2Scorer 0.01 1000
+   ```
 
    The system will momentarily print logging information and the final synthesized program and associated metrics.
 
