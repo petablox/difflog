@@ -14,11 +14,9 @@ Relaxation."
 
 2. Run the command `sbt compile`.
 
-3. To use Difflog to synthesize Datalog programs, invoke sbt and issue the following commands at the ensuing prompt:
+3. To use Difflog to synthesize Datalog programs, invoke `sbt` and issue the following commands at the ensuing prompt:
 
-   ```$ sbt
-
-   [info] Loading settings from plugins.sbt ...
+   ```[info] Loading settings from plugins.sbt ...
    [info] ...
    ...
    sbt> run alps src/test/resources/ALPS/data/path.d src/test/resources/ALPS/templates/path.tp HybridAnnealingLearner NaiveEvaluator L2Scorer 0.01 1000
