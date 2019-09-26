@@ -12,25 +12,25 @@ Relaxation."
 
 1. Install sbt. We recommend a version >= 1.1.1.
 
-2. Run the command "sbt compile".
+2. Run the command `sbt compile`.
 
 3. To use Difflog to synthesize Datalog programs, invoke sbt and issue the following commands at the ensuing prompt:
 
-   $ sbt
+   ```$ sbt
 
    [info] Loading settings from plugins.sbt ...
    [info] ...
    ...
-   sbt> run alps src/test/resources/ALPS/data/path.d src/test/resources/ALPS/templates/path.tp HybridAnnealingLearner NaiveEvaluator L2Scorer 0.01 1000
+   sbt> run alps src/test/resources/ALPS/data/path.d src/test/resources/ALPS/templates/path.tp HybridAnnealingLearner NaiveEvaluator L2Scorer 0.01 1000```
 
    The system will momentarily print logging information and the final synthesized program and associated metrics.
 
 3. In general, the synthesis command is of the form:
 
-   run alps data.d templates.tp learnerName evaluatorName scorerName targetLoss numIters
+   ```run alps data.d templates.tp learnerName evaluatorName scorerName targetLoss numIters```
 
    For the learner, evaluator, scorer, target loss and number of iterations, we recommend the values
-   HybridAnnealingLearner, NaiveEvaluator, L2Scorer, 0.01 and 1000 respectively.
+   `HybridAnnealingLearner`, `NaiveEvaluator`, `L2Scorer`, `0.01` and `1000` respectively.
 
-   Several data.d and templates.tp files can be found in the src/test/resources/ALPS directory. The user is encouraged
+   Several data.d and templates.tp files can be found in the `src/test/resources/ALPS` directory. The user is encouraged
    to create new benchmarks patterned on these files.
